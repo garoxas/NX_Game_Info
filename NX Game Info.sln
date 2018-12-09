@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.106
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NX Game Info", "NX Game Info\NX Game Info.csproj", "{A9721E36-198D-4096-B2E0-7B256C0B509C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibHac", "LibHac\src\LibHac\LibHac.csproj", "{B6FB473E-5F05-4F8C-919E-7C3E7D8FCB10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{A9721E36-198D-4096-B2E0-7B256C0B509C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9721E36-198D-4096-B2E0-7B256C0B509C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9721E36-198D-4096-B2E0-7B256C0B509C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6FB473E-5F05-4F8C-919E-7C3E7D8FCB10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6FB473E-5F05-4F8C-919E-7C3E7D8FCB10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6FB473E-5F05-4F8C-919E-7C3E7D8FCB10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6FB473E-5F05-4F8C-919E-7C3E7D8FCB10}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
