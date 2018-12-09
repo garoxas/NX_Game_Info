@@ -18,6 +18,7 @@ namespace NX_Game_Info
     public partial class Main : Form
     {
         private const string PROD_KEYS = "prod.keys";
+        private const string TITLE_KEYS = "title.keys";
         private const string HAC_VERSIONLIST = "hac_versionlist.json";
 
         [DllImport("Shlwapi.dll", CharSet = CharSet.Auto)]
@@ -56,29 +57,6 @@ namespace NX_Game_Info
                 Dangerous,
                 Invalid = -1
             }
-
-            public static Dictionary<ulong, Permission> permissions = new Dictionary<ulong, Permission>
-            {
-                { 0x8000000000000801, Permission.Safe },        // CanMountLogo, CanMountContentMeta, CanMountContentControl, CanMountContentManual, CanMountContentData, CanMountApplicationPackage
-                { 0x8000000000000000, Permission.Safe },        // CanMountSaveDataStorage, CanOpenSaveDataInternalStorage
-                { 0x8000000000000800, Permission.Safe },        // CanMountContentStorage
-                { 0x8000000000001000, Permission.Safe },        // CanMountImageAndVideoStorage
-                { 0x8000000200000000, Permission.Safe },        // CanMountCloudBackupWorkStorage
-                { 0x8000000000000084, Permission.Unsafe },      // CanMountBisCalibrationFile, CanOpenBisPartitionCalibrationBinary, CanOpenBisPartitionCalibrationFile
-                { 0x8000000000000080, Permission.Unsafe },      // CanMountBisSafeMode, CanMountBisUser, CanMountBisSystemProperPartition, CanOpenBisPartitionSafeMode, CanOpenBisPartitionUser, CanOpenBisPartitionSystem, CanOpenBisPartitionSystemProperEncryption, CanOpenBisPartitionSystemProperPartition
-                { 0x8000000000008080, Permission.Unsafe },      // CanMountBisSystem, CanMountBisSystemProperEncryption, CanOpenBisPartitionUserDataRoot, CanOpenBisPartitionBootConfigAndPackage2*
-                { 0xC000000000200000, Permission.Safe },        // CanMountSdCard, CanOpenSdCardStorage
-                { 0x8000000000000010, Permission.Safe },        // CanMountGameCard
-                { 0x8000000000040020, Permission.Safe },        // CanMountDeviceSaveData
-                { 0x8000000000000028, Permission.Safe },        // CanMountSystemSaveData
-                { 0x8000000000000020, Permission.Safe },        // CanMountOthersSaveData, CanMountOthersSystemSaveData
-                { 0x8000000000010082, Permission.Unsafe },      // CanOpenBisPartitionBootPartition1Root
-                { 0x8000000000010080, Permission.Unsafe },      // CanOpenBisPartitionBootPartition2Root
-                { 0x8000000000000100, Permission.Safe },        // CanOpenGameCardStorage
-                { 0x8000000000100008, Permission.Safe },        // CanMountSystemDataPrivate
-                { 0xC000000000400000, Permission.Safe },        // CanMountHost
-                { 0x8000000000010000, Permission.Safe },        // CanMountRegisteredUpdatePartition
-            };
 
             public string titleID { get; set; }
             public string titleIDApplication { get { return String.IsNullOrEmpty(titleID) ? "" : titleID.Substring(0, Math.Min(titleID.Length, 13)) + "000"; } }
@@ -159,41 +137,6 @@ namespace NX_Game_Info
             public string signatureString { get { return signature == null ? "" : (bool)signature ? "Passed" : "Not Passed"; } }
             public Permission permission { get; set; } = Permission.Invalid;
             public string permissionString { get { return permission == Permission.Invalid ? "" : permission.ToString(); } }
-            public ulong permissionsBitmask
-            {
-                set
-                {
-                    switch (value)
-                    {
-                        case 0x4000000000000000:
-                            permission = Permission.Safe;
-                            break;
-
-                        case 0xffffffffffffffff:
-                            permission = Permission.Dangerous;
-                            break;
-
-                        default:
-                            permission = Permission.Safe;
-
-                            foreach (var perms in permissions)
-                            {
-                                if ((value & perms.Key) != 0)
-                                {
-                                    if (perms.Value > permission)
-                                    {
-                                        permission = perms.Value;
-                                        if (permission == Permission.Dangerous)
-                                        {
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            break;
-                    }
-                }
-            }
         }
 
         private class VersionTitle
@@ -217,14 +160,44 @@ namespace NX_Game_Info
         {
             InitializeComponent();
 
-            try
-            {
-                keyset = ExternalKeys.ReadKeyFile(PROD_KEYS);
-            }
-            catch (FileNotFoundException)
+            if (!File.Exists(PROD_KEYS))
             {
                 MessageBox.Show("File not found. Check if '" + PROD_KEYS + "' exist and try again");
                 Environment.Exit(-1);
+            }
+
+            try
+            {
+                keyset = ExternalKeys.ReadKeyFile(PROD_KEYS, TITLE_KEYS);
+            }
+            catch { }
+
+            bool haveKakSource = !((bool)keyset?.AesKekGenerationSource.All(b => b == 0) || (bool)keyset?.AesKeyGenerationSource.All(b => b == 0) || (bool)keyset?.KeyAreaKeyApplicationSource.All(b => b == 0));
+            if ((bool)keyset?.HeaderKey.All(b => b == 0) ||
+                ((haveKakSource && (bool)keyset?.MasterKeys[0].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[0][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[0].All(b => b == 0) ||
+                ((haveKakSource && (bool)keyset?.MasterKeys[1].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[1][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[1].All(b => b == 0) ||
+                ((haveKakSource && (bool)keyset?.MasterKeys[2].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[2][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[2].All(b => b == 0) ||
+                ((haveKakSource && (bool)keyset?.MasterKeys[3].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[3][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[3].All(b => b == 0) ||
+                ((haveKakSource && (bool)keyset?.MasterKeys[4].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[4][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[4].All(b => b == 0))
+            {
+                MessageBox.Show("Keyfile missing required keys. Check if these keys exist and try again.\n" +
+                    "header_key, aes_kek_generation_source, aes_key_generation_source, key_area_key_application_source, master_key_00-04");
+                Environment.Exit(-1);
+            }
+
+            if ((haveKakSource && (bool)keyset?.MasterKeys[5].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[5][0].All(b => b == 0) || (bool)keyset?.Titlekeks[5].All(b => b == 0))
+            {
+                MessageBox.Show("master_key_05, key_area_key_application_05 or titlekek_05 are missing from Keyfile.\nGames using this key may be missing or incorrect");
+            }
+
+            if ((haveKakSource && (bool)keyset?.MasterKeys[6].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[6][0].All(b => b == 0) || (bool)keyset?.Titlekeks[6].All(b => b == 0))
+            {
+                MessageBox.Show("master_key_06, key_area_key_application_06 or titlekek_06 are missing from Keyfile.\nGames using this key may be missing or incorrect");
+            }
+
+            if (keyset?.TitleKeys.Count == 0)
+            {
+                MessageBox.Show("Title Keys is missing.\nGames using Titlekey crypto may be missing or incorrect");
             }
 
             try
@@ -338,19 +311,26 @@ namespace NX_Game_Info
 
         private Title processFile(string filename)
         {
-            Title title = processXci(filename) ?? processNsp(filename);
-
             try
             {
-                title.filename = filename;
-                title.filesize = new FileInfo(filename).Length;
-            }
-            catch (NullReferenceException)
-            {
-                return null;
-            }
+                Title title = processXci(filename) ?? processNsp(filename);
 
-            return title;
+                try
+                {
+                    title.filename = filename;
+                    title.filesize = new FileInfo(filename).Length;
+                }
+                catch (NullReferenceException)
+                {
+                    return null;
+                }
+
+                return title;
+            }
+            catch (MissingKeyException)
+            { }
+
+            return null;
         }
 
         private Title processXci(string filename)
@@ -575,7 +555,18 @@ namespace NX_Game_Info
 
                             if (nca.Npdm != null)
                             {
-                                title.permissionsBitmask = nca.Npdm.AciD.FsAccess.PermissionsBitmask;
+                                if (nca.Npdm.AciD.ServiceAccess.Services.Count == 0)
+                                {
+                                    title.permission = Title.Permission.Dangerous;
+                                }
+                                else if (nca.Npdm.AciD.ServiceAccess.Services.ContainsKey("fsp-ldr") || nca.Npdm.AciD.ServiceAccess.Services.ContainsKey("fsp-pr"))
+                                {
+                                    title.permission = Title.Permission.Unsafe;
+                                }
+                                else
+                                {
+                                    title.permission = Title.Permission.Safe;
+                                }
                             }
                         }
                     }
