@@ -1,17 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
-using System.Linq;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Xml.Linq;
 using System.Windows.Forms;
+using Application = System.Windows.Forms.Application;
+using BrightIdeasSoftware;
 using LibHac;
 using LibHac.IO;
-using LibHac.Npdm;
-using System.Text;
-using System.Collections.Generic;
-using System.Xml.Linq;
 using Newtonsoft.Json;
-using System.Drawing;
 
 namespace NX_Game_Info
 {
@@ -95,7 +96,25 @@ namespace NX_Game_Info
             }
             public string filename { get; set; }
             public long filesize { get; set; }
+            public string filesizeString { get { StringBuilder builder = new StringBuilder(20); StrFormatByteSize(filesize, builder, 20); return builder.ToString(); } }
             public TitleType type { get; set; }
+            public string typeString
+            {
+                get
+                {
+                    switch (type)
+                    {
+                        case TitleType.Application:
+                            return "Base";
+                        case TitleType.Patch:
+                            return "Update";
+                        case TitleType.AddOnContent:
+                            return "DLC";
+                        default:
+                            return "";
+                    }
+                }
+            }
             public Distribution distribution { get; set; } = Distribution.Invalid;
             public HashSet<Structure> structure { get; set; } = new HashSet<Structure>();
             public string structureString
@@ -162,13 +181,13 @@ namespace NX_Game_Info
 
             if (!File.Exists(PROD_KEYS))
             {
-                MessageBox.Show("File not found. Check if '" + PROD_KEYS + "' exist and try again");
+                MessageBox.Show("File not found. Check if '" + PROD_KEYS + "' exist and try again", Application.ProductName);
                 Environment.Exit(-1);
             }
 
             try
             {
-                keyset = ExternalKeys.ReadKeyFile(PROD_KEYS, TITLE_KEYS);
+                keyset = ExternalKeys.ReadKeyFile(PROD_KEYS, File.Exists(TITLE_KEYS) ? TITLE_KEYS : null);
             }
             catch { }
 
@@ -181,23 +200,23 @@ namespace NX_Game_Info
                 ((haveKakSource && (bool)keyset?.MasterKeys[4].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[4][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[4].All(b => b == 0))
             {
                 MessageBox.Show("Keyfile missing required keys. Check if these keys exist and try again.\n" +
-                    "header_key, aes_kek_generation_source, aes_key_generation_source, key_area_key_application_source, master_key_00-04");
+                    "header_key, aes_kek_generation_source, aes_key_generation_source, key_area_key_application_source, master_key_00-04", Application.ProductName);
                 Environment.Exit(-1);
             }
 
             if ((haveKakSource && (bool)keyset?.MasterKeys[5].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[5][0].All(b => b == 0) || (bool)keyset?.Titlekeks[5].All(b => b == 0))
             {
-                MessageBox.Show("master_key_05, key_area_key_application_05 or titlekek_05 are missing from Keyfile.\nGames using this key may be missing or incorrect");
+                MessageBox.Show("master_key_05, key_area_key_application_05 or titlekek_05 are missing from Keyfile.\nGames using this key may be missing or incorrect", Application.ProductName);
             }
 
             if ((haveKakSource && (bool)keyset?.MasterKeys[6].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[6][0].All(b => b == 0) || (bool)keyset?.Titlekeks[6].All(b => b == 0))
             {
-                MessageBox.Show("master_key_06, key_area_key_application_06 or titlekek_06 are missing from Keyfile.\nGames using this key may be missing or incorrect");
+                MessageBox.Show("master_key_06, key_area_key_application_06 or titlekek_06 are missing from Keyfile.\nGames using this key may be missing or incorrect", Application.ProductName);
             }
 
             if (keyset?.TitleKeys.Count == 0)
             {
-                MessageBox.Show("Title Keys is missing.\nGames using Titlekey crypto may be missing or incorrect");
+                MessageBox.Show("Title Keys is missing.\nGames using Titlekey crypto may be missing or incorrect", Application.ProductName);
             }
 
             try
@@ -222,7 +241,7 @@ namespace NX_Game_Info
         {
             if (backgroundWorkerProcess.IsBusy)
             {
-                MessageBox.Show("Please wait until the current process is finished and try again");
+                MessageBox.Show("Please wait until the current process is finished and try again", Application.ProductName);
                 return;
             }
 
@@ -234,7 +253,7 @@ namespace NX_Game_Info
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                listView.Items.Clear();
+                objectListView.Items.Clear();
 
                 backgroundWorkerProcess.RunWorkerAsync(openFileDialog.FileNames);
             }
@@ -244,7 +263,7 @@ namespace NX_Game_Info
         {
             if (backgroundWorkerProcess.IsBusy)
             {
-                MessageBox.Show("Please wait until the current process is finished and try again");
+                MessageBox.Show("Please wait until the current process is finished and try again", Application.ProductName);
                 return;
             }
 
@@ -252,7 +271,7 @@ namespace NX_Game_Info
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
-                listView.Items.Clear();
+                objectListView.Items.Clear();
 
                 backgroundWorkerProcess.RunWorkerAsync(Directory.EnumerateFiles(folderBrowserDialog.SelectedPath, "*.*", SearchOption.AllDirectories)
                     .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp")).ToArray());
@@ -285,27 +304,25 @@ namespace NX_Game_Info
         {
             List<Title> titles = (List<Title>)e.Result;
 
-            foreach (var title in titles)
+            objectListView.SetObjects(titles);
+
+            foreach (OLVListItem listItem in objectListView.Items)
             {
-                ListViewItem listViewItem = new ListViewItem(new[] { title.titleID, title.titleName, title.displayVersion, title.versionString, title.latestVersionString,
-                    title.firmware, title.masterkeyString, title.filename, new Func<long, string>((long filesize) => { StringBuilder builder = new StringBuilder(20); StrFormatByteSize(filesize, builder, 20); return builder.ToString(); })(title.filesize),
-                    title.distribution.ToString(), title.structureString, title.signatureString, title.permissionString });
+                Title title = listItem.RowObject as Title;
 
                 if (title.signature != true)
                 {
-                    listViewItem.BackColor = Color.WhiteSmoke;
+                    listItem.BackColor = Color.WhiteSmoke;
                 }
 
                 if (title.permission == Title.Permission.Dangerous)
                 {
-                    listViewItem.ForeColor = Color.DarkRed;
+                    listItem.ForeColor = Color.DarkRed;
                 }
                 else if (title.permission == Title.Permission.Unsafe)
                 {
-                    listViewItem.ForeColor = Color.Indigo;
+                    listItem.ForeColor = Color.Indigo;
                 }
-
-                listView.Items.Add(listViewItem);
             }
         }
 
