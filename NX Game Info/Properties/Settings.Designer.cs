@@ -22,5 +22,53 @@ namespace NX_Game_Info.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string InitialDirectory {
+            get {
+                return ((string)(this["InitialDirectory"]));
+            }
+            set {
+                this["InitialDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool MasterKey5 {
+            get {
+                return ((bool)(this["MasterKey5"]));
+            }
+            set {
+                this["MasterKey5"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool MasterKey6 {
+            get {
+                return ((bool)(this["MasterKey6"]));
+            }
+            set {
+                this["MasterKey6"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool TitleKeys {
+            get {
+                return ((bool)(this["TitleKeys"]));
+            }
+            set {
+                this["TitleKeys"] = value;
+            }
+        }
     }
 }

@@ -48,6 +48,11 @@ namespace NX_Game_Info
                 PrograminfoXml,
                 CardspecXml,
                 AuthoringtoolinfoXml,
+                RootPartition,
+                UpdatePartition,
+                NormalPartition,
+                SecurePartition,
+                LogoPartition,
                 Invalid = -1
             }
 
@@ -63,12 +68,12 @@ namespace NX_Game_Info
             public string titleIDApplication { get { return String.IsNullOrEmpty(titleID) ? "" : titleID.Substring(0, Math.Min(titleID.Length, 13)) + "000"; } }
             public string titleName { get; set; }
             public string displayVersion { get; set; }
-            public long version { get; set; } = -1;
-            public string versionString { get { return version > -1 ? version.ToString() : ""; } }
-            public long latestVersion { get; set; } = -1;
-            public string latestVersionString { get { return latestVersion > -1 ? latestVersion.ToString() : ""; } }
+            public uint version { get; set; } = unchecked((uint)-1);
+            public string versionString { get { return version != unchecked((uint)-1) ? version.ToString() : ""; } }
+            public uint latestVersion { get; set; } = unchecked((uint)-1);
+            public string latestVersionString { get { return latestVersion != unchecked((uint)-1) ? latestVersion.ToString() : ""; } }
             public string firmware { get; set; }
-            public long masterkey { get; set; } = 0;
+            public uint masterkey { get; set; } = 0;
             public string masterkeyString
             {
                 get
@@ -123,7 +128,18 @@ namespace NX_Game_Info
                 {
                     if (distribution == Distribution.Cartridge)
                     {
-
+                        if (new HashSet<Structure>(new[] { Structure.UpdatePartition, Structure.NormalPartition, Structure.SecurePartition }).All(value => structure.Contains(value)))
+                        {
+                            return "Scene";
+                        }
+                        else if (new HashSet<Structure>(new[] { Structure.SecurePartition }).All(value => structure.Contains(value)))
+                        {
+                            return "Converted";
+                        }
+                        else
+                        {
+                            return "Not complete";
+                        }
                     }
                     else if (distribution == Distribution.Digital)
                     {
@@ -161,19 +177,19 @@ namespace NX_Game_Info
         private class VersionTitle
         {
             public string id { get; set; }
-            public int version { get; set; }
-            public int required_version { get; set; }
+            public uint version { get; set; }
+            public uint required_version { get; set; }
         }
 
         private class VersionList
         {
             public List<VersionTitle> titles { get; set; }
-            public int format_version { get; set; }
-            public int last_modified { get; set; }
+            public uint format_version { get; set; }
+            public uint last_modified { get; set; }
         }
 
         private Keyset keyset;
-        private Dictionary<string, int> versionList = new Dictionary<string, int>();
+        private Dictionary<string, uint> versionList = new Dictionary<string, uint>();
 
         public Main()
         {
@@ -181,7 +197,7 @@ namespace NX_Game_Info
 
             if (!File.Exists(PROD_KEYS))
             {
-                MessageBox.Show("File not found. Check if '" + PROD_KEYS + "' exist and try again", Application.ProductName);
+                MessageBox.Show("File not found. Check if '" + PROD_KEYS + "' exist and try again.", Application.ProductName);
                 Environment.Exit(-1);
             }
 
@@ -200,23 +216,41 @@ namespace NX_Game_Info
                 ((haveKakSource && (bool)keyset?.MasterKeys[4].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[4][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[4].All(b => b == 0))
             {
                 MessageBox.Show("Keyfile missing required keys. Check if these keys exist and try again.\n" +
-                    "header_key, aes_kek_generation_source, aes_key_generation_source, key_area_key_application_source, master_key_00-04", Application.ProductName);
+                    "header_key, aes_kek_generation_source, aes_key_generation_source, key_area_key_application_source, master_key_00-04.", Application.ProductName);
                 Environment.Exit(-1);
             }
 
-            if ((haveKakSource && (bool)keyset?.MasterKeys[5].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[5][0].All(b => b == 0) || (bool)keyset?.Titlekeks[5].All(b => b == 0))
+            if (!Properties.Settings.Default.MasterKey5)
             {
-                MessageBox.Show("master_key_05, key_area_key_application_05 or titlekek_05 are missing from Keyfile.\nGames using this key may be missing or incorrect", Application.ProductName);
+                if ((haveKakSource && (bool)keyset?.MasterKeys[5].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[5][0].All(b => b == 0) || (bool)keyset?.Titlekeks[5].All(b => b == 0))
+                {
+                    MessageBox.Show("master_key_05, key_area_key_application_05 or titlekek_05 are missing from Keyfile.\nGames using this key may be missing or incorrect.", Application.ProductName);
+
+                    Properties.Settings.Default.MasterKey5 = true;
+                    Properties.Settings.Default.Save();
+                }
             }
 
-            if ((haveKakSource && (bool)keyset?.MasterKeys[6].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[6][0].All(b => b == 0) || (bool)keyset?.Titlekeks[6].All(b => b == 0))
+            if (!Properties.Settings.Default.MasterKey6)
             {
-                MessageBox.Show("master_key_06, key_area_key_application_06 or titlekek_06 are missing from Keyfile.\nGames using this key may be missing or incorrect", Application.ProductName);
+                if ((haveKakSource && (bool)keyset?.MasterKeys[6].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[6][0].All(b => b == 0) || (bool)keyset?.Titlekeks[6].All(b => b == 0))
+                {
+                    MessageBox.Show("master_key_06, key_area_key_application_06 or titlekek_06 are missing from Keyfile.\nGames using this key may be missing or incorrect.", Application.ProductName);
+
+                    Properties.Settings.Default.MasterKey6 = true;
+                    Properties.Settings.Default.Save();
+                }
             }
 
-            if (keyset?.TitleKeys.Count == 0)
+            if (!Properties.Settings.Default.TitleKeys)
             {
-                MessageBox.Show("Title Keys is missing.\nGames using Titlekey crypto may be missing or incorrect", Application.ProductName);
+                if (keyset?.TitleKeys.Count == 0)
+                {
+                    MessageBox.Show("Title Keys is missing.\nGames using Titlekey crypto may be missing or incorrect.", Application.ProductName);
+
+                    Properties.Settings.Default.TitleKeys = true;
+                    Properties.Settings.Default.Save();
+                }
             }
 
             try
@@ -241,7 +275,7 @@ namespace NX_Game_Info
         {
             if (backgroundWorkerProcess.IsBusy)
             {
-                MessageBox.Show("Please wait until the current process is finished and try again", Application.ProductName);
+                MessageBox.Show("Please wait until the current process is finished and try again.", Application.ProductName);
                 return;
             }
 
@@ -250,12 +284,19 @@ namespace NX_Game_Info
             openFileDialog.Filter = "NX Game Files (*.xci;*.nsp)|*.xci;*.nsp|Gamecard Files (*.xci)|*.xci|Package Files (*.nsp)|*.nsp|All Files (*.*)|*.*";
             openFileDialog.Multiselect = true;
             openFileDialog.RestoreDirectory = true;
+            openFileDialog.InitialDirectory = Properties.Settings.Default.InitialDirectory;
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 objectListView.Items.Clear();
 
-                backgroundWorkerProcess.RunWorkerAsync(openFileDialog.FileNames);
+                List<string> filenames = openFileDialog.FileNames.ToList();
+                filenames.Sort();
+
+                Properties.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
+                Properties.Settings.Default.Save();
+
+                backgroundWorkerProcess.RunWorkerAsync(filenames);
             }
         }
 
@@ -263,18 +304,25 @@ namespace NX_Game_Info
         {
             if (backgroundWorkerProcess.IsBusy)
             {
-                MessageBox.Show("Please wait until the current process is finished and try again", Application.ProductName);
+                MessageBox.Show("Please wait until the current process is finished and try again.", Application.ProductName);
                 return;
             }
 
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            folderBrowserDialog.SelectedPath = Properties.Settings.Default.InitialDirectory;
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
                 objectListView.Items.Clear();
 
-                backgroundWorkerProcess.RunWorkerAsync(Directory.EnumerateFiles(folderBrowserDialog.SelectedPath, "*.*", SearchOption.AllDirectories)
-                    .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp")).ToArray());
+                List<string> filenames = Directory.EnumerateFiles(folderBrowserDialog.SelectedPath, "*.*", SearchOption.AllDirectories)
+                    .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp")).ToList();
+                filenames.Sort();
+
+                Properties.Settings.Default.InitialDirectory = folderBrowserDialog.SelectedPath;
+                Properties.Settings.Default.Save();
+
+                backgroundWorkerProcess.RunWorkerAsync(filenames);
             }
         }
 
@@ -285,7 +333,7 @@ namespace NX_Game_Info
 
         private void backgroundWorkerProcess_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
         {
-            string[] filenames = (string[])e.Argument;
+            List<string> filenames = (List<string>)e.Argument;
             List<Title> titles = new List<Title>();
 
             foreach (var filename in filenames)
@@ -356,16 +404,213 @@ namespace NX_Game_Info
 
             using (var filestream = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
+                Xci xci;
+                string biggestNca = null, controlNca = null;
+
                 try
                 {
-                    Xci xci = new Xci(keyset, filestream.AsStorage());
+                    xci = new Xci(keyset, filestream.AsStorage());
 
-                    title.type = TitleType.Application;
                     title.distribution = Title.Distribution.Cartridge;
                 }
                 catch (InvalidDataException)
                 {
                     return null;
+                }
+
+                if (xci.RootPartition != null)
+                {
+                    title.structure.Add(Title.Structure.RootPartition);
+                }
+
+                if (xci.UpdatePartition != null)
+                {
+                    title.structure.Add(Title.Structure.UpdatePartition);
+                }
+
+                if (xci.NormalPartition != null)
+                {
+                    title.structure.Add(Title.Structure.NormalPartition);
+                }
+
+                if (xci.SecurePartition != null)
+                {
+                    PfsFileEntry[] fileEntries = xci.SecurePartition.Files;
+                    foreach (PfsFileEntry entry in fileEntries)
+                    {
+                        if (entry.Name.EndsWith(".cnmt.nca"))
+                        {
+                            using (var cnmtNca = xci.SecurePartition.OpenFile(entry))
+                            {
+                                Nca nca = new Nca(keyset, cnmtNca, false);
+
+                                try
+                                {
+                                    Pfs ncaPfs = new Pfs(nca.OpenSection(0, false, IntegrityCheckLevel.ErrorOnInvalid, true));
+
+                                    PfsFileEntry[] ncaFileEntries = ncaPfs.Files;
+                                    foreach (PfsFileEntry pfsEntry in ncaFileEntries)
+                                    {
+                                        Cnmt cnmt = new Cnmt(ncaPfs.OpenFile(pfsEntry).AsStream());
+
+                                        if (title.version == unchecked((uint)-1) || cnmt.TitleVersion?.Version > title.version)
+                                        {
+                                            title.type = cnmt.Type;
+
+                                            byte[] titleID = BitConverter.GetBytes(cnmt.TitleId);
+                                            Array.Reverse(titleID);
+                                            title.titleID = BitConverter.ToString(titleID).Replace("-", "").ToUpper();
+
+                                            title.version = cnmt.TitleVersion?.Version ?? title.version;
+
+                                            uint firmware = cnmt.MinimumSystemVersion?.Version ?? 0;
+                                            if (firmware == 0)
+                                            {
+                                                title.firmware = "0";
+                                            }
+                                            else if (firmware <= 450)
+                                            {
+                                                title.firmware = "1.0.0";
+                                            }
+                                            else if (firmware <= 65796)
+                                            {
+                                                title.firmware = "2.0.0";
+                                            }
+                                            else if (firmware <= 131162)
+                                            {
+                                                title.firmware = "2.1.0";
+                                            }
+                                            else if (firmware <= 196628)
+                                            {
+                                                title.firmware = "2.2.0";
+                                            }
+                                            else if (firmware <= 262164)
+                                            {
+                                                title.firmware = "2.3.0";
+                                            }
+                                            else
+                                            {
+                                                title.firmware = ((firmware >> 26) & 0x3F) + "." + ((firmware >> 20) & 0x3F) + "." + ((firmware >> 16) & 0x0F);
+                                            }
+
+                                            CnmtContentEntry[] contentEntries = cnmt.ContentEntries;
+                                            foreach (CnmtContentEntry contentEntry in contentEntries)
+                                            {
+                                                if (title.type == TitleType.Application || title.type == TitleType.Patch)
+                                                {
+                                                    if (contentEntry.Type == CnmtContentType.Program)
+                                                    {
+                                                        biggestNca = BitConverter.ToString(contentEntry.NcaId).Replace("-", "").ToLower() + ".nca";
+                                                    }
+                                                    else if (contentEntry.Type == CnmtContentType.Control)
+                                                    {
+                                                        controlNca = BitConverter.ToString(contentEntry.NcaId).Replace("-", "").ToLower() + ".nca";
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                catch (MissingKeyException) { }
+                            }
+
+                            title.structure.Add(Title.Structure.CnmtNca);
+                        }
+                    }
+
+                    if (!String.IsNullOrEmpty(biggestNca))
+                    {
+                        using (var biggest = xci.SecurePartition.OpenFile(biggestNca))
+                        {
+                            Nca nca = new Nca(keyset, biggest, false);
+                            if (nca.Header.ContentType == ContentType.Program)
+                            {
+                                title.signature = (nca.Header.FixedSigValidity == Validity.Valid);
+                            }
+
+                            if (nca.Header.ContentType == ContentType.Program)
+                            {
+                                title.masterkey = (uint)nca.Header.CryptoType == 2 ? Math.Max((uint)nca.Header.CryptoType2 - 1, 0) : 0;
+
+                                try
+                                {
+                                    nca.ParseNpdm();
+                                }
+                                catch { }
+
+                                if (nca.Npdm != null)
+                                {
+                                    if (nca.Npdm.AciD.ServiceAccess.Services.Count == 0 || nca.Npdm.AciD.ServiceAccess.Services.Keys.Any(key => key.StartsWith("fsp-")))
+                                    {
+                                        if (nca.Npdm.AciD.FsAccess.PermissionsBitmask == 0xffffffffffffffff)
+                                        {
+                                            title.permission = Title.Permission.Dangerous;
+                                        }
+                                        else if ((nca.Npdm.AciD.FsAccess.PermissionsBitmask & 0x8000000000000000) != 0)
+                                        {
+                                            title.permission = Title.Permission.Unsafe;
+                                        }
+                                        else
+                                        {
+                                            title.permission = Title.Permission.Safe;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        title.permission = Title.Permission.Safe;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (!String.IsNullOrEmpty(controlNca))
+                    {
+                        using (var control = xci.SecurePartition.OpenFile(controlNca))
+                        {
+                            Nca nca = new Nca(keyset, control, false);
+                            if (nca.Header.ContentType == ContentType.Control)
+                            {
+                                byte[] titleID = BitConverter.GetBytes(nca.Header.TitleId);
+                                Array.Reverse(titleID);
+                                title.titleID = BitConverter.ToString(titleID).Replace("-", "").ToUpper();
+
+                                try
+                                {
+                                    Romfs romfs = new Romfs(nca.OpenSection(0, false, IntegrityCheckLevel.ErrorOnInvalid, true));
+
+                                    RomfsFile[] romfsFiles = romfs.Files.ToArray();
+                                    foreach (RomfsFile romfsFile in romfsFiles)
+                                    {
+                                        if (romfsFile.Name.Equals("control.nacp"))
+                                        {
+                                            Nacp nacp = new Nacp(romfs.OpenFile(romfsFile).AsStream());
+
+                                            title.titleName = nacp.Descriptions.First().Title;
+                                            title.displayVersion = nacp.DisplayVersion;
+                                        }
+                                    }
+                                }
+                                catch (MissingKeyException) { }
+                            }
+                        }
+                    }
+
+                    title.structure.Add(Title.Structure.SecurePartition);
+                }
+
+                if (xci.LogoPartition != null)
+                {
+                    title.structure.Add(Title.Structure.LogoPartition);
+                }
+            }
+
+            if (title.type == TitleType.Application || title.type == TitleType.Patch)
+            {
+                uint version;
+                if (versionList.TryGetValue(title.titleIDApplication, out version))
+                {
+                    title.latestVersion = version;
                 }
             }
 
@@ -406,9 +651,9 @@ namespace NX_Game_Info
                             title.type = titleType;
 
                             title.titleID = xml.Element("ContentMeta").Element("Id").Value.Remove(1, 2).ToUpper();
-                            title.version = Convert.ToInt64(xml.Element("ContentMeta").Element("Version").Value);
+                            title.version = Convert.ToUInt32(xml.Element("ContentMeta").Element("Version").Value);
 
-                            long firmware = Convert.ToInt64(xml.Element("ContentMeta").Element("RequiredSystemVersion").Value) % 0x100000000;
+                            uint firmware = (uint)(Convert.ToUInt64(xml.Element("ContentMeta").Element("RequiredSystemVersion").Value) % 0x100000000);
                             if (firmware == 0)
                             {
                                 title.firmware = "0";
@@ -438,7 +683,7 @@ namespace NX_Game_Info
                                 title.firmware = ((firmware >> 26) & 0x3F) + "." + ((firmware >> 20) & 0x3F) + "." + ((firmware >> 16) & 0x0F);
                             }
 
-                            title.masterkey = Math.Max(Convert.ToInt64(xml.Element("ContentMeta").Element("KeyGenerationMin").Value) - 1, 0);
+                            title.masterkey = Math.Max(Convert.ToUInt32(xml.Element("ContentMeta").Element("KeyGenerationMin").Value) - 1, 0);
 
                             foreach (XElement element in xml.Descendants("Content"))
                             {
@@ -470,45 +715,79 @@ namespace NX_Game_Info
                         using (var cnmtNca = pfs.OpenFile(entry))
                         {
                             Nca nca = new Nca(keyset, cnmtNca, false);
-                            Pfs ncaPfs = new Pfs(nca.OpenSection(0, false, IntegrityCheckLevel.ErrorOnInvalid, true));
 
-                            PfsFileEntry[] ncaFileEntries = ncaPfs.Files;
-                            foreach (PfsFileEntry pfsEntry in ncaFileEntries)
+                            try
                             {
-                                Cnmt cnmt = new Cnmt(ncaPfs.OpenFile(pfsEntry).AsStream());
+                                Pfs ncaPfs = new Pfs(nca.OpenSection(0, false, IntegrityCheckLevel.ErrorOnInvalid, true));
 
-                                title.type = cnmt.Type;
-
-                                byte[] titleID = BitConverter.GetBytes(cnmt.TitleId);
-                                Array.Reverse(titleID);
-                                title.titleID = BitConverter.ToString(titleID).Replace("-", "").ToUpper();
-
-                                title.version = cnmt.TitleVersion?.Version != 0 ? cnmt.TitleVersion.Version : title.version;
-                                title.firmware = cnmt.MinimumSystemVersion?.Version != 0 ? cnmt.MinimumSystemVersion?.ToString() : title.firmware ?? "0";
-
-                                CnmtContentEntry[] contentEntries = cnmt.ContentEntries;
-                                foreach (CnmtContentEntry contentEntry in contentEntries)
+                                PfsFileEntry[] ncaFileEntries = ncaPfs.Files;
+                                foreach (PfsFileEntry pfsEntry in ncaFileEntries)
                                 {
-                                    if (title.type == TitleType.Application || title.type == TitleType.Patch)
+                                    Cnmt cnmt = new Cnmt(ncaPfs.OpenFile(pfsEntry).AsStream());
+
+                                    title.type = cnmt.Type;
+
+                                    byte[] titleID = BitConverter.GetBytes(cnmt.TitleId);
+                                    Array.Reverse(titleID);
+                                    title.titleID = BitConverter.ToString(titleID).Replace("-", "").ToUpper();
+
+                                    title.version = cnmt.TitleVersion?.Version ?? title.version;
+
+                                    uint firmware = cnmt.MinimumSystemVersion?.Version ?? 0;
+                                    if (firmware == 0)
                                     {
-                                        if (contentEntry.Type == CnmtContentType.Program)
-                                        {
-                                            biggestNca = BitConverter.ToString(contentEntry.NcaId).Replace("-", "").ToLower() + ".nca";
-                                        }
-                                        else if (contentEntry.Type == CnmtContentType.Control)
-                                        {
-                                            controlNca = BitConverter.ToString(contentEntry.NcaId).Replace("-", "").ToLower() + ".nca";
-                                        }
+                                        title.firmware = "0";
                                     }
-                                    else if (title.type == TitleType.AddOnContent)
+                                    else if (firmware <= 450)
                                     {
-                                        if (contentEntry.Type == CnmtContentType.Data)
+                                        title.firmware = "1.0.0";
+                                    }
+                                    else if (firmware <= 65796)
+                                    {
+                                        title.firmware = "2.0.0";
+                                    }
+                                    else if (firmware <= 131162)
+                                    {
+                                        title.firmware = "2.1.0";
+                                    }
+                                    else if (firmware <= 196628)
+                                    {
+                                        title.firmware = "2.2.0";
+                                    }
+                                    else if (firmware <= 262164)
+                                    {
+                                        title.firmware = "2.3.0";
+                                    }
+                                    else
+                                    {
+                                        title.firmware = ((firmware >> 26) & 0x3F) + "." + ((firmware >> 20) & 0x3F) + "." + ((firmware >> 16) & 0x0F);
+                                    }
+
+                                    CnmtContentEntry[] contentEntries = cnmt.ContentEntries;
+                                    foreach (CnmtContentEntry contentEntry in contentEntries)
+                                    {
+                                        if (title.type == TitleType.Application || title.type == TitleType.Patch)
                                         {
-                                            biggestNca = BitConverter.ToString(contentEntry.NcaId).Replace("-", "").ToLower() + ".nca";
+                                            if (contentEntry.Type == CnmtContentType.Program)
+                                            {
+                                                biggestNca = BitConverter.ToString(contentEntry.NcaId).Replace("-", "").ToLower() + ".nca";
+                                            }
+                                            else if (contentEntry.Type == CnmtContentType.Control)
+                                            {
+                                                controlNca = BitConverter.ToString(contentEntry.NcaId).Replace("-", "").ToLower() + ".nca";
+                                            }
+                                        }
+                                        else if (title.type == TitleType.AddOnContent)
+                                        {
+                                            if (contentEntry.Type == CnmtContentType.Data)
+                                            {
+                                                biggestNca = BitConverter.ToString(contentEntry.NcaId).Replace("-", "").ToLower() + ".nca";
+                                            }
                                         }
                                     }
                                 }
                             }
+                            catch (MissingKeyException) { }
                         }
 
                         title.structure.Add(Title.Structure.CnmtNca);
@@ -564,6 +843,8 @@ namespace NX_Game_Info
 
                         if (nca.Header.ContentType == ContentType.Program)
                         {
+                            title.masterkey = (uint)nca.Header.CryptoType == 2 ? Math.Max((uint)nca.Header.CryptoType2 - 1, 0) : 0;
+
                             try
                             {
                                 nca.ParseNpdm();
@@ -572,13 +853,20 @@ namespace NX_Game_Info
 
                             if (nca.Npdm != null)
                             {
-                                if (nca.Npdm.AciD.ServiceAccess.Services.Count == 0)
+                                if (nca.Npdm.AciD.ServiceAccess.Services.Count == 0 || nca.Npdm.AciD.ServiceAccess.Services.Keys.Any(key => key.StartsWith("fsp-")))
                                 {
-                                    title.permission = Title.Permission.Dangerous;
-                                }
-                                else if (nca.Npdm.AciD.ServiceAccess.Services.ContainsKey("fsp-ldr") || nca.Npdm.AciD.ServiceAccess.Services.ContainsKey("fsp-pr"))
-                                {
-                                    title.permission = Title.Permission.Unsafe;
+                                    if (nca.Npdm.AciD.FsAccess.PermissionsBitmask == 0xffffffffffffffff)
+                                    {
+                                        title.permission = Title.Permission.Dangerous;
+                                    }
+                                    else if ((nca.Npdm.AciD.FsAccess.PermissionsBitmask & 0x8000000000000000) != 0)
+                                    {
+                                        title.permission = Title.Permission.Unsafe;
+                                    }
+                                    else
+                                    {
+                                        title.permission = Title.Permission.Safe;
+                                    }
                                 }
                                 else
                                 {
@@ -600,19 +888,23 @@ namespace NX_Game_Info
                             Array.Reverse(titleID);
                             title.titleID = BitConverter.ToString(titleID).Replace("-", "").ToUpper();
 
-                            Romfs romfs = new Romfs(nca.OpenSection(0, false, IntegrityCheckLevel.ErrorOnInvalid, true));
-
-                            RomfsFile[] romfsFiles = romfs.Files.ToArray();
-                            foreach (RomfsFile romfsFile in romfsFiles)
+                            try
                             {
-                                if (romfsFile.Name.Equals("control.nacp"))
-                                {
-                                    Nacp nacp = new Nacp(romfs.OpenFile(romfsFile).AsStream());
+                                Romfs romfs = new Romfs(nca.OpenSection(0, false, IntegrityCheckLevel.ErrorOnInvalid, true));
 
-                                    title.titleName = nacp.Descriptions.First().Title;
-                                    title.displayVersion = nacp.DisplayVersion;
+                                RomfsFile[] romfsFiles = romfs.Files.ToArray();
+                                foreach (RomfsFile romfsFile in romfsFiles)
+                                {
+                                    if (romfsFile.Name.Equals("control.nacp"))
+                                    {
+                                        Nacp nacp = new Nacp(romfs.OpenFile(romfsFile).AsStream());
+
+                                        title.titleName = nacp.Descriptions.First().Title;
+                                        title.displayVersion = nacp.DisplayVersion;
+                                    }
                                 }
                             }
+                            catch (MissingKeyException) { }
                         }
                     }
                 }
@@ -620,7 +912,7 @@ namespace NX_Game_Info
 
             if (title.type == TitleType.Application || title.type == TitleType.Patch)
             {
-                int version;
+                uint version;
                 if (versionList.TryGetValue(title.titleIDApplication, out version))
                 {
                     title.latestVersion = version;
