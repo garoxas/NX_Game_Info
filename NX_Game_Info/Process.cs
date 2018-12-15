@@ -1,209 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Xml.Linq;
-using System.Windows.Forms;
-using Application = System.Windows.Forms.Application;
-using BrightIdeasSoftware;
 using LibHac;
 using LibHac.IO;
 using Newtonsoft.Json;
+using Title = NX_Game_Info.Common.Title;
 
 namespace NX_Game_Info
 {
-    public partial class Main : Form
+    class Process
     {
-        private const string PROD_KEYS = "prod.keys";
-        private const string TITLE_KEYS = "title.keys";
-        private const string HAC_VERSIONLIST = "hac_versionlist.json";
+        public static Keyset keyset;
+        public static Dictionary<string, uint> versionList = new Dictionary<string, uint>();
 
-        [DllImport("Shlwapi.dll", CharSet = CharSet.Auto)]
-        public static extern Int32 StrFormatByteSize(
-            long fileSize,
-            [MarshalAs(UnmanagedType.LPTStr)] StringBuilder buffer,
-            int bufferSize);
-
-        private class Title
+        public static bool initialize(out List<string> messages)
         {
-            public enum Distribution
+            messages = new List<string>();
+
+            if (!File.Exists(Common.PROD_KEYS))
             {
-                Digital,
-                Cartridge,
-                Invalid = -1
-            }
-
-            public enum Structure
-            {
-                CnmtXml,
-                CnmtNca,
-                Cert,
-                Tik,
-                LegalinfoXml,
-                NacpXml,
-                PrograminfoXml,
-                CardspecXml,
-                AuthoringtoolinfoXml,
-                RootPartition,
-                UpdatePartition,
-                NormalPartition,
-                SecurePartition,
-                LogoPartition,
-                Invalid = -1
-            }
-
-            public enum Permission
-            {
-                Safe,
-                Unsafe,
-                Dangerous,
-                Invalid = -1
-            }
-
-            public string titleID { get; set; }
-            public string titleIDApplication { get { return String.IsNullOrEmpty(titleID) ? "" : titleID.Substring(0, Math.Min(titleID.Length, 13)) + "000"; } }
-            public string titleName { get; set; }
-            public string displayVersion { get; set; }
-            public uint version { get; set; } = unchecked((uint)-1);
-            public string versionString { get { return version != unchecked((uint)-1) ? version.ToString() : ""; } }
-            public uint latestVersion { get; set; } = unchecked((uint)-1);
-            public string latestVersionString { get { return latestVersion != unchecked((uint)-1) ? latestVersion.ToString() : ""; } }
-            public string firmware { get; set; }
-            public uint masterkey { get; set; } = 0;
-            public string masterkeyString
-            {
-                get
-                {
-                    switch (masterkey)
-                    {
-                        case 0:
-                            return masterkey.ToString() + " (1.0.0-2.3.0)";
-                        case 1:
-                            return masterkey.ToString() + " (3.0.0)";
-                        case 2:
-                            return masterkey.ToString() + " (3.0.1-3.0.2)";
-                        case 3:
-                            return masterkey.ToString() + " (4.0.0-4.1.0)";
-                        case 4:
-                            return masterkey.ToString() + " (5.0.0-5.1.0)";
-                        case 5:
-                            return masterkey.ToString() + " (6.0.0-6.1.0)";
-                        case 6:
-                            return masterkey.ToString() + " (6.2.0)";
-                        default:
-                            return masterkey.ToString();
-                    }
-                }
-            }
-            public string filename { get; set; }
-            public long filesize { get; set; }
-            public string filesizeString { get { StringBuilder builder = new StringBuilder(20); StrFormatByteSize(filesize, builder, 20); return builder.ToString(); } }
-            public TitleType type { get; set; }
-            public string typeString
-            {
-                get
-                {
-                    switch (type)
-                    {
-                        case TitleType.Application:
-                            return "Base";
-                        case TitleType.Patch:
-                            return "Update";
-                        case TitleType.AddOnContent:
-                            return "DLC";
-                        default:
-                            return "";
-                    }
-                }
-            }
-            public Distribution distribution { get; set; } = Distribution.Invalid;
-            public HashSet<Structure> structure { get; set; } = new HashSet<Structure>();
-            public string structureString
-            {
-                get
-                {
-                    if (distribution == Distribution.Cartridge)
-                    {
-                        if (new HashSet<Structure>(new[] { Structure.UpdatePartition, Structure.NormalPartition, Structure.SecurePartition }).All(value => structure.Contains(value)))
-                        {
-                            return "Scene";
-                        }
-                        else if (new HashSet<Structure>(new[] { Structure.SecurePartition }).All(value => structure.Contains(value)))
-                        {
-                            return "Converted";
-                        }
-                        else
-                        {
-                            return "Not complete";
-                        }
-                    }
-                    else if (distribution == Distribution.Digital)
-                    {
-                        if (new HashSet<Structure>(new[] { Structure.LegalinfoXml, Structure.NacpXml, Structure.PrograminfoXml, Structure.CardspecXml }).All(value => structure.Contains(value)))
-                        {
-                            return "Scene";
-                        }
-                        else if (new HashSet<Structure>(new[] { Structure.AuthoringtoolinfoXml }).All(value => structure.Contains(value)))
-                        {
-                            return "Homebrew";
-                        }
-                        else if (new HashSet<Structure>(new[] { Structure.Cert, Structure.Tik }).All(value => structure.Contains(value)))
-                        {
-                            return "CDN";
-                        }
-                        else if (new HashSet<Structure>(new[] { Structure.CnmtXml }).All(value => structure.Contains(value)))
-                        {
-                            return "Converted";
-                        }
-                        else
-                        {
-                            return "Not complete";
-                        }
-                    }
-
-                    return "";
-                }
-            }
-            public bool? signature { get; set; } = null;
-            public string signatureString { get { return signature == null ? "" : (bool)signature ? "Passed" : "Not Passed"; } }
-            public Permission permission { get; set; } = Permission.Invalid;
-            public string permissionString { get { return permission == Permission.Invalid ? "" : permission.ToString(); } }
-        }
-
-        private class VersionTitle
-        {
-            public string id { get; set; }
-            public uint version { get; set; }
-            public uint required_version { get; set; }
-        }
-
-        private class VersionList
-        {
-            public List<VersionTitle> titles { get; set; }
-            public uint format_version { get; set; }
-            public uint last_modified { get; set; }
-        }
-
-        private Keyset keyset;
-        private Dictionary<string, uint> versionList = new Dictionary<string, uint>();
-
-        public Main()
-        {
-            InitializeComponent();
-
-            if (!File.Exists(PROD_KEYS))
-            {
-                MessageBox.Show("File not found. Check if '" + PROD_KEYS + "' exist and try again.", Application.ProductName);
-                Environment.Exit(-1);
+                messages.Add("File not found. Check if '" + Common.PROD_KEYS + "' exist and try again.");
+                return false;
             }
 
             try
             {
-                keyset = ExternalKeys.ReadKeyFile(PROD_KEYS, File.Exists(TITLE_KEYS) ? TITLE_KEYS : null);
+                keyset = ExternalKeys.ReadKeyFile(Common.PROD_KEYS, File.Exists(Common.TITLE_KEYS) ? Common.TITLE_KEYS : null);
             }
             catch { }
 
@@ -215,8 +39,8 @@ namespace NX_Game_Info
                 ((haveKakSource && (bool)keyset?.MasterKeys[3].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[3][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[3].All(b => b == 0) ||
                 ((haveKakSource && (bool)keyset?.MasterKeys[4].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[4][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[4].All(b => b == 0))
             {
-                MessageBox.Show("Keyfile missing required keys. Check if these keys exist and try again.\n" +
-                    "header_key, aes_kek_generation_source, aes_key_generation_source, key_area_key_application_source, master_key_00-04.", Application.ProductName);
+                messages.Add("Keyfile missing required keys. Check if these keys exist and try again.\n" +
+                    "header_key, aes_kek_generation_source, aes_key_generation_source, key_area_key_application_source, master_key_00-04.");
                 Environment.Exit(-1);
             }
 
@@ -224,7 +48,7 @@ namespace NX_Game_Info
             {
                 if ((haveKakSource && (bool)keyset?.MasterKeys[5].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[5][0].All(b => b == 0) || (bool)keyset?.Titlekeks[5].All(b => b == 0))
                 {
-                    MessageBox.Show("master_key_05, key_area_key_application_05 or titlekek_05 are missing from Keyfile.\nGames using this key may be missing or incorrect.", Application.ProductName);
+                    messages.Add("master_key_05, key_area_key_application_05 or titlekek_05 are missing from Keyfile.\nGames using this key may be missing or incorrect.");
 
                     Properties.Settings.Default.MasterKey5 = true;
                     Properties.Settings.Default.Save();
@@ -235,7 +59,7 @@ namespace NX_Game_Info
             {
                 if ((haveKakSource && (bool)keyset?.MasterKeys[6].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[6][0].All(b => b == 0) || (bool)keyset?.Titlekeks[6].All(b => b == 0))
                 {
-                    MessageBox.Show("master_key_06, key_area_key_application_06 or titlekek_06 are missing from Keyfile.\nGames using this key may be missing or incorrect.", Application.ProductName);
+                    messages.Add("master_key_06, key_area_key_application_06 or titlekek_06 are missing from Keyfile.\nGames using this key may be missing or incorrect.");
 
                     Properties.Settings.Default.MasterKey6 = true;
                     Properties.Settings.Default.Save();
@@ -246,7 +70,7 @@ namespace NX_Game_Info
             {
                 if (keyset?.TitleKeys.Count == 0)
                 {
-                    MessageBox.Show("Title Keys is missing.\nGames using Titlekey crypto may be missing or incorrect.", Application.ProductName);
+                    messages.Add("Title Keys is missing.\nGames using Titlekey crypto may be missing or incorrect.");
 
                     Properties.Settings.Default.TitleKeys = true;
                     Properties.Settings.Default.Save();
@@ -255,7 +79,7 @@ namespace NX_Game_Info
 
             try
             {
-                var versionlist = JsonConvert.DeserializeObject<VersionList>(File.ReadAllText(HAC_VERSIONLIST));
+                var versionlist = JsonConvert.DeserializeObject<Common.VersionList>(File.ReadAllText(Common.HAC_VERSIONLIST));
 
                 foreach (var title in versionlist.titles)
                 {
@@ -269,112 +93,11 @@ namespace NX_Game_Info
                 }
             }
             catch { }
+
+            return true;
         }
 
-        private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (backgroundWorkerProcess.IsBusy)
-            {
-                MessageBox.Show("Please wait until the current process is finished and try again.", Application.ProductName);
-                return;
-            }
-
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "Open NX Game Files";
-            openFileDialog.Filter = "NX Game Files (*.xci;*.nsp)|*.xci;*.nsp|Gamecard Files (*.xci)|*.xci|Package Files (*.nsp)|*.nsp|All Files (*.*)|*.*";
-            openFileDialog.Multiselect = true;
-            openFileDialog.RestoreDirectory = true;
-            openFileDialog.InitialDirectory = Properties.Settings.Default.InitialDirectory;
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                objectListView.Items.Clear();
-
-                List<string> filenames = openFileDialog.FileNames.ToList();
-                filenames.Sort();
-
-                Properties.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
-                Properties.Settings.Default.Save();
-
-                backgroundWorkerProcess.RunWorkerAsync(filenames);
-            }
-        }
-
-        private void openDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (backgroundWorkerProcess.IsBusy)
-            {
-                MessageBox.Show("Please wait until the current process is finished and try again.", Application.ProductName);
-                return;
-            }
-
-            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            folderBrowserDialog.SelectedPath = Properties.Settings.Default.InitialDirectory;
-
-            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
-            {
-                objectListView.Items.Clear();
-
-                List<string> filenames = Directory.EnumerateFiles(folderBrowserDialog.SelectedPath, "*.*", SearchOption.AllDirectories)
-                    .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp")).ToList();
-                filenames.Sort();
-
-                Properties.Settings.Default.InitialDirectory = folderBrowserDialog.SelectedPath;
-                Properties.Settings.Default.Save();
-
-                backgroundWorkerProcess.RunWorkerAsync(filenames);
-            }
-        }
-
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Environment.Exit(-1);
-        }
-
-        private void backgroundWorkerProcess_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
-        {
-            List<string> filenames = (List<string>)e.Argument;
-            List<Title> titles = new List<Title>();
-
-            foreach (var filename in filenames)
-            {
-                Title title = processFile(filename);
-                if (title != null)
-                {
-                    titles.Add(title);
-                }
-            }
-
-            e.Result = titles;
-        }
-
-        private void backgroundWorkerProcess_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
-        {
-            List<Title> titles = (List<Title>)e.Result;
-
-            objectListView.SetObjects(titles);
-
-            foreach (OLVListItem listItem in objectListView.Items)
-            {
-                Title title = listItem.RowObject as Title;
-
-                if (title.signature != true)
-                {
-                    listItem.BackColor = Color.WhiteSmoke;
-                }
-
-                if (title.permission == Title.Permission.Dangerous)
-                {
-                    listItem.ForeColor = Color.DarkRed;
-                }
-                else if (title.permission == Title.Permission.Unsafe)
-                {
-                    listItem.ForeColor = Color.Indigo;
-                }
-            }
-        }
-
-        private Title processFile(string filename)
+        public static Title processFile(string filename)
         {
             try
             {
@@ -398,7 +121,7 @@ namespace NX_Game_Info
             return null;
         }
 
-        private Title processXci(string filename)
+        public static Title processXci(string filename)
         {
             Title title = new Title();
 
@@ -617,7 +340,7 @@ namespace NX_Game_Info
             return title;
         }
 
-        private Title processNsp(string filename)
+        public static Title processNsp(string filename)
         {
             Title title = new Title();
 
