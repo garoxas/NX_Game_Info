@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -9,15 +10,51 @@ namespace NX_Game_Info
 {
     class Common
     {
-        public static readonly string PROD_KEYS = "prod.keys";
-        public static readonly string TITLE_KEYS = "title.keys";
-        public static readonly string HAC_VERSIONLIST = "hac_versionlist.json";
+        public static readonly string PATH_PREFIX = Environment.OSVersion.Platform == PlatformID.Unix ?
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.nx/" : "";
+
+        public static readonly string PROD_KEYS = PATH_PREFIX + "prod.keys";
+        public static readonly string TITLE_KEYS = PATH_PREFIX + "title.keys";
+        public static readonly string HAC_VERSIONLIST = PATH_PREFIX + "hac_versionlist.json";
 
         [DllImport("Shlwapi.dll", CharSet = CharSet.Auto)]
         public static extern Int32 StrFormatByteSize(
             long fileSize,
             [MarshalAs(UnmanagedType.LPTStr)] StringBuilder buffer,
             int bufferSize);
+
+        public class Settings : ApplicationSettingsBase
+        {
+            [UserScopedSettingAttribute()]
+            public bool MasterKey5
+            {
+                get { return (bool)this["MasterKey5"]; }
+                set { this["MasterKey5"] = value; }
+            }
+
+            [UserScopedSettingAttribute()]
+            public bool MasterKey6
+            {
+                get { return (bool)this["MasterKey6"]; }
+                set { this["MasterKey6"] = value; }
+            }
+
+            [UserScopedSettingAttribute()]
+            public bool TitleKeys
+            {
+                get { return (bool)this["TitleKeys"]; }
+                set { this["TitleKeys"] = value; }
+            }
+
+            [UserScopedSettingAttribute()]
+            public string InitialDirectory
+            {
+                get { return (string)this["InitialDirectory"]; }
+                set { this["InitialDirectory"] = value; }
+            }
+
+            public static Settings Default = new Settings();
+        }
 
         public class Title
         {

@@ -8,6 +8,10 @@ using LibHac.IO;
 using Newtonsoft.Json;
 using Title = NX_Game_Info.Common.Title;
 
+#pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body
+#pragma warning disable RECS0061 // Warns when a culture-aware 'EndsWith' call is used by default.
+#pragma warning disable RECS0063 // Warns when a culture-aware 'StartsWith' call is used by default.
+
 namespace NX_Game_Info
 {
     class Process
@@ -44,36 +48,36 @@ namespace NX_Game_Info
                 Environment.Exit(-1);
             }
 
-            if (!Properties.Settings.Default.MasterKey5)
+            if (!Common.Settings.Default.MasterKey5)
             {
                 if ((haveKakSource && (bool)keyset?.MasterKeys[5].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[5][0].All(b => b == 0) || (bool)keyset?.Titlekeks[5].All(b => b == 0))
                 {
                     messages.Add("master_key_05, key_area_key_application_05 or titlekek_05 are missing from Keyfile.\nGames using this key may be missing or incorrect.");
 
-                    Properties.Settings.Default.MasterKey5 = true;
-                    Properties.Settings.Default.Save();
+                    Common.Settings.Default.MasterKey5 = true;
+                    Common.Settings.Default.Save();
                 }
             }
 
-            if (!Properties.Settings.Default.MasterKey6)
+            if (!Common.Settings.Default.MasterKey6)
             {
                 if ((haveKakSource && (bool)keyset?.MasterKeys[6].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[6][0].All(b => b == 0) || (bool)keyset?.Titlekeks[6].All(b => b == 0))
                 {
                     messages.Add("master_key_06, key_area_key_application_06 or titlekek_06 are missing from Keyfile.\nGames using this key may be missing or incorrect.");
 
-                    Properties.Settings.Default.MasterKey6 = true;
-                    Properties.Settings.Default.Save();
+                    Common.Settings.Default.MasterKey6 = true;
+                    Common.Settings.Default.Save();
                 }
             }
 
-            if (!Properties.Settings.Default.TitleKeys)
+            if (!Common.Settings.Default.TitleKeys)
             {
                 if (keyset?.TitleKeys.Count == 0)
                 {
                     messages.Add("Title Keys is missing.\nGames using Titlekey crypto may be missing or incorrect.");
 
-                    Properties.Settings.Default.TitleKeys = true;
-                    Properties.Settings.Default.Save();
+                    Common.Settings.Default.TitleKeys = true;
+                    Common.Settings.Default.Save();
                 }
             }
 
