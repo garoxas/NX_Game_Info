@@ -11,7 +11,7 @@ using Title = NX_Game_Info.Common.Title;
 #if WINDOWS
 using Settings = NX_Game_Info.Properties.Settings;
 #elif MACOS
-using Settings = Common.Settings;
+using Settings = NX_Game_Info.Common.Settings;
 #endif
 
 #pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body

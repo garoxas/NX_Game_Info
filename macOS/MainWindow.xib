@@ -30,7 +30,7 @@
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" autosaveColumns="NO" rowSizeStyle="automatic" headerView="Wwj-iD-jBl" viewBased="YES" id="Yy4-24-icq">
-                                    <rect key="frame" x="0.0" y="0.0" width="1707" height="330"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="1727" height="330"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <size key="intercellSpacing" width="3" height="2"/>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -188,7 +188,7 @@
                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="distribution"/>
                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                         </tableColumn>
-                                        <tableColumn identifier="Structure" editable="NO" width="80" minWidth="10" maxWidth="3.4028234663852886e+38" id="l1A-rU-xqv">
+                                        <tableColumn identifier="Structure" editable="NO" width="100" minWidth="10" maxWidth="3.4028234663852886e+38" id="l1A-rU-xqv">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Structure">
                                                 <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -256,7 +256,7 @@
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                         <tableHeaderView key="headerView" id="Wwj-iD-jBl">
-                            <rect key="frame" x="0.0" y="0.0" width="1707" height="25"/>
+                            <rect key="frame" x="0.0" y="0.0" width="1727" height="25"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </tableHeaderView>
                     </scrollView>

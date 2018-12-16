@@ -363,6 +363,8 @@ namespace NX_Game_Info
                 textField.TextColor = NSColor.Purple;
             }
 
+            textField.Cell.LineBreakMode = NSLineBreakMode.CharWrapping;
+
             return textField;
         }
     }
