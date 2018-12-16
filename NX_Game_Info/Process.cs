@@ -8,6 +8,12 @@ using LibHac.IO;
 using Newtonsoft.Json;
 using Title = NX_Game_Info.Common.Title;
 
+#if WINDOWS
+using Settings = NX_Game_Info.Properties.Settings;
+#elif MACOS
+using Settings = Common.Settings;
+#endif
+
 #pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body
 #pragma warning disable RECS0061 // Warns when a culture-aware 'EndsWith' call is used by default.
 #pragma warning disable RECS0063 // Warns when a culture-aware 'StartsWith' call is used by default.
@@ -53,26 +59,26 @@ namespace NX_Game_Info
                 }
             }
 
-            if (!Common.Settings.Default.MasterKey)
+            if (!Settings.Default.MasterKey)
             {
                 if (masterkey.Any(b => b != 0))
                 {
                     messages.Add("master_key_0X, key_area_key_application_0X or titlekek_0X for MasterKey " + string.Join(", ", masterkey.Where(b => b != 0)) +
                         " are missing from Keyfile.\nGames using this key may be missing or incorrect.");
 
-                    Common.Settings.Default.MasterKey = true;
-                    Common.Settings.Default.Save();
+                    Settings.Default.MasterKey = true;
+                    Settings.Default.Save();
                 }
             }
 
-            if (!Common.Settings.Default.TitleKeys)
+            if (!Settings.Default.TitleKeys)
             {
                 if (keyset?.TitleKeys.Count == 0)
                 {
                     messages.Add("Title Keys is missing.\nGames using Titlekey crypto may be missing or incorrect.");
 
-                    Common.Settings.Default.TitleKeys = true;
-                    Common.Settings.Default.Save();
+                    Settings.Default.TitleKeys = true;
+                    Settings.Default.Save();
                 }
             }
 

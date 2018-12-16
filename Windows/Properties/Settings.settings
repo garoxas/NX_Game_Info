@@ -5,10 +5,7 @@
     <Setting Name="InitialDirectory" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="MasterKey5" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="MasterKey6" Type="System.Boolean" Scope="User">
+    <Setting Name="MasterKey" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="TitleKeys" Type="System.Boolean" Scope="User">

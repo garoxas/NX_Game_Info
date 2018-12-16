@@ -38,24 +38,12 @@ namespace NX_Game_Info.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool MasterKey5 {
+        public bool MasterKey {
             get {
-                return ((bool)(this["MasterKey5"]));
+                return ((bool)(this["MasterKey"]));
             }
             set {
-                this["MasterKey5"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool MasterKey6 {
-            get {
-                return ((bool)(this["MasterKey6"]));
-            }
-            set {
-                this["MasterKey6"] = value;
+                this["MasterKey"] = value;
             }
         }
         
