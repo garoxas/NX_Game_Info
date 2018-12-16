@@ -26,17 +26,10 @@ namespace NX_Game_Info
         public class Settings : ApplicationSettingsBase
         {
             [UserScopedSettingAttribute()]
-            public bool MasterKey5
+            public bool MasterKey
             {
-                get { return (bool)this["MasterKey5"]; }
-                set { this["MasterKey5"] = value; }
-            }
-
-            [UserScopedSettingAttribute()]
-            public bool MasterKey6
-            {
-                get { return (bool)this["MasterKey6"]; }
-                set { this["MasterKey6"] = value; }
+                get { return (bool)this["MasterKey"]; }
+                set { this["MasterKey"] = value; }
             }
 
             [UserScopedSettingAttribute()]

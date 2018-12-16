@@ -30,14 +30,14 @@
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
                                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" columnSelection="YES" autosaveColumns="NO" rowSizeStyle="automatic" headerView="Wwj-iD-jBl" viewBased="YES" id="Yy4-24-icq">
-                                    <rect key="frame" x="0.0" y="0.0" width="1615" height="330"/>
+                                    <rect key="frame" x="0.0" y="0.0" width="1707" height="330"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                     <size key="intercellSpacing" width="3" height="2"/>
                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <tableViewGridLines key="gridStyleMask" vertical="YES" horizontal="YES"/>
                                     <color key="gridColor" name="windowBackgroundColor" catalog="System" colorSpace="catalog"/>
                                     <tableColumns>
-                                        <tableColumn identifier="TitleID" editable="NO" width="120" minWidth="40" maxWidth="1000" id="Qm2-Rg-Rx1">
+                                        <tableColumn identifier="TitleID" editable="NO" width="140" minWidth="40" maxWidth="1000" id="Qm2-Rg-Rx1">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Title ID">
                                                 <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -51,7 +51,7 @@
                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="titleID"/>
                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                         </tableColumn>
-                                        <tableColumn identifier="TitleName" editable="NO" width="200" minWidth="40" maxWidth="1000" id="Dqb-tW-ozP">
+                                        <tableColumn identifier="TitleName" editable="NO" width="240" minWidth="40" maxWidth="1000" id="Dqb-tW-ozP">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Title Name">
                                                 <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -202,7 +202,7 @@
                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="structureString"/>
                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                         </tableColumn>
-                                        <tableColumn identifier="Signature" editable="NO" width="64" minWidth="10" maxWidth="3.4028234663852886e+38" id="YH0-b7-Abl">
+                                        <tableColumn identifier="Signature" editable="NO" width="80" minWidth="10" maxWidth="3.4028234663852886e+38" id="YH0-b7-Abl">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Signature">
                                                 <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -216,7 +216,7 @@
                                             <sortDescriptor key="sortDescriptorPrototype" selector="compare:" sortKey="signatureString"/>
                                             <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
                                         </tableColumn>
-                                        <tableColumn identifier="Permission" editable="NO" width="64" minWidth="10" maxWidth="3.4028234663852886e+38" id="HUm-zU-l1X">
+                                        <tableColumn identifier="Permission" editable="NO" width="80" minWidth="10" maxWidth="3.4028234663852886e+38" id="HUm-zU-l1X">
                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Permission">
                                                 <font key="font" metaFont="smallSystem"/>
                                                 <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -256,7 +256,7 @@
                             <autoresizingMask key="autoresizingMask"/>
                         </scroller>
                         <tableHeaderView key="headerView" id="Wwj-iD-jBl">
-                            <rect key="frame" x="0.0" y="0.0" width="1615" height="25"/>
+                            <rect key="frame" x="0.0" y="0.0" width="1707" height="25"/>
                             <autoresizingMask key="autoresizingMask"/>
                         </tableHeaderView>
                     </scrollView>

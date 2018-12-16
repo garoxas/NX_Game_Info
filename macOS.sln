@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NX_Game_Info", "macOS\NX_Game_Info.csproj", "{BBD7E812-1514-4684-BC59-ADDF81760887}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibHac", "LibHac\src\LibHac\LibHac.csproj", "{4D728D65-9AB1-49AD-AC2E-57D5C4481079}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -13,5 +15,9 @@ Global
 		{BBD7E812-1514-4684-BC59-ADDF81760887}.Debug|x86.Build.0 = Debug|x86
 		{BBD7E812-1514-4684-BC59-ADDF81760887}.Release|x86.ActiveCfg = Release|x86
 		{BBD7E812-1514-4684-BC59-ADDF81760887}.Release|x86.Build.0 = Release|x86
+		{4D728D65-9AB1-49AD-AC2E-57D5C4481079}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4D728D65-9AB1-49AD-AC2E-57D5C4481079}.Debug|x86.Build.0 = Debug|Any CPU
+		{4D728D65-9AB1-49AD-AC2E-57D5C4481079}.Release|x86.ActiveCfg = Release|Any CPU
+		{4D728D65-9AB1-49AD-AC2E-57D5C4481079}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

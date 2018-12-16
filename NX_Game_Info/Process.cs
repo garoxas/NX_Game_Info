@@ -31,41 +31,36 @@ namespace NX_Game_Info
 
             try
             {
-                keyset = ExternalKeys.ReadKeyFile(Common.PROD_KEYS, File.Exists(Common.TITLE_KEYS) ? Common.TITLE_KEYS : null);
+                keyset = ExternalKeys.ReadKeyFile(Common.PROD_KEYS, Common.TITLE_KEYS);
             }
             catch { }
 
             bool haveKakSource = !((bool)keyset?.AesKekGenerationSource.All(b => b == 0) || (bool)keyset?.AesKeyGenerationSource.All(b => b == 0) || (bool)keyset?.KeyAreaKeyApplicationSource.All(b => b == 0));
             if ((bool)keyset?.HeaderKey.All(b => b == 0) ||
-                ((haveKakSource && (bool)keyset?.MasterKeys[0].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[0][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[0].All(b => b == 0) ||
-                ((haveKakSource && (bool)keyset?.MasterKeys[1].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[1][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[1].All(b => b == 0) ||
-                ((haveKakSource && (bool)keyset?.MasterKeys[2].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[2][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[2].All(b => b == 0) ||
-                ((haveKakSource && (bool)keyset?.MasterKeys[3].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[3][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[3].All(b => b == 0) ||
-                ((haveKakSource && (bool)keyset?.MasterKeys[4].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[4][0].All(b => b == 0)) || (bool)keyset?.Titlekeks[4].All(b => b == 0))
+                ((haveKakSource && (bool)keyset?.MasterKeys[0].All(b => b == 0)) && (bool)keyset?.KeyAreaKeys[0][0].All(b => b == 0)) && (bool)keyset?.Titlekeks[0].All(b => b == 0))
             {
                 messages.Add("Keyfile missing required keys. Check if these keys exist and try again.\n" +
-                    "header_key, aes_kek_generation_source, aes_key_generation_source, key_area_key_application_source, master_key_00-04.");
+                    "header_key, aes_kek_generation_source, aes_key_generation_source, key_area_key_application_source, master_key_00.");
                 Environment.Exit(-1);
             }
 
-            if (!Common.Settings.Default.MasterKey5)
+            int[] masterkey = new int[6];
+            for (int i = 0; i < masterkey.Length; i++)
             {
-                if ((haveKakSource && (bool)keyset?.MasterKeys[5].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[5][0].All(b => b == 0) || (bool)keyset?.Titlekeks[5].All(b => b == 0))
+                if (((haveKakSource && (bool)keyset?.MasterKeys[i + 1].All(b => b == 0)) && (bool)keyset?.KeyAreaKeys[i + 1][0].All(b => b == 0)) && (bool)keyset?.Titlekeks[i + 1].All(b => b == 0))
                 {
-                    messages.Add("master_key_05, key_area_key_application_05 or titlekek_05 are missing from Keyfile.\nGames using this key may be missing or incorrect.");
-
-                    Common.Settings.Default.MasterKey5 = true;
-                    Common.Settings.Default.Save();
+                    masterkey[i] = i + 1;
                 }
             }
 
-            if (!Common.Settings.Default.MasterKey6)
+            if (!Common.Settings.Default.MasterKey)
             {
-                if ((haveKakSource && (bool)keyset?.MasterKeys[6].All(b => b == 0)) || (bool)keyset?.KeyAreaKeys[6][0].All(b => b == 0) || (bool)keyset?.Titlekeks[6].All(b => b == 0))
+                if (masterkey.Any(b => b != 0))
                 {
-                    messages.Add("master_key_06, key_area_key_application_06 or titlekek_06 are missing from Keyfile.\nGames using this key may be missing or incorrect.");
+                    messages.Add("master_key_0X, key_area_key_application_0X or titlekek_0X for MasterKey " + string.Join(", ", masterkey.Where(b => b != 0)) +
+                        " are missing from Keyfile.\nGames using this key may be missing or incorrect.");
 
-                    Common.Settings.Default.MasterKey6 = true;
+                    Common.Settings.Default.MasterKey = true;
                     Common.Settings.Default.Save();
                 }
             }

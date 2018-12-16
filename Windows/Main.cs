@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.IO;
@@ -8,7 +9,6 @@ using System.Windows.Forms;
 using Application = System.Windows.Forms.Application;
 using BrightIdeasSoftware;
 using Title = NX_Game_Info.Common.Title;
-using System.ComponentModel;
 
 namespace NX_Game_Info
 {
