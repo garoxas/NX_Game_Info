@@ -11,7 +11,7 @@ namespace NX_Game_Info
     class Common
     {
         public static readonly string PATH_PREFIX = Environment.OSVersion.Platform == PlatformID.Win32NT ?
-            "" : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.nx/";
+            "" : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.switch/";
 
         public static readonly string PROD_KEYS = PATH_PREFIX + "prod.keys";
         public static readonly string TITLE_KEYS = PATH_PREFIX + "title.keys";
