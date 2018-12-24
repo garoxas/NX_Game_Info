@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 using LibHac;
 using LibHac.IO;
@@ -258,7 +259,7 @@ namespace NX_Game_Info
 
                             if (nca.Header.ContentType == ContentType.Program)
                             {
-                                title.masterkey = (uint)nca.Header.CryptoType == 2 ? Math.Max((uint)nca.Header.CryptoType2 - 1, 0) : 0;
+                                title.masterkey = (uint)nca.Header.CryptoType == 2 ? (uint)Math.Max(nca.Header.CryptoType2 - 1, 0) : 0;
 
                                 try
                                 {
@@ -372,7 +373,18 @@ namespace NX_Game_Info
                     {
                         using (var cnmtXml = pfs.OpenFile(entry))
                         {
-                            XDocument xml = XDocument.Load(cnmtXml.AsStream());
+                            Stream stream = cnmtXml.AsStream();
+                            byte[] buffer = new byte[stream.Length];
+                            stream.Read(buffer, 0, buffer.Length);
+
+                            byte[] bom = Encoding.UTF8.GetPreamble();
+                            if (buffer.Take(bom.Length).SequenceEqual(bom))
+                            {
+                                Array.Copy(buffer, bom.Length, buffer, 0, buffer.Length - bom.Length);
+                                Array.Resize(ref buffer, buffer.Length - bom.Length);
+                            }
+
+                            XDocument xml = XDocument.Parse(Encoding.UTF8.GetString(buffer).Replace("&", "&amp;"));
 
                             TitleType titleType;
                             Enum.TryParse(xml.Element("ContentMeta").Element("Type").Value, true, out titleType);
@@ -411,7 +423,7 @@ namespace NX_Game_Info
                                 title.firmware = ((firmware >> 26) & 0x3F) + "." + ((firmware >> 20) & 0x3F) + "." + ((firmware >> 16) & 0x0F);
                             }
 
-                            title.masterkey = Math.Max(Convert.ToUInt32(xml.Element("ContentMeta").Element("KeyGenerationMin").Value) - 1, 0);
+                            title.masterkey = (uint)Math.Max(Convert.ToInt32(xml.Element("ContentMeta").Element("KeyGenerationMin").Value) - 1, 0);
 
                             foreach (XElement element in xml.Descendants("Content"))
                             {
@@ -536,7 +548,18 @@ namespace NX_Game_Info
                     {
                         using (var nacpXml = pfs.OpenFile(entry))
                         {
-                            XDocument xml = XDocument.Load(nacpXml.AsStream());
+                            Stream stream = nacpXml.AsStream();
+                            byte[] buffer = new byte[stream.Length];
+                            stream.Read(buffer, 0, buffer.Length);
+
+                            byte[] bom = Encoding.UTF8.GetPreamble();
+                            if (buffer.Take(bom.Length).SequenceEqual(bom))
+                            {
+                                Array.Copy(buffer, bom.Length, buffer, 0, buffer.Length - bom.Length);
+                                Array.Resize(ref buffer, buffer.Length - bom.Length);
+                            }
+
+                            XDocument xml = XDocument.Parse(Encoding.UTF8.GetString(buffer).Replace("&", "&amp;"));
 
                             title.titleName = xml.Element("Application").Element("Title").Element("Name").Value;
                             title.displayVersion = xml.Element("Application").Element("DisplayVersion").Value;
@@ -571,7 +594,7 @@ namespace NX_Game_Info
 
                         if (nca.Header.ContentType == ContentType.Program)
                         {
-                            title.masterkey = (uint)nca.Header.CryptoType == 2 ? Math.Max((uint)nca.Header.CryptoType2 - 1, 0) : 0;
+                            title.masterkey = (uint)nca.Header.CryptoType == 2 ? (uint)Math.Max(nca.Header.CryptoType2 - 1, 0) : 0;
 
                             try
                             {
