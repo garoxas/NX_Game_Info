@@ -15,6 +15,7 @@ namespace NX_Game_Info
 
         public static readonly string PROD_KEYS = PATH_PREFIX + "prod.keys";
         public static readonly string TITLE_KEYS = PATH_PREFIX + "title.keys";
+        public static readonly string CONSOLE_KEYS = PATH_PREFIX + "console.keys";
         public static readonly string HAC_VERSIONLIST = PATH_PREFIX + "hac_versionlist.json";
 
         [DllImport("Shlwapi.dll", CharSet = CharSet.Auto)]
@@ -40,10 +41,24 @@ namespace NX_Game_Info
             }
 
             [UserScopedSettingAttribute()]
+            public bool ConsoleKeys
+            {
+                get { return (bool)this["ConsoleKeys"]; }
+                set { this["ConsoleKeys"] = value; }
+            }
+
+            [UserScopedSettingAttribute()]
             public string InitialDirectory
             {
                 get { return (string)this["InitialDirectory"]; }
                 set { this["InitialDirectory"] = value; }
+            }
+
+            [UserScopedSettingAttribute()]
+            public string SDCardDirectory
+            {
+                get { return (string)this["SDCardDirectory"]; }
+                set { this["SDCardDirectory"] = value; }
             }
 
             public static Settings Default = new Settings();
@@ -55,6 +70,7 @@ namespace NX_Game_Info
             {
                 Digital,
                 Cartridge,
+                Filesystem,
                 Invalid = -1
             }
 
@@ -184,6 +200,10 @@ namespace NX_Game_Info
                         {
                             return "Not complete";
                         }
+                    }
+                    else if (distribution == Distribution.Filesystem)
+                    {
+                        return "Filesystem";
                     }
 
                     return "";

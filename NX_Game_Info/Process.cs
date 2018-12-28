@@ -38,7 +38,7 @@ namespace NX_Game_Info
 
             try
             {
-                keyset = ExternalKeys.ReadKeyFile(Common.PROD_KEYS, Common.TITLE_KEYS);
+                keyset = ExternalKeys.ReadKeyFile(Common.PROD_KEYS, Common.TITLE_KEYS, Common.CONSOLE_KEYS);
             }
             catch { }
 
@@ -64,7 +64,7 @@ namespace NX_Game_Info
             {
                 if (masterkey.Any(b => b != 0))
                 {
-                    messages.Add("master_key_0X, key_area_key_application_0X or titlekek_0X for MasterKey " + string.Join(", ", masterkey.Where(b => b != 0)) +
+                    messages.Add("master_key_##, key_area_key_application_## or titlekek_## for MasterKey " + string.Join(", ", masterkey.Where(b => b != 0)) +
                         " are missing from Keyfile.\nGames using this key may be missing or incorrect.");
 
                     Settings.Default.MasterKey = true;
@@ -79,6 +79,17 @@ namespace NX_Game_Info
                     messages.Add("Title Keys is missing.\nGames using Titlekey crypto may be missing or incorrect.");
 
                     Settings.Default.TitleKeys = true;
+                    Settings.Default.Save();
+                }
+            }
+
+            if (!Settings.Default.ConsoleKeys)
+            {
+                if (keyset?.SdSeed.All(b => b == 0) ?? true)
+                {
+                    messages.Add("sd_seed is missing from Console Keys.\nOpen SD Card will not be available.");
+
+                    Settings.Default.ConsoleKeys = true;
                     Settings.Default.Save();
                 }
             }
@@ -315,7 +326,15 @@ namespace NX_Game_Info
                                         {
                                             Nacp nacp = new Nacp(romfs.OpenFile(romfsFile).AsStream());
 
-                                            title.titleName = nacp.Descriptions.First().Title;
+                                            foreach (NacpDescription description in nacp.Descriptions)
+                                            {
+                                                if (!String.IsNullOrEmpty(description.Title))
+                                                {
+                                                    title.titleName = description.Title;
+                                                    break;
+                                                }
+                                            }
+
                                             title.displayVersion = nacp.DisplayVersion;
                                         }
                                     }
@@ -650,7 +669,15 @@ namespace NX_Game_Info
                                     {
                                         Nacp nacp = new Nacp(romfs.OpenFile(romfsFile).AsStream());
 
-                                        title.titleName = nacp.Descriptions.First().Title;
+                                        foreach (NacpDescription description in nacp.Descriptions)
+                                        {
+                                            if (!String.IsNullOrEmpty(description.Title))
+                                            {
+                                                title.titleName = description.Title;
+                                                break;
+                                            }
+                                        }
+
                                         title.displayVersion = nacp.DisplayVersion;
                                     }
                                 }
@@ -668,6 +695,174 @@ namespace NX_Game_Info
                 {
                     title.latestVersion = version;
                 }
+            }
+
+            return title;
+        }
+
+        public static List<LibHac.Title> processSd(string sdpath)
+        {
+            try
+            {
+                var fs = new SwitchFs(keyset, new FileSystem(sdpath));
+
+                return fs.Titles.Values.ToList();
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return null;
+            }
+        }
+
+        public static Title processTitle(LibHac.Title sdtitle)
+        {
+            Title title = new Title();
+
+            title.filesize = sdtitle.GetSize();
+            title.distribution = Title.Distribution.Filesystem;
+
+            foreach (Nca nca in sdtitle.Ncas)
+            {
+                if (nca.Header.ContentType == ContentType.Program)
+                {
+                    title.filename = nca.Filename;
+
+                    title.masterkey = (uint)nca.Header.CryptoType == 2 ? (uint)Math.Max(nca.Header.CryptoType2 - 1, 0) : 0;
+                    title.signature = (nca.Header.FixedSigValidity == Validity.Valid);
+
+                    try
+                    {
+                        nca.ParseNpdm();
+                    }
+                    catch { }
+
+                    if (nca.Npdm != null)
+                    {
+                        if (nca.Npdm.AciD.ServiceAccess.Services.Count == 0 || nca.Npdm.AciD.ServiceAccess.Services.Keys.Any(key => key.StartsWith("fsp-")))
+                        {
+                            if (nca.Npdm.AciD.FsAccess.PermissionsBitmask == 0xffffffffffffffff)
+                            {
+                                title.permission = Title.Permission.Dangerous;
+                            }
+                            else if ((nca.Npdm.AciD.FsAccess.PermissionsBitmask & 0x8000000000000000) != 0)
+                            {
+                                title.permission = Title.Permission.Unsafe;
+                            }
+                            else
+                            {
+                                title.permission = Title.Permission.Safe;
+                            }
+                        }
+                        else
+                        {
+                            title.permission = Title.Permission.Safe;
+                        }
+                    }
+                }
+                else if (nca.Header.ContentType == ContentType.Meta)
+                {
+                    try
+                    {
+                        Pfs ncaPfs = new Pfs(nca.OpenSection(0, false, IntegrityCheckLevel.ErrorOnInvalid, true));
+
+                        PfsFileEntry[] ncaFileEntries = ncaPfs.Files;
+                        foreach (PfsFileEntry pfsEntry in ncaFileEntries)
+                        {
+                            Cnmt cnmt = new Cnmt(ncaPfs.OpenFile(pfsEntry).AsStream());
+
+                            title.type = cnmt.Type;
+
+                            byte[] titleID = BitConverter.GetBytes(cnmt.TitleId);
+                            Array.Reverse(titleID);
+                            title.titleID = BitConverter.ToString(titleID).Replace("-", "").ToUpper();
+
+                            title.version = cnmt.TitleVersion?.Version ?? title.version;
+
+                            uint firmware = cnmt.MinimumSystemVersion?.Version ?? 0;
+                            if (firmware == 0)
+                            {
+                                title.firmware = "0";
+                            }
+                            else if (firmware <= 450)
+                            {
+                                title.firmware = "1.0.0";
+                            }
+                            else if (firmware <= 65796)
+                            {
+                                title.firmware = "2.0.0";
+                            }
+                            else if (firmware <= 131162)
+                            {
+                                title.firmware = "2.1.0";
+                            }
+                            else if (firmware <= 196628)
+                            {
+                                title.firmware = "2.2.0";
+                            }
+                            else if (firmware <= 262164)
+                            {
+                                title.firmware = "2.3.0";
+                            }
+                            else
+                            {
+                                title.firmware = ((firmware >> 26) & 0x3F) + "." + ((firmware >> 20) & 0x3F) + "." + ((firmware >> 16) & 0x0F);
+                            }
+                        }
+                    }
+                    catch (MissingKeyException) { }
+                }
+                else if (nca.Header.ContentType == ContentType.Control)
+                {
+                    byte[] titleID = BitConverter.GetBytes(nca.Header.TitleId);
+                    Array.Reverse(titleID);
+                    title.titleID = BitConverter.ToString(titleID).Replace("-", "").ToUpper();
+
+                    try
+                    {
+                        Romfs romfs = new Romfs(nca.OpenSection(0, false, IntegrityCheckLevel.ErrorOnInvalid, true));
+
+                        RomfsFile[] romfsFiles = romfs.Files.ToArray();
+                        foreach (RomfsFile romfsFile in romfsFiles)
+                        {
+                            if (romfsFile.Name.Equals("control.nacp"))
+                            {
+                                Nacp nacp = new Nacp(romfs.OpenFile(romfsFile).AsStream());
+
+                                foreach (NacpDescription description in nacp.Descriptions)
+                                {
+                                    if (!String.IsNullOrEmpty(description.Title))
+                                    {
+                                        title.titleName = description.Title;
+                                        break;
+                                    }
+                                }
+
+                                title.displayVersion = nacp.DisplayVersion;
+                            }
+                        }
+                    }
+                    catch (MissingKeyException) { }
+                }
+                else if (nca.Header.ContentType == ContentType.AocData)
+                {
+                    title.filename = nca.Filename;
+
+                    title.signature = (nca.Header.FixedSigValidity == Validity.Valid);
+                }
+            }
+
+            if (title.type == TitleType.Application || title.type == TitleType.Patch)
+            {
+                uint version;
+                if (versionList.TryGetValue(title.titleIDApplication, out version))
+                {
+                    title.latestVersion = version;
+                }
+            }
+
+            if (title.type == TitleType.Patch)
+            {
+                title.titleID = title.titleID.Substring(0, Math.Min(title.titleID.Length, 13)) + "800";
             }
 
             return title;

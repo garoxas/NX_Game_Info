@@ -87,6 +87,28 @@ namespace NX_Game_Info
             }
         }
 
+        private void openSDCardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (backgroundWorkerProcess.IsBusy)
+            {
+                MessageBox.Show("Please wait until the current process is finished and try again.", Application.ProductName);
+                return;
+            }
+
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
+            folderBrowserDialog.SelectedPath = String.IsNullOrEmpty(Properties.Settings.Default.SDCardDirectory) ? Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()) : Properties.Settings.Default.SDCardDirectory;
+
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                objectListView.Items.Clear();
+
+                Properties.Settings.Default.SDCardDirectory = folderBrowserDialog.SelectedPath;
+                Properties.Settings.Default.Save();
+
+                backgroundWorkerProcess.RunWorkerAsync(folderBrowserDialog.SelectedPath);
+            }
+        }
+
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Environment.Exit(-1);
@@ -96,20 +118,39 @@ namespace NX_Game_Info
         {
             BackgroundWorker worker = sender as BackgroundWorker;
 
-            List<string> filenames = (List<string>)e.Argument;
             List<Title> titles = new List<Title>();
 
-            int count = filenames.Count, index = 0;
-
-            foreach (var filename in filenames)
+            if (e.Argument is List<string>)
             {
-                Title title = Process.processFile(filename);
-                if (title != null)
-                {
-                    titles.Add(title);
-                }
+                List<string> filenames = (List<string>)e.Argument;
+                int count = filenames.Count, index = 0;
 
-                worker.ReportProgress(++index / count * 100);
+                foreach (var filename in filenames)
+                {
+                    Title title = Process.processFile(filename);
+                    if (title != null)
+                    {
+                        titles.Add(title);
+                    }
+
+                    worker.ReportProgress(++index / count * 100);
+                }
+            }
+            else if (e.Argument is string)
+            {
+                List<LibHac.Title> sdtitles = Process.processSd((string)e.Argument);
+                int count = sdtitles.Count, index = 0;
+
+                foreach (var sdtitle in sdtitles)
+                {
+                    Title title = Process.processTitle(sdtitle);
+                    if (title != null)
+                    {
+                        titles.Add(title);
+                    }
+
+                    worker.ReportProgress(++index / count * 100);
+                }
             }
 
             e.Result = titles;
