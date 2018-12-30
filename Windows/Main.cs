@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Application = System.Windows.Forms.Application;
 using BrightIdeasSoftware;
@@ -14,6 +15,8 @@ namespace NX_Game_Info
 {
     public partial class Main : Form
     {
+        internal IProgressDialog progressDialog;
+
         public Main()
         {
             InitializeComponent();
@@ -50,12 +53,16 @@ namespace NX_Game_Info
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 objectListView.Items.Clear();
+                toolStripStatusLabel.Text = "";
 
                 List<string> filenames = openFileDialog.FileNames.ToList();
                 filenames.Sort();
 
                 Properties.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
                 Properties.Settings.Default.Save();
+
+                progressDialog = (IProgressDialog)new ProgressDialog();
+                progressDialog.StartProgressDialog(Handle, "Opening " + filenames.Count + " file" + (filenames.Count == 1 ? "" : "s"));
 
                 backgroundWorkerProcess.RunWorkerAsync(filenames);
             }
@@ -75,6 +82,7 @@ namespace NX_Game_Info
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
                 objectListView.Items.Clear();
+                toolStripStatusLabel.Text = "";
 
                 List<string> filenames = Directory.EnumerateFiles(folderBrowserDialog.SelectedPath, "*.*", SearchOption.AllDirectories)
                     .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp")).ToList();
@@ -82,6 +90,9 @@ namespace NX_Game_Info
 
                 Properties.Settings.Default.InitialDirectory = folderBrowserDialog.SelectedPath;
                 Properties.Settings.Default.Save();
+
+                progressDialog = (IProgressDialog)new ProgressDialog();
+                progressDialog.StartProgressDialog(Handle, "Opening " + filenames.Count + " file" + (filenames.Count == 1 ? "" : "s") + " from directory " + folderBrowserDialog.SelectedPath);
 
                 backgroundWorkerProcess.RunWorkerAsync(filenames);
             }
@@ -101,9 +112,13 @@ namespace NX_Game_Info
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
                 objectListView.Items.Clear();
+                toolStripStatusLabel.Text = "";
 
                 Properties.Settings.Default.SDCardDirectory = folderBrowserDialog.SelectedPath;
                 Properties.Settings.Default.Save();
+
+                progressDialog = (IProgressDialog)new ProgressDialog();
+                progressDialog.StartProgressDialog(Handle, "Opening SD card on " + folderBrowserDialog.SelectedPath);
 
                 backgroundWorkerProcess.RunWorkerAsync(folderBrowserDialog.SelectedPath);
             }
@@ -133,7 +148,7 @@ namespace NX_Game_Info
                         titles.Add(title);
                     }
 
-                    worker.ReportProgress(++index / count * 100);
+                    worker.ReportProgress(100 * ++index / count);
                 }
             }
             else if (e.Argument is string)
@@ -149,7 +164,7 @@ namespace NX_Game_Info
                         titles.Add(title);
                     }
 
-                    worker.ReportProgress(++index / count * 100);
+                    worker.ReportProgress(100 * ++index / count);
                 }
             }
 
@@ -158,7 +173,7 @@ namespace NX_Game_Info
 
         private void backgroundWorkerProcess_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-
+            progressDialog.SetProgress((uint)e.ProgressPercentage, 100);
         }
 
         private void backgroundWorkerProcess_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
@@ -185,6 +200,94 @@ namespace NX_Game_Info
                     listItem.ForeColor = Color.Indigo;
                 }
             }
+
+            toolStripStatusLabel.Text = titles.Count + " file" + (titles.Count == 1 ? "" : "s");
+
+            progressDialog.StopProgressDialog();
+            Activate();
+        }
+    }
+
+    // IProgressDialog Credits to Alex J https://stackoverflow.com/a/37393363
+    [Flags]
+    public enum IPD_Flags : uint
+    {
+        Normal = 0x00000000,
+        Modal = 0x00000001,
+        AutoTime = 0x00000002,
+        NoTime = 0x00000004,
+        NoMinimize = 0x00000008,
+        NoProgressBar = 0x00000010,
+    }
+
+    [Flags]
+    public enum IPDTIMER_Flags : uint
+    {
+        Reset = 0x00000001,
+        Pause = 0x00000002,
+        Resume = 0x00000003,
+    }
+
+    [ComImport]
+    [Guid("F8383852-FCD3-11d1-A6B9-006097DF5BD4")]
+    internal class ProgressDialog
+    {
+
+    }
+
+    [ComImport]
+    [Guid("EBBC7C04-315E-11d2-B62F-006097DF5BD4")]
+    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    internal interface IProgressDialog
+    {
+        [PreserveSig]
+        void StartProgressDialog(IntPtr hwndParent
+        , [MarshalAs(UnmanagedType.IUnknown)] object punkEnableModless
+        , uint dwFlags
+        , IntPtr pvResevered);
+
+        [PreserveSig]
+        void StopProgressDialog();
+
+        [PreserveSig]
+        void SetTitle([MarshalAs(UnmanagedType.LPWStr)] string pwzTitle);
+
+        [PreserveSig]
+        void SetAnimation(IntPtr hInstAnimation, ushort idAnimation);
+
+        [PreserveSig]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        bool HasUserCancelled();
+
+        [PreserveSig]
+        void SetProgress(uint dwCompleted, uint dwTotal);
+
+        [PreserveSig]
+        void SetProgress64(ulong ullCompleted, ulong ullTotal);
+
+        [PreserveSig]
+        void SetLine(uint dwLineNum
+            , [MarshalAs(UnmanagedType.LPWStr)] string pwzString
+            , [MarshalAs(UnmanagedType.VariantBool)] bool fCompactPath
+            , IntPtr pvResevered);
+
+        [PreserveSig]
+        void SetCancelMsg([MarshalAs(UnmanagedType.LPWStr)]string pwzCancelMsg, object pvResevered);
+
+        [PreserveSig]
+        void Timer(uint dwTimerAction, object pvResevered);
+    }
+
+    public static class ProgressDialogExtension
+    {
+        internal static void StartProgressDialog(this IProgressDialog progressDialog, IntPtr hwndParent, string pwzString)
+        {
+            progressDialog.SetTitle(Application.ProductName);
+            progressDialog.SetCancelMsg("Please wait until the current process is finished", IntPtr.Zero);
+            progressDialog.SetLine(1, pwzString, false, IntPtr.Zero);
+
+            progressDialog.StartProgressDialog(hwndParent, null, (uint)(IPD_Flags.Modal | IPD_Flags.AutoTime | IPD_Flags.NoMinimize), IntPtr.Zero);
+            progressDialog.SetProgress(0, 100);
         }
     }
 }
