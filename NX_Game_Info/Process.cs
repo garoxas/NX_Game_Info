@@ -227,6 +227,18 @@ namespace NX_Game_Info
                                 title.signature = (nca.Header.FixedSigValidity == Validity.Valid);
                             }
 
+                            if (nca.HasRightsId)
+                            {
+                                if (keyset.TitleNames.TryGetValue(nca.Header.RightsId, out string titleName))
+                                {
+                                    title.titleName = titleName;
+                                }
+                                if (keyset.TitleVersions.TryGetValue(nca.Header.RightsId, out uint titleVersion))
+                                {
+                                    title.latestVersion = titleVersion;
+                                }
+                            }
+
                             if (nca.Header.ContentType == ContentType.Program)
                             {
                                 title.masterkey = (uint)nca.Header.CryptoType == 2 ? (uint)Math.Max(nca.Header.CryptoType2 - 1, 0) : 0;
@@ -580,6 +592,18 @@ namespace NX_Game_Info
                             title.signature = (nca.Header.FixedSigValidity == Validity.Valid);
                         }
 
+                        if (nca.HasRightsId)
+                        {
+                            if (keyset.TitleNames.TryGetValue(nca.Header.RightsId, out string titleName))
+                            {
+                                title.titleName = titleName;
+                            }
+                            if (keyset.TitleVersions.TryGetValue(nca.Header.RightsId, out uint titleVersion))
+                            {
+                                title.latestVersion = titleVersion;
+                            }
+                        }
+
                         if (nca.Header.ContentType == ContentType.Program)
                         {
                             title.masterkey = (uint)nca.Header.CryptoType == 2 ? (uint)Math.Max(nca.Header.CryptoType2 - 1, 0) : 0;
@@ -710,6 +734,18 @@ namespace NX_Game_Info
                     title.masterkey = (uint)nca.Header.CryptoType == 2 ? (uint)Math.Max(nca.Header.CryptoType2 - 1, 0) : 0;
                     title.signature = (nca.Header.FixedSigValidity == Validity.Valid);
 
+                    if (nca.HasRightsId)
+                    {
+                        if (keyset.TitleNames.TryGetValue(nca.Header.RightsId, out string titleName))
+                        {
+                            title.titleName = titleName;
+                        }
+                        if (keyset.TitleVersions.TryGetValue(nca.Header.RightsId, out uint titleVersion))
+                        {
+                            title.latestVersion = titleVersion;
+                        }
+                    }
+
                     try
                     {
                         nca.ParseNpdm();
@@ -839,6 +875,18 @@ namespace NX_Game_Info
 
                     title.masterkey = (uint)nca.Header.CryptoType == 2 ? (uint)Math.Max(nca.Header.CryptoType2 - 1, 0) : 0;
                     title.signature = (nca.Header.FixedSigValidity == Validity.Valid);
+
+                    if (nca.HasRightsId)
+                    {
+                        if (keyset.TitleNames.TryGetValue(nca.Header.RightsId, out string titleName))
+                        {
+                            title.titleName = titleName;
+                        }
+                        if (keyset.TitleVersions.TryGetValue(nca.Header.RightsId, out uint titleVersion))
+                        {
+                            title.latestVersion = titleVersion;
+                        }
+                    }
                 }
             }
 
