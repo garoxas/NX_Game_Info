@@ -51,49 +51,6 @@ namespace NX_Game_Info
                 Environment.Exit(-1);
             }
 
-            int[] masterkey = new int[6];
-            for (int i = 0; i < masterkey.Length; i++)
-            {
-                if (((haveKakSource && (bool)keyset?.MasterKeys[i + 1].All(b => b == 0)) && (bool)keyset?.KeyAreaKeys[i + 1][0].All(b => b == 0)) && (bool)keyset?.Titlekeks[i + 1].All(b => b == 0))
-                {
-                    masterkey[i] = i + 1;
-                }
-            }
-
-            if (!Settings.Default.MasterKey)
-            {
-                if (masterkey.Any(b => b != 0))
-                {
-                    messages.Add("master_key_##, key_area_key_application_## or titlekek_## for MasterKey " + string.Join(", ", masterkey.Where(b => b != 0)) +
-                        " are missing from Keyfile.\nGames using this key may be missing or incorrect.");
-
-                    Settings.Default.MasterKey = true;
-                    Settings.Default.Save();
-                }
-            }
-
-            if (!Settings.Default.TitleKeys)
-            {
-                if (keyset?.TitleKeys.Count == 0)
-                {
-                    messages.Add("Title Keys is missing.\nGames using Titlekey crypto may be missing or incorrect.");
-
-                    Settings.Default.TitleKeys = true;
-                    Settings.Default.Save();
-                }
-            }
-
-            if (!Settings.Default.ConsoleKeys)
-            {
-                if (keyset?.SdSeed.All(b => b == 0) ?? true)
-                {
-                    messages.Add("sd_seed is missing from Console Keys.\nOpen SD Card will not be available.");
-
-                    Settings.Default.ConsoleKeys = true;
-                    Settings.Default.Save();
-                }
-            }
-
             try
             {
                 var versionlist = JsonConvert.DeserializeObject<Common.VersionList>(File.ReadAllText(Common.HAC_VERSIONLIST));
@@ -132,8 +89,7 @@ namespace NX_Game_Info
 
                 return title;
             }
-            catch (MissingKeyException)
-            { }
+            catch (MissingKeyException) { }
 
             return null;
         }
@@ -158,22 +114,22 @@ namespace NX_Game_Info
                     return null;
                 }
 
-                if (xci.RootPartition != null)
+                if (xci.RootPartition?.Files.Length > 0)
                 {
                     title.structure.Add(Title.Structure.RootPartition);
                 }
 
-                if (xci.UpdatePartition != null)
+                if (xci.UpdatePartition?.Files.Length > 0)
                 {
                     title.structure.Add(Title.Structure.UpdatePartition);
                 }
 
-                if (xci.NormalPartition != null)
+                if (xci.NormalPartition?.Files.Length > 0)
                 {
                     title.structure.Add(Title.Structure.NormalPartition);
                 }
 
-                if (xci.SecurePartition != null)
+                if (xci.SecurePartition?.Files.Length > 0)
                 {
                     PfsFileEntry[] fileEntries = xci.SecurePartition.Files;
                     foreach (PfsFileEntry entry in fileEntries)
@@ -251,7 +207,10 @@ namespace NX_Game_Info
                                         }
                                     }
                                 }
-                                catch (MissingKeyException) { }
+                                catch (MissingKeyException ex)
+                                {
+                                    title.error = "Missing " + (ex.Type == KeyType.Title ? "Title Key" : "Key") + ": " + ex.Name.Replace("key_area_key_application", "master_key");
+                                }
                             }
 
                             title.structure.Add(Title.Structure.CnmtNca);
@@ -275,6 +234,10 @@ namespace NX_Game_Info
                                 try
                                 {
                                     nca.ParseNpdm();
+                                }
+                                catch (MissingKeyException ex)
+                                {
+                                    title.error = "Missing " + (ex.Type == KeyType.Title ? "Title Key" : "Key") + ": " + ex.Name.Replace("key_area_key_application", "master_key");
                                 }
                                 catch { }
 
@@ -339,7 +302,10 @@ namespace NX_Game_Info
                                         }
                                     }
                                 }
-                                catch (MissingKeyException) { }
+                                catch (MissingKeyException ex)
+                                {
+                                    title.error = "Missing " + (ex.Type == KeyType.Title ? "Title Key" : "Key") + ": " + ex.Name.Replace("key_area_key_application", "master_key");
+                                }
                             }
                         }
                     }
@@ -347,7 +313,7 @@ namespace NX_Game_Info
                     title.structure.Add(Title.Structure.SecurePartition);
                 }
 
-                if (xci.LogoPartition != null)
+                if (xci.LogoPartition?.Files.Length > 0)
                 {
                     title.structure.Add(Title.Structure.LogoPartition);
                 }
@@ -355,8 +321,7 @@ namespace NX_Game_Info
 
             if (title.type == TitleType.Application || title.type == TitleType.Patch)
             {
-                uint version;
-                if (versionList.TryGetValue(title.titleIDApplication, out version))
+                if (versionList.TryGetValue(title.titleIDApplication, out uint version))
                 {
                     title.latestVersion = version;
                 }
@@ -395,6 +360,7 @@ namespace NX_Game_Info
                             Stream stream = cnmtXml.AsStream();
                             byte[] buffer = new byte[stream.Length];
                             stream.Read(buffer, 0, buffer.Length);
+                            stream.Close();
 
                             byte[] bom = Encoding.UTF8.GetPreamble();
                             if (buffer.Take(bom.Length).SequenceEqual(bom))
@@ -405,8 +371,7 @@ namespace NX_Game_Info
 
                             XDocument xml = XDocument.Parse(Encoding.UTF8.GetString(buffer).Replace("&", "&amp;"));
 
-                            TitleType titleType;
-                            Enum.TryParse(xml.Element("ContentMeta").Element("Type").Value, true, out titleType);
+                            Enum.TryParse(xml.Element("ContentMeta").Element("Type").Value, true, out TitleType titleType);
                             title.type = titleType;
 
                             title.titleID = xml.Element("ContentMeta").Element("Id").Value.Remove(1, 2).ToUpper();
@@ -546,7 +511,10 @@ namespace NX_Game_Info
                                     }
                                 }
                             }
-                            catch (MissingKeyException) { }
+                            catch (MissingKeyException ex)
+                            {
+                                title.error = "Missing " + (ex.Type == KeyType.Title ? "Title Key" : "Key") + ": " + ex.Name.Replace("key_area_key_application", "master_key");
+                            }
                         }
 
                         title.structure.Add(Title.Structure.CnmtNca);
@@ -570,6 +538,7 @@ namespace NX_Game_Info
                             Stream stream = nacpXml.AsStream();
                             byte[] buffer = new byte[stream.Length];
                             stream.Read(buffer, 0, buffer.Length);
+                            stream.Close();
 
                             byte[] bom = Encoding.UTF8.GetPreamble();
                             if (buffer.Take(bom.Length).SequenceEqual(bom))
@@ -619,6 +588,10 @@ namespace NX_Game_Info
                             {
                                 nca.ParseNpdm();
                             }
+                            catch (MissingKeyException ex)
+                            {
+                                title.error = "Missing " + (ex.Type == KeyType.Title ? "Title Key" : "Key") + ": " + ex.Name.Replace("key_area_key_application", "master_key");
+                            }
                             catch { }
 
                             if (nca.Npdm != null)
@@ -658,6 +631,11 @@ namespace NX_Game_Info
                             Array.Reverse(titleID);
                             title.titleID = BitConverter.ToString(titleID).Replace("-", "").ToUpper();
 
+                            if (title.type == TitleType.Patch)
+                            {
+                                title.titleID = title.titleID.Substring(0, Math.Min(title.titleID.Length, 13)) + "800";
+                            }
+
                             try
                             {
                                 Romfs romfs = new Romfs(nca.OpenSection(0, false, IntegrityCheckLevel.ErrorOnInvalid, true));
@@ -682,7 +660,10 @@ namespace NX_Game_Info
                                     }
                                 }
                             }
-                            catch (MissingKeyException) { }
+                            catch (MissingKeyException ex)
+                            {
+                                title.error = "Missing " + (ex.Type == KeyType.Title ? "Title Key" : "Key") + ": " + ex.Name.Replace("key_area_key_application", "master_key");
+                            }
                         }
                     }
                 }
@@ -690,8 +671,7 @@ namespace NX_Game_Info
 
             if (title.type == TitleType.Application || title.type == TitleType.Patch)
             {
-                uint version;
-                if (versionList.TryGetValue(title.titleIDApplication, out version))
+                if (versionList.TryGetValue(title.titleIDApplication, out uint version))
                 {
                     title.latestVersion = version;
                 }
@@ -733,6 +713,10 @@ namespace NX_Game_Info
                     try
                     {
                         nca.ParseNpdm();
+                    }
+                    catch (MissingKeyException ex)
+                    {
+                        title.error = "Missing " + (ex.Type == KeyType.Title ? "Title Key" : "Key") + ": " + ex.Name.Replace("key_area_key_application", "master_key");
                     }
                     catch { }
 
@@ -809,7 +793,10 @@ namespace NX_Game_Info
                             }
                         }
                     }
-                    catch (MissingKeyException) { }
+                    catch (MissingKeyException ex)
+                    {
+                        title.error = "Missing " + (ex.Type == KeyType.Title ? "Title Key" : "Key") + ": " + ex.Name.Replace("key_area_key_application", "master_key");
+                    }
                 }
                 else if (nca.Header.ContentType == ContentType.Control)
                 {
@@ -841,20 +828,23 @@ namespace NX_Game_Info
                             }
                         }
                     }
-                    catch (MissingKeyException) { }
+                    catch (MissingKeyException ex)
+                    {
+                        title.error = "Missing " + (ex.Type == KeyType.Title ? "Title Key" : "Key") + ": " + ex.Name.Replace("key_area_key_application", "master_key");
+                    }
                 }
                 else if (nca.Header.ContentType == ContentType.AocData)
                 {
                     title.filename = nca.Filename;
 
+                    title.masterkey = (uint)nca.Header.CryptoType == 2 ? (uint)Math.Max(nca.Header.CryptoType2 - 1, 0) : 0;
                     title.signature = (nca.Header.FixedSigValidity == Validity.Valid);
                 }
             }
 
             if (title.type == TitleType.Application || title.type == TitleType.Patch)
             {
-                uint version;
-                if (versionList.TryGetValue(title.titleIDApplication, out version))
+                if (versionList.TryGetValue(title.titleIDApplication, out uint version))
                 {
                     title.latestVersion = version;
                 }

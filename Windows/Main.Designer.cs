@@ -54,6 +54,7 @@
             this.olvColumnStructure = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnSignature = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnPermission = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumnError = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.menuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.objectListView)).BeginInit();
@@ -128,16 +129,16 @@
             this.statusStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.statusStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel});
-            this.statusStrip.Location = new System.Drawing.Point(0, 422);
+            this.statusStrip.Location = new System.Drawing.Point(0, 428);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Size = new System.Drawing.Size(800, 28);
+            this.statusStrip.Size = new System.Drawing.Size(800, 22);
             this.statusStrip.TabIndex = 2;
             this.statusStrip.Text = "statusStrip";
             // 
             // toolStripStatusLabel
             // 
             this.toolStripStatusLabel.Name = "toolStripStatusLabel";
-            this.toolStripStatusLabel.Size = new System.Drawing.Size(0, 23);
+            this.toolStripStatusLabel.Size = new System.Drawing.Size(0, 17);
             // 
             // objectListView
             // 
@@ -155,6 +156,7 @@
             this.objectListView.AllColumns.Add(this.olvColumnStructure);
             this.objectListView.AllColumns.Add(this.olvColumnSignature);
             this.objectListView.AllColumns.Add(this.olvColumnPermission);
+            this.objectListView.AllColumns.Add(this.olvColumnError);
             this.objectListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.olvColumnTitleID,
             this.olvColumnTitleName,
@@ -169,14 +171,15 @@
             this.olvColumnDistribution,
             this.olvColumnStructure,
             this.olvColumnSignature,
-            this.olvColumnPermission});
+            this.olvColumnPermission,
+            this.olvColumnError});
             this.objectListView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.objectListView.FullRowSelect = true;
             this.objectListView.GridLines = true;
             this.objectListView.Location = new System.Drawing.Point(0, 33);
             this.objectListView.Name = "objectListView";
             this.objectListView.ShowGroups = false;
-            this.objectListView.Size = new System.Drawing.Size(800, 389);
+            this.objectListView.Size = new System.Drawing.Size(800, 395);
             this.objectListView.TabIndex = 3;
             this.objectListView.UseCompatibleStateImageBehavior = false;
             this.objectListView.View = System.Windows.Forms.View.Details;
@@ -274,6 +277,13 @@
             this.olvColumnPermission.CellPadding = null;
             this.olvColumnPermission.Text = "Permission";
             // 
+            // olvColumnError
+            // 
+            this.olvColumnError.AspectName = "error";
+            this.olvColumnError.CellPadding = null;
+            this.olvColumnError.Text = "";
+            this.olvColumnError.Width = 260;
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -322,6 +332,7 @@
         private BrightIdeasSoftware.OLVColumn olvColumnStructure;
         private BrightIdeasSoftware.OLVColumn olvColumnSignature;
         private BrightIdeasSoftware.OLVColumn olvColumnPermission;
+        private BrightIdeasSoftware.OLVColumn olvColumnError;
     }
 }
 

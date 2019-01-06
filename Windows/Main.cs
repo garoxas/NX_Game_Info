@@ -21,8 +21,7 @@ namespace NX_Game_Info
         {
             InitializeComponent();
 
-            List<string> messages;
-            bool init = Process.initialize(out messages);
+            bool init = Process.initialize(out List<string> messages);
 
             foreach (var message in messages)
             {
@@ -100,6 +99,18 @@ namespace NX_Game_Info
 
         private void openSDCardToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (Process.keyset?.SdSeed.All(b => b == 0) ?? true)
+            {
+                MessageBox.Show("sd_seed is missing from Console Keys.\nOpen SD Card will not be available.", Application.ProductName);
+                return;
+            }
+
+            if ((Process.keyset?.SdCardKekSource.All(b => b == 0) ?? true) || (Process.keyset?.SdCardKeySources[1].All(b => b == 0) ?? true))
+            {
+                MessageBox.Show("sd_card_kek_source and sd_card_nca_key_source are missing from Keyfile.\nOpen SD Card will not be available.", Application.ProductName);
+                return;
+            }
+
             if (backgroundWorkerProcess.IsBusy)
             {
                 MessageBox.Show("Please wait until the current process is finished and try again.", Application.ProductName);
@@ -142,14 +153,16 @@ namespace NX_Game_Info
 
                 foreach (var filename in filenames)
                 {
+                    worker.ReportProgress(100 * index++ / count, filename);
+
                     Title title = Process.processFile(filename);
                     if (title != null)
                     {
                         titles.Add(title);
                     }
-
-                    worker.ReportProgress(100 * ++index / count);
                 }
+
+                worker.ReportProgress(100, "");
             }
             else if (e.Argument is string)
             {
@@ -158,14 +171,16 @@ namespace NX_Game_Info
 
                 foreach (var sdtitle in sdtitles)
                 {
+                    worker.ReportProgress(100 * index++ / count, sdtitle.MainNca?.Filename);
+
                     Title title = Process.processTitle(sdtitle);
                     if (title != null)
                     {
                         titles.Add(title);
                     }
-
-                    worker.ReportProgress(100 * ++index / count);
                 }
+
+                worker.ReportProgress(100, "");
             }
 
             e.Result = titles;
@@ -173,6 +188,7 @@ namespace NX_Game_Info
 
         private void backgroundWorkerProcess_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
+            progressDialog.SetLine(2, e.UserState as string, true, IntPtr.Zero);
             progressDialog.SetProgress((uint)e.ProgressPercentage, 100);
         }
 

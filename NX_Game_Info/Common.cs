@@ -27,27 +27,6 @@ namespace NX_Game_Info
         public class Settings : ApplicationSettingsBase
         {
             [UserScopedSettingAttribute()]
-            public bool MasterKey
-            {
-                get { return (bool)this["MasterKey"]; }
-                set { this["MasterKey"] = value; }
-            }
-
-            [UserScopedSettingAttribute()]
-            public bool TitleKeys
-            {
-                get { return (bool)this["TitleKeys"]; }
-                set { this["TitleKeys"] = value; }
-            }
-
-            [UserScopedSettingAttribute()]
-            public bool ConsoleKeys
-            {
-                get { return (bool)this["ConsoleKeys"]; }
-                set { this["ConsoleKeys"] = value; }
-            }
-
-            [UserScopedSettingAttribute()]
             public string InitialDirectory
             {
                 get { return (string)this["InitialDirectory"]; }
@@ -110,7 +89,7 @@ namespace NX_Game_Info
             public uint latestVersion { get; set; } = unchecked((uint)-1);
             public string latestVersionString { get { return latestVersion != unchecked((uint)-1) ? latestVersion.ToString() : ""; } }
             public string firmware { get; set; }
-            public uint masterkey { get; set; } = 0;
+            public uint masterkey { get; set; } = unchecked((uint)-1);
             public string masterkeyString
             {
                 get
@@ -131,6 +110,8 @@ namespace NX_Game_Info
                             return masterkey.ToString() + " (6.0.0-6.1.0)";
                         case 6:
                             return masterkey.ToString() + " (6.2.0)";
+                        case unchecked((uint)-1):
+                            return "";
                         default:
                             return masterkey.ToString();
                     }
@@ -165,7 +146,8 @@ namespace NX_Game_Info
                 {
                     if (distribution == Distribution.Cartridge)
                     {
-                        if (new HashSet<Structure>(new[] { Structure.UpdatePartition, Structure.NormalPartition, Structure.SecurePartition }).All(value => structure.Contains(value)))
+                        if (new HashSet<Structure>(new[] { Structure.UpdatePartition, Structure.SecurePartition }).All(value => structure.Contains(value)) &&
+                            new HashSet<Structure>(new[] { Structure.RootPartition, Structure.NormalPartition }).Any(value => structure.Contains(value)))
                         {
                             return "Scene";
                         }
@@ -213,6 +195,7 @@ namespace NX_Game_Info
             public string signatureString { get { return signature == null ? "" : (bool)signature ? "Passed" : "Not Passed"; } }
             public Permission permission { get; set; } = Permission.Invalid;
             public string permissionString { get { return permission == Permission.Invalid ? "" : permission.ToString(); } }
+            public string error { get; set; }
         }
 
         public class VersionTitle
