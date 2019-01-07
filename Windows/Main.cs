@@ -146,9 +146,8 @@ namespace NX_Game_Info
 
             List<Title> titles = new List<Title>();
 
-            if (e.Argument is List<string>)
+            if (e.Argument is List<string> filenames)
             {
-                List<string> filenames = (List<string>)e.Argument;
                 int count = filenames.Count, index = 0;
 
                 foreach (var filename in filenames)
@@ -164,9 +163,9 @@ namespace NX_Game_Info
 
                 worker.ReportProgress(100, "");
             }
-            else if (e.Argument is string)
+            else if (e.Argument is string sdpath)
             {
-                List<LibHac.Title> sdtitles = Process.processSd((string)e.Argument);
+                List<LibHac.Title> sdtitles = Process.processSd(sdpath);
                 int count = sdtitles.Count, index = 0;
 
                 foreach (var sdtitle in sdtitles)

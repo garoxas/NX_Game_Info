@@ -10,13 +10,12 @@ namespace NX_Game_Info
 {
     class Common
     {
-        public static readonly string PATH_PREFIX = Environment.OSVersion.Platform == PlatformID.Win32NT ?
-            "" : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.switch/";
+        public static readonly string PATH_PREFIX = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.switch/";
 
-        public static readonly string PROD_KEYS = PATH_PREFIX + "prod.keys";
-        public static readonly string TITLE_KEYS = PATH_PREFIX + "title.keys";
-        public static readonly string CONSOLE_KEYS = PATH_PREFIX + "console.keys";
-        public static readonly string HAC_VERSIONLIST = PATH_PREFIX + "hac_versionlist.json";
+        public static readonly string PROD_KEYS = "prod.keys";
+        public static readonly string TITLE_KEYS = "title.keys";
+        public static readonly string CONSOLE_KEYS = "console.keys";
+        public static readonly string HAC_VERSIONLIST = "hac_versionlist.json";
 
         [DllImport("Shlwapi.dll", CharSet = CharSet.Auto)]
         public static extern Int32 StrFormatByteSize(

@@ -52,8 +52,7 @@ namespace NX_Game_Info
             tableView.DataSource = tableViewDataSource;
             tableView.Delegate = tableViewDelegate;
 
-            List<string> messages;
-            bool init = Process.initialize(out messages);
+            bool init = Process.initialize(out List<string> messages);
 
             foreach (var message in messages)
             {
@@ -70,8 +69,10 @@ namespace NX_Game_Info
                 Environment.Exit(-1);
             }
 
-            backgroundWorker = new BackgroundWorker();
-            backgroundWorker.WorkerReportsProgress = true;
+            backgroundWorker = new BackgroundWorker
+            {
+                WorkerReportsProgress = true
+            };
             backgroundWorker.DoWork += BackgroundWorker_DoWork;
             backgroundWorker.ProgressChanged += BackgroundWorker_ProgressChanged;
             backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
@@ -101,6 +102,7 @@ namespace NX_Game_Info
             if (openPanel.RunModal() == (int)NSModalResponse.OK)
             {
                 tableViewDataSource.Titles.Clear();
+                tableView.ReloadData();
 
                 List<string> filenames = openPanel.Urls.Select((arg) => arg.Path).ToList();
                 filenames.Sort();
@@ -134,6 +136,7 @@ namespace NX_Game_Info
             if (openPanel.RunModal() == (int)NSModalResponse.OK)
             {
                 tableViewDataSource.Titles.Clear();
+                tableView.ReloadData();
 
                 List<string> filenames = Directory.EnumerateFiles(openPanel.Urls.First().Path, "*.*", SearchOption.AllDirectories)
                     .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp")).ToList();
@@ -146,24 +149,99 @@ namespace NX_Game_Info
             }
         }
 
+        [Export("newDocument:")]
+        public void OpenSDCard(NSMenuItem menuItem)
+        {
+            if (Process.keyset?.SdSeed.All(b => b == 0) ?? true)
+            {
+                var alert = new NSAlert()
+                {
+                    InformativeText = "sd_seed is missing from Console Keys.\nOpen SD Card will not be available.",
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                };
+                alert.RunModal();
+                return;
+            }
+
+            if ((Process.keyset?.SdCardKekSource.All(b => b == 0) ?? true) || (Process.keyset?.SdCardKeySources[1].All(b => b == 0) ?? true))
+            {
+                var alert = new NSAlert()
+                {
+                    InformativeText = "sd_card_kek_source and sd_card_nca_key_source are missing from Keyfile.\nOpen SD Card will not be available.",
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                };
+                alert.RunModal();
+                return;
+            }
+
+            if (backgroundWorker.IsBusy)
+            {
+                var alert = new NSAlert()
+                {
+                    InformativeText = "Please wait until the current process is finished and try again.",
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                };
+                alert.RunModal();
+                return;
+            }
+
+            NSOpenPanel openPanel = NSOpenPanel.OpenPanel;
+            openPanel.CanChooseFiles = false;
+            openPanel.CanChooseDirectories = true;
+            openPanel.DirectoryUrl = new NSUrl(Common.Settings.Default.InitialDirectory ?? "");
+
+            if (openPanel.RunModal() == (int)NSModalResponse.OK)
+            {
+                tableViewDataSource.Titles.Clear();
+                tableView.ReloadData();
+
+                Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
+                Common.Settings.Default.Save();
+
+                backgroundWorker.RunWorkerAsync(openPanel.Urls.First().Path);
+            }
+        }
+
         void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
 
-            List<string> filenames = (List<string>)e.Argument;
             List<Title> titles = new List<Title>();
 
-            int count = filenames.Count, index = 0;
-
-            foreach (var filename in filenames)
+            if (e.Argument is List<string> filenames)
             {
-                Title title = Process.processFile(filename);
-                if (title != null)
+                int count = filenames.Count, index = 0;
+
+                foreach (var filename in filenames)
                 {
-                    titles.Add(title);
+                    worker.ReportProgress(100 * index++ / count, filename);
+
+                    Title title = Process.processFile(filename);
+                    if (title != null)
+                    {
+                        titles.Add(title);
+                    }
                 }
 
-                worker.ReportProgress(++index / count * 100);
+                worker.ReportProgress(100, "");
+            }
+            else if (e.Argument is string sdpath)
+            {
+                List<LibHac.Title> sdtitles = Process.processSd(sdpath);
+                int count = sdtitles.Count, index = 0;
+
+                foreach (var sdtitle in sdtitles)
+                {
+                    worker.ReportProgress(100 * index++ / count, sdtitle.MainNca?.Filename);
+
+                    Title title = Process.processTitle(sdtitle);
+                    if (title != null)
+                    {
+                        titles.Add(title);
+                    }
+                }
+
+                worker.ReportProgress(100, "");
             }
 
             e.Result = titles;
@@ -185,13 +263,11 @@ namespace NX_Game_Info
 
     public class TableViewDataSource : NSTableViewDataSource
     {
-        List<Title> titles = new List<Title>();
-
-        internal List<Title> Titles { get { return titles; } }
+        internal List<Title> Titles { get; } = new List<Title>();
 
         public override nint GetRowCount(NSTableView tableView)
         {
-            return titles.Count;
+            return Titles.Count;
         }
 
         public override void SortDescriptorsChanged(NSTableView tableView, NSSortDescriptor[] oldDescriptors)
@@ -199,67 +275,42 @@ namespace NX_Game_Info
             NSSortDescriptor sortDescriptor = tableView.SortDescriptors[0];
             if (sortDescriptor != null)
             {
-                titles.Sort((x, y) =>
+                Titles.Sort((x, y) =>
                 {
-                    if (sortDescriptor.Key == "titleID")
+                    switch (sortDescriptor.Key)
                     {
-                        return string.Compare(x.titleID, y.titleID) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "titleName")
-                    {
-                        return string.Compare(x.titleName, y.titleName) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "displayVersion")
-                    {
-                        return string.Compare(x.displayVersion, y.displayVersion) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "versionString")
-                    {
-                        return string.Compare(x.versionString, y.versionString) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "latestVersionString")
-                    {
-                        return string.Compare(x.latestVersionString, y.latestVersionString) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "firmware")
-                    {
-                        return string.Compare(x.firmware, y.firmware) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "masterkeyString")
-                    {
-                        return string.Compare(x.masterkeyString, y.masterkeyString) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "filename")
-                    {
-                        return string.Compare(x.filename, y.filename) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "filesizeString")
-                    {
-                        return (int)((x.filesize - y.filesize) * (sortDescriptor.Ascending ? 1 : -1));
-                    }
-                    else if (sortDescriptor.Key == "typeString")
-                    {
-                        return string.Compare(x.typeString, y.typeString) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "distribution")
-                    {
-                        return string.Compare(x.distribution.ToString(), y.distribution.ToString()) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "structureString")
-                    {
-                        return string.Compare(x.structureString, y.structureString) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "signatureString")
-                    {
-                        return string.Compare(x.signatureString, y.signatureString) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else if (sortDescriptor.Key == "permissionString")
-                    {
-                        return string.Compare(x.permissionString, y.permissionString) * (sortDescriptor.Ascending ? 1 : -1);
-                    }
-                    else
-                    {
-                        return 0;
+                        case "titleID":
+                            return string.Compare(x.titleID, y.titleID) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "titleName":
+                            return string.Compare(x.titleName, y.titleName) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "displayVersion":
+                            return string.Compare(x.displayVersion, y.displayVersion) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "versionString":
+                            return string.Compare(x.versionString, y.versionString) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "latestVersionString":
+                            return string.Compare(x.latestVersionString, y.latestVersionString) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "firmware":
+                            return string.Compare(x.firmware, y.firmware) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "masterkeyString":
+                            return string.Compare(x.masterkeyString, y.masterkeyString) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "filename":
+                            return string.Compare(x.filename, y.filename) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "filesizeString":
+                            return (int)((x.filesize - y.filesize) * (sortDescriptor.Ascending ? 1 : -1));
+                        case "typeString":
+                            return string.Compare(x.typeString, y.typeString) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "distribution":
+                            return string.Compare(x.distribution.ToString(), y.distribution.ToString()) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "structureString":
+                            return string.Compare(x.structureString, y.structureString) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "signatureString":
+                            return string.Compare(x.signatureString, y.signatureString) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "permissionString":
+                            return string.Compare(x.permissionString, y.permissionString) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "error":
+                            return string.Compare(x.error, y.error) * (sortDescriptor.Ascending ? 1 : -1);
+                        default:
+                            return 0;
                     }
                 });
 
@@ -291,62 +342,53 @@ namespace NX_Game_Info
             }
 
             Title title = dataSource.Titles[(int)row];
-
-            if (tableColumn.Identifier == "TitleID")
+            switch (tableColumn.Identifier)
             {
-                textField.StringValue = title.titleID ?? "";
-            }
-            else if (tableColumn.Identifier == "TitleName")
-            {
-                textField.StringValue = title.titleName ?? "";
-            }
-            else if (tableColumn.Identifier == "DisplayVersion")
-            {
-                textField.StringValue = title.displayVersion ?? "";
-            }
-            else if (tableColumn.Identifier == "Version")
-            {
-                textField.StringValue = title.versionString ?? "";
-            }
-            else if (tableColumn.Identifier == "LatestVersion")
-            {
-                textField.StringValue = title.latestVersionString ?? "";
-            }
-            else if (tableColumn.Identifier == "Firmware")
-            {
-                textField.StringValue = title.firmware ?? "";
-            }
-            else if (tableColumn.Identifier == "MasterKey")
-            {
-                textField.StringValue = title.masterkeyString ?? "";
-            }
-            else if (tableColumn.Identifier == "FileName")
-            {
-                textField.StringValue = title.filename ?? "";
-            }
-            else if (tableColumn.Identifier == "FileSize")
-            {
-                textField.StringValue = NSByteCountFormatter.Format(title.filesize, NSByteCountFormatterCountStyle.File) ?? "";
-            }
-            else if (tableColumn.Identifier == "Type")
-            {
-                textField.StringValue = title.typeString ?? "";
-            }
-            else if (tableColumn.Identifier == "Distribution")
-            {
-                textField.StringValue = title.distribution.ToString() ?? "";
-            }
-            else if (tableColumn.Identifier == "Structure")
-            {
-                textField.StringValue = title.structureString ?? "";
-            }
-            else if (tableColumn.Identifier == "Signature")
-            {
-                textField.StringValue = title.signatureString ?? "";
-            }
-            else if (tableColumn.Identifier == "Permission")
-            {
-                textField.StringValue = title.permissionString ?? "";
+                case "TitleID":
+                    textField.StringValue = title.titleID ?? "";
+                    break;
+                case "TitleName":
+                    textField.StringValue = title.titleName ?? "";
+                    break;
+                case "DisplayVersion":
+                    textField.StringValue = title.displayVersion ?? "";
+                    break;
+                case "Version":
+                    textField.StringValue = title.versionString ?? "";
+                    break;
+                case "LatestVersion":
+                    textField.StringValue = title.latestVersionString ?? "";
+                    break;
+                case "Firmware":
+                    textField.StringValue = title.firmware ?? "";
+                    break;
+                case "MasterKey":
+                    textField.StringValue = title.masterkeyString ?? "";
+                    break;
+                case "FileName":
+                    textField.StringValue = title.filename ?? "";
+                    break;
+                case "FileSize":
+                    textField.StringValue = NSByteCountFormatter.Format(title.filesize, NSByteCountFormatterCountStyle.File) ?? "";
+                    break;
+                case "Type":
+                    textField.StringValue = title.typeString ?? "";
+                    break;
+                case "Distribution":
+                    textField.StringValue = title.distribution.ToString() ?? "";
+                    break;
+                case "Structure":
+                    textField.StringValue = title.structureString ?? "";
+                    break;
+                case "Signature":
+                    textField.StringValue = title.signatureString ?? "";
+                    break;
+                case "Permission":
+                    textField.StringValue = title.permissionString ?? "";
+                    break;
+                case "Error":
+                    textField.StringValue = title.error ?? "";
+                    break;
             }
 
             if (title.signature != true)

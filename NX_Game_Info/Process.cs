@@ -30,7 +30,11 @@ namespace NX_Game_Info
         {
             messages = new List<string>();
 
-            if (!File.Exists(Common.PROD_KEYS))
+            string prod_keys = File.Exists(Common.PROD_KEYS) ? Common.PROD_KEYS : Common.PATH_PREFIX + Common.PROD_KEYS;
+            string title_keys = File.Exists(Common.TITLE_KEYS) ? Common.TITLE_KEYS : Common.PATH_PREFIX + Common.TITLE_KEYS;
+            string console_keys = File.Exists(Common.CONSOLE_KEYS) ? Common.CONSOLE_KEYS : Common.PATH_PREFIX + Common.CONSOLE_KEYS;
+
+            if (!File.Exists(prod_keys))
             {
                 messages.Add("File not found. Check if '" + Common.PROD_KEYS + "' exist and try again.");
                 return false;
@@ -38,7 +42,7 @@ namespace NX_Game_Info
 
             try
             {
-                keyset = ExternalKeys.ReadKeyFile(Common.PROD_KEYS, Common.TITLE_KEYS, Common.CONSOLE_KEYS);
+                keyset = ExternalKeys.ReadKeyFile(prod_keys, title_keys, console_keys);
             }
             catch { }
 
@@ -51,9 +55,11 @@ namespace NX_Game_Info
                 Environment.Exit(-1);
             }
 
+            string hac_versionlist = File.Exists(Common.HAC_VERSIONLIST) ? Common.HAC_VERSIONLIST : Common.PATH_PREFIX + Common.HAC_VERSIONLIST;
+
             try
             {
-                var versionlist = JsonConvert.DeserializeObject<Common.VersionList>(File.ReadAllText(Common.HAC_VERSIONLIST));
+                var versionlist = JsonConvert.DeserializeObject<Common.VersionList>(File.ReadAllText(hac_versionlist));
 
                 foreach (var title in versionlist.titles)
                 {
