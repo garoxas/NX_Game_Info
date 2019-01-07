@@ -36,13 +36,14 @@
   - *Dangerous:* Titles with Filesystem services access and [permissions bitmask 0xffffffffffffffff](https://switchbrew.org/wiki/Filesystem_services#Permissions) set. `Has all permissions, should only be for homebrew titles and not game titles`
 
 # How to
-NX Game Info uses `prod.keys`, `title.keys` and `console.keys` in the format as defined in https://github.com/garoxas/LibHac/blob/master/KEYS.md
+NX Game Info uses `prod.keys`, `title.keys` and `console.keys` in the format as defined in https://github.com/garoxas/LibHac/blob/NX_Game_Info/KEYS.md and `hac_versionlist.json` from [tagaya CDN server](https://switchbrew.org/wiki/Network#tagaya)
 
  - *prod.keys*: Mandatory keys includes `header_key`, `aes_kek_generation_source`, `aes_key_generation_source`, `key_area_key_application_source` and `master_key_00`. Failing to provide these keys will make the application quit
   `master_key_##`, `key_area_key_application_##` and `titlekek_##` will also be necessary to decrypt titles with higher MasterKey requirement
  - *title.keys*: Optional, but required for `Permission` check
  - *console.keys*: Optional, but `sd_seed` key required for `Open SD Card` feature
- 
+ - *hac_versionlist.json*: Optional, but required for `Latest Version` feature
+
 These files should be put in the same directory as the executable for Windows or in $HOME/.switch
 
 # macOS
