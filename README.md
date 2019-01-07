@@ -43,7 +43,7 @@ NX Game Info uses `prod.keys`, `title.keys` and `console.keys` in the format as 
  - *title.keys*: Optional, but required for `Permission` check
  - *console.keys*: Optional, but `sd_seed` key required for `Open SD Card` feature
  
-These files should be put in the same directory as the executable for Windows or in $HOME/.switch for macOS
+These files should be put in the same directory as the executable for Windows or in $HOME/.switch
 
 # macOS
 ### Open File/Directory
