@@ -152,6 +152,8 @@ namespace NX_Game_Info
 
                 foreach (var filename in filenames)
                 {
+                    if (worker.CancellationPending) break;
+
                     worker.ReportProgress(100 * index++ / count, filename);
 
                     Title title = Process.processFile(filename);
@@ -170,6 +172,8 @@ namespace NX_Game_Info
 
                 foreach (var sdtitle in sdtitles)
                 {
+                    if (worker.CancellationPending) break;
+
                     worker.ReportProgress(100 * index++ / count, sdtitle.MainNca?.Filename);
 
                     Title title = Process.processTitle(sdtitle);
@@ -187,6 +191,11 @@ namespace NX_Game_Info
 
         private void backgroundWorkerProcess_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
+            if (progressDialog.HasUserCancelled())
+            {
+                backgroundWorkerProcess.CancelAsync();
+            }
+
             progressDialog.SetLine(2, e.UserState as string, true, IntPtr.Zero);
             progressDialog.SetProgress((uint)e.ProgressPercentage, 100);
         }

@@ -120,6 +120,7 @@
             // backgroundWorkerProcess
             // 
             this.backgroundWorkerProcess.WorkerReportsProgress = true;
+            this.backgroundWorkerProcess.WorkerSupportsCancellation = true;
             this.backgroundWorkerProcess.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerProcess_DoWork);
             this.backgroundWorkerProcess.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorkerProcess_ProgressChanged);
             this.backgroundWorkerProcess.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorkerProcess_RunWorkerCompleted);
