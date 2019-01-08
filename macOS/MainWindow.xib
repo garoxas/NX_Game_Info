@@ -8,6 +8,10 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="MainWindowController">
             <connections>
+                <outlet property="cancel" destination="2SK-K2-DYw" id="y7R-fi-Ppm"/>
+                <outlet property="message" destination="CaA-hy-YGi" id="5kn-Kf-oJl"/>
+                <outlet property="progress" destination="9Qy-Rn-Xtc" id="2Ke-nM-a8w"/>
+                <outlet property="sheet" destination="QI1-j4-PZV" id="cP1-eX-iWX"/>
                 <outlet property="tableView" destination="Yy4-24-icq" id="Rcw-pc-HtK"/>
                 <outlet property="window" destination="2" id="6"/>
             </connections>
@@ -261,6 +265,45 @@
                             <autoresizingMask key="autoresizingMask"/>
                         </tableHeaderView>
                     </scrollView>
+                </subviews>
+            </view>
+        </window>
+        <window title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="QI1-j4-PZV">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="163" y="199" width="480" height="120"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <view key="contentView" id="gQc-yn-Onv">
+                <rect key="frame" x="0.0" y="0.0" width="480" height="120"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <progressIndicator wantsLayer="YES" maxValue="100" style="bar" id="9Qy-Rn-Xtc">
+                        <rect key="frame" x="20" y="50" width="440" height="20"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                    </progressIndicator>
+                    <button verticalHuggingPriority="750" id="2SK-K2-DYw">
+                        <rect key="frame" x="384" y="13" width="82" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="9bP-ZQ-RxV">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                            <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
+                        </buttonCell>
+                        <connections>
+                            <action selector="cancelProgress:" target="-2" id="8z3-C2-DEI"/>
+                        </connections>
+                    </button>
+                    <textField verticalHuggingPriority="750" id="CaA-hy-YGi">
+                        <rect key="frame" x="18" y="78" width="440" height="22"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <textFieldCell key="cell" lineBreakMode="truncatingMiddle" sendsActionOnEndEditing="YES" title="Please wait until the current process is finished" id="j0y-sq-LUR">
+                            <font key="font" usesAppearanceFont="YES"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                 </subviews>
             </view>
         </window>

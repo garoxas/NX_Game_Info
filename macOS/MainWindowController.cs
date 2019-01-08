@@ -71,7 +71,8 @@ namespace NX_Game_Info
 
             backgroundWorker = new BackgroundWorker
             {
-                WorkerReportsProgress = true
+                WorkerReportsProgress = true,
+                WorkerSupportsCancellation = true
             };
             backgroundWorker.DoWork += BackgroundWorker_DoWork;
             backgroundWorker.ProgressChanged += BackgroundWorker_ProgressChanged;
@@ -110,6 +111,11 @@ namespace NX_Game_Info
                 Common.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
                 Common.Settings.Default.Save();
 
+                message.StringValue = "";
+                progress.DoubleValue = 0;
+
+                Window.BeginSheet(sheet, ProgressComplete);
+
                 backgroundWorker.RunWorkerAsync(filenames);
             }
         }
@@ -144,6 +150,11 @@ namespace NX_Game_Info
 
                 Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
                 Common.Settings.Default.Save();
+
+                message.StringValue = "";
+                progress.DoubleValue = 0;
+
+                Window.BeginSheet(sheet, ProgressComplete);
 
                 backgroundWorker.RunWorkerAsync(filenames);
             }
@@ -198,6 +209,11 @@ namespace NX_Game_Info
                 Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
                 Common.Settings.Default.Save();
 
+                message.StringValue = "";
+                progress.DoubleValue = 0;
+
+                Window.BeginSheet(sheet, ProgressComplete);
+
                 backgroundWorker.RunWorkerAsync(openPanel.Urls.First().Path);
             }
         }
@@ -214,6 +230,8 @@ namespace NX_Game_Info
 
                 foreach (var filename in filenames)
                 {
+                    if (worker.CancellationPending) break;
+
                     worker.ReportProgress(100 * index++ / count, filename);
 
                     Title title = Process.processFile(filename);
@@ -223,7 +241,10 @@ namespace NX_Game_Info
                     }
                 }
 
-                worker.ReportProgress(100, "");
+                if (!worker.CancellationPending)
+                {
+                    worker.ReportProgress(100, "");
+                }
             }
             else if (e.Argument is string sdpath)
             {
@@ -232,6 +253,8 @@ namespace NX_Game_Info
 
                 foreach (var sdtitle in sdtitles)
                 {
+                    if (worker.CancellationPending) break;
+
                     worker.ReportProgress(100 * index++ / count, sdtitle.MainNca?.Filename);
 
                     Title title = Process.processTitle(sdtitle);
@@ -241,7 +264,10 @@ namespace NX_Game_Info
                     }
                 }
 
-                worker.ReportProgress(100, "");
+                if (!worker.CancellationPending)
+                {
+                    worker.ReportProgress(100, "");
+                }
             }
 
             e.Result = titles;
@@ -249,7 +275,8 @@ namespace NX_Game_Info
 
         void BackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
-
+            message.StringValue = e.UserState as string;
+            progress.DoubleValue = e.ProgressPercentage;
         }
 
         void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -257,8 +284,22 @@ namespace NX_Game_Info
             tableViewDataSource.Titles.AddRange((List<Title>)e.Result);
 
             tableView.ReloadData();
+
+            Window.EndSheet(sheet);
         }
 
+        [Export("cancelProgress:")]
+        public void CancelProgress(NSObject sender)
+        {
+            message.StringValue = "Please wait until the current process is finished";
+
+            backgroundWorker.CancelAsync();
+        }
+
+        void ProgressComplete(nint obj)
+        {
+
+        }
     }
 
     public class TableViewDataSource : NSTableViewDataSource

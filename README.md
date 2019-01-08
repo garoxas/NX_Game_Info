@@ -49,6 +49,8 @@ These files should be put in the same directory as the executable for Windows or
 # macOS
 ### Open File/Directory
 ![NX_Game_Info_macOS.png](NX_Game_Info_macOS.png)
+### Open SD Card
+![NX_Game_Info_macOS_SD_Card.png](NX_Game_Info_macOS_SD_Card.png)
 
 # Windows
 ### Open File/Directory

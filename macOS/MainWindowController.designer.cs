@@ -13,10 +13,45 @@ namespace NX_Game_Info
 	partial class MainWindowController
 	{
 		[Outlet]
+		AppKit.NSButton cancel { get; set; }
+
+		[Outlet]
+		AppKit.NSTextField message { get; set; }
+
+		[Outlet]
+		AppKit.NSProgressIndicator progress { get; set; }
+
+		[Outlet]
+		AppKit.NSWindow sheet { get; set; }
+
+		[Outlet]
 		AppKit.NSTableView tableView { get; set; }
+
+		[Action ("cancelProgress:")]
+		partial void cancelProgress (Foundation.NSObject sender);
 		
 		void ReleaseDesignerOutlets ()
 		{
+			if (cancel != null) {
+				cancel.Dispose ();
+				cancel = null;
+			}
+
+			if (message != null) {
+				message.Dispose ();
+				message = null;
+			}
+
+			if (progress != null) {
+				progress.Dispose ();
+				progress = null;
+			}
+
+			if (sheet != null) {
+				sheet.Dispose ();
+				sheet = null;
+			}
+
 			if (tableView != null) {
 				tableView.Dispose ();
 				tableView = null;

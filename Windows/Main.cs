@@ -163,7 +163,10 @@ namespace NX_Game_Info
                     }
                 }
 
-                worker.ReportProgress(100, "");
+                if (!worker.CancellationPending)
+                {
+                    worker.ReportProgress(100, "");
+                }
             }
             else if (e.Argument is string sdpath)
             {
@@ -183,7 +186,10 @@ namespace NX_Game_Info
                     }
                 }
 
-                worker.ReportProgress(100, "");
+                if (!worker.CancellationPending)
+                {
+                    worker.ReportProgress(100, "");
+                }
             }
 
             e.Result = titles;
