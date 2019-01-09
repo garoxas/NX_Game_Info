@@ -9,6 +9,7 @@ using Title = NX_Game_Info.Common.Title;
 
 #pragma warning disable RECS0061 // Warns when a culture-aware 'EndsWith' call is used by default.
 #pragma warning disable RECS0063 // Warns when a culture-aware 'StartsWith' call is used by default.
+#pragma warning disable RECS0117 // Local variable has the same name as a member and hides it
 
 namespace NX_Game_Info
 {
@@ -111,6 +112,7 @@ namespace NX_Game_Info
                 Common.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
                 Common.Settings.Default.Save();
 
+                title.StringValue = "Opening " + filenames.Count + " file" + (filenames.Count == 1 ? "" : "s");
                 message.StringValue = "";
                 progress.DoubleValue = 0;
 
@@ -151,6 +153,7 @@ namespace NX_Game_Info
                 Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
                 Common.Settings.Default.Save();
 
+                title.StringValue = "Opening " + filenames.Count + " file" + (filenames.Count == 1 ? "" : "s") + " from directory " + openPanel.Urls.First().Path;
                 message.StringValue = "";
                 progress.DoubleValue = 0;
 
@@ -209,6 +212,7 @@ namespace NX_Game_Info
                 Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
                 Common.Settings.Default.Save();
 
+                title.StringValue = "Opening SD card on " + openPanel.Urls.First().Path;
                 message.StringValue = "";
                 progress.DoubleValue = 0;
 

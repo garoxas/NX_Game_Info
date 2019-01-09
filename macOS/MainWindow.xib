@@ -13,6 +13,7 @@
                 <outlet property="progress" destination="9Qy-Rn-Xtc" id="2Ke-nM-a8w"/>
                 <outlet property="sheet" destination="QI1-j4-PZV" id="cP1-eX-iWX"/>
                 <outlet property="tableView" destination="Yy4-24-icq" id="Rcw-pc-HtK"/>
+                <outlet property="title" destination="3g0-dI-LIW" id="kau-qM-WZi"/>
                 <outlet property="window" destination="2" id="6"/>
             </connections>
         </customObject>
@@ -277,8 +278,26 @@
                 <rect key="frame" x="0.0" y="0.0" width="480" height="120"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
+                    <textField verticalHuggingPriority="750" id="3g0-dI-LIW">
+                        <rect key="frame" x="18" y="78" width="444" height="22"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <textFieldCell key="cell" lineBreakMode="truncatingMiddle" sendsActionOnEndEditing="YES" title="Opening" id="fa0-6c-3Nj">
+                            <font key="font" metaFont="system"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
+                    <textField verticalHuggingPriority="750" id="CaA-hy-YGi">
+                        <rect key="frame" x="18" y="48" width="444" height="22"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <textFieldCell key="cell" lineBreakMode="truncatingMiddle" sendsActionOnEndEditing="YES" title="Please wait until the current process is finished" id="j0y-sq-LUR">
+                            <font key="font" metaFont="smallSystem"/>
+                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                        </textFieldCell>
+                    </textField>
                     <progressIndicator wantsLayer="YES" maxValue="100" style="bar" id="9Qy-Rn-Xtc">
-                        <rect key="frame" x="20" y="50" width="440" height="20"/>
+                        <rect key="frame" x="20" y="21" width="354" height="20"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                     </progressIndicator>
                     <button verticalHuggingPriority="750" id="2SK-K2-DYw">
@@ -295,15 +314,6 @@ Gw
                             <action selector="cancelProgress:" target="-2" id="8z3-C2-DEI"/>
                         </connections>
                     </button>
-                    <textField verticalHuggingPriority="750" id="CaA-hy-YGi">
-                        <rect key="frame" x="18" y="78" width="440" height="22"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" lineBreakMode="truncatingMiddle" sendsActionOnEndEditing="YES" title="Please wait until the current process is finished" id="j0y-sq-LUR">
-                            <font key="font" usesAppearanceFont="YES"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
                 </subviews>
             </view>
         </window>

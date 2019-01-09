@@ -27,6 +27,9 @@ namespace NX_Game_Info
 		[Outlet]
 		AppKit.NSTableView tableView { get; set; }
 
+		[Outlet]
+		AppKit.NSTextField title { get; set; }
+
 		[Action ("cancelProgress:")]
 		partial void cancelProgress (Foundation.NSObject sender);
 		
@@ -35,6 +38,11 @@ namespace NX_Game_Info
 			if (cancel != null) {
 				cancel.Dispose ();
 				cancel = null;
+			}
+
+			if (title != null) {
+				title.Dispose ();
+				title = null;
 			}
 
 			if (message != null) {
