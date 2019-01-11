@@ -1,4 +1,12 @@
 # NX Game Info
+
+# Features
+- NSP, XCI and installed titles on Switch SD card
+- Game files structure (Scene Release, CDN Rip, Authoring Tool, Converted from other formats)
+- NCA signature to verify official Nintendo titles. Unmodified titles should pass this verification, although titles converted from other formats will not
+- Filesystem services permissions. Game titles should not have excessive permissions, and only trust titles with `Unsafe` and `Dangerous` from reliable source
+
+# Information
 - Title ID
 - Title Name
 - Display Version
@@ -44,7 +52,10 @@ NX Game Info uses `prod.keys`, `title.keys` and `console.keys` in the format as 
  - *console.keys*: Optional, but `sd_seed` key required for `Open SD Card` feature
  - *hac_versionlist.json*: Optional, but required for `Latest Version` feature
 
-These files should be put in the same directory as the executable for Windows or in $HOME/.switch
+The application will look for these files at the following locations (other file locations will follow wherever `prod.keys` file was found)
+
+ - Directory of the executable file (.exe) for Windows or the application bundle (.app) for macOS
+ - `$HOME/.switch` e.g. C:\\Users\\_yourname_\\.switch for Windows or /Users/_yourname_/.switch for macOS
 
 # macOS
 ### Open File/Directory

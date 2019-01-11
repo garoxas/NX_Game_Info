@@ -11,6 +11,8 @@ using Application = System.Windows.Forms.Application;
 using BrightIdeasSoftware;
 using Title = NX_Game_Info.Common.Title;
 
+#pragma warning disable IDE1006 // Naming rule violation: These words must begin with upper case characters
+
 namespace NX_Game_Info
 {
     public partial class Main : Form
@@ -20,6 +22,8 @@ namespace NX_Game_Info
         public Main()
         {
             InitializeComponent();
+
+            debugLogToolStripMenuItem.Checked = Properties.Settings.Default.DebugLog;
 
             bool init = Process.initialize(out List<string> messages);
 
@@ -49,6 +53,8 @@ namespace NX_Game_Info
             openFileDialog.RestoreDirectory = true;
             openFileDialog.InitialDirectory = Properties.Settings.Default.InitialDirectory;
 
+            Process.log?.WriteLine("Open File");
+
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 objectListView.Items.Clear();
@@ -60,8 +66,10 @@ namespace NX_Game_Info
                 Properties.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
                 Properties.Settings.Default.Save();
 
+                Process.log?.WriteLine("{0} file{1} selected", filenames.Count, filenames.Count == 1 ? "" : "s");
+
                 progressDialog = (IProgressDialog)new ProgressDialog();
-                progressDialog.StartProgressDialog(Handle, "Opening " + filenames.Count + " file" + (filenames.Count == 1 ? "" : "s"));
+                progressDialog.StartProgressDialog(Handle, String.Format("Opening {0} file{1}", filenames.Count, filenames.Count == 1 ? "" : "s"));
 
                 backgroundWorkerProcess.RunWorkerAsync(filenames);
             }
@@ -78,6 +86,8 @@ namespace NX_Game_Info
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
             folderBrowserDialog.SelectedPath = Properties.Settings.Default.InitialDirectory;
 
+            Process.log?.WriteLine("Open Directory");
+
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
                 objectListView.Items.Clear();
@@ -90,8 +100,10 @@ namespace NX_Game_Info
                 Properties.Settings.Default.InitialDirectory = folderBrowserDialog.SelectedPath;
                 Properties.Settings.Default.Save();
 
+                Process.log?.WriteLine("{0} file{1} selected", filenames.Count, filenames.Count == 1 ? "" : "s");
+
                 progressDialog = (IProgressDialog)new ProgressDialog();
-                progressDialog.StartProgressDialog(Handle, "Opening " + filenames.Count + " file" + (filenames.Count == 1 ? "" : "s") + " from directory " + folderBrowserDialog.SelectedPath);
+                progressDialog.StartProgressDialog(Handle, String.Format("Opening {0} file{1} from directory {2}", filenames.Count, filenames.Count == 1 ? "" : "s", folderBrowserDialog.SelectedPath));
 
                 backgroundWorkerProcess.RunWorkerAsync(filenames);
             }
@@ -99,14 +111,21 @@ namespace NX_Game_Info
 
         private void openSDCardToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (Process.keyset?.SdSeed.All(b => b == 0) ?? true)
+            if (Process.keyset?.SdSeed?.All(b => b == 0) ?? true)
             {
-                MessageBox.Show("sd_seed is missing from Console Keys.\nOpen SD Card will not be available.", Application.ProductName);
+                string error = "sd_seed is missing from Console Keys";
+                Process.log?.WriteLine(error);
+
+                MessageBox.Show(String.Format("{0}.\nOpen SD Card will not be available.", error), Application.ProductName);
                 return;
             }
 
-            if ((Process.keyset?.SdCardKekSource.All(b => b == 0) ?? true) || (Process.keyset?.SdCardKeySources[1].All(b => b == 0) ?? true))
+            if ((Process.keyset?.SdCardKekSource?.All(b => b == 0) ?? true) || (Process.keyset?.SdCardKeySources?[1]?.All(b => b == 0) ?? true))
             {
+                Process.log?.WriteLine("Keyfile missing required keys");
+                Process.log?.WriteLine(" - {0} ({1}exists)", "sd_card_kek_source", (bool)Process.keyset?.SdCardKekSource?.Any(b => b != 0) ? "" : "not ");
+                Process.log?.WriteLine(" - {0} ({1}exists)", "sd_card_nca_key_source", (bool)Process.keyset?.SdCardKeySources?[1]?.Any(b => b != 0) ? "" : "not ");
+
                 MessageBox.Show("sd_card_kek_source and sd_card_nca_key_source are missing from Keyfile.\nOpen SD Card will not be available.", Application.ProductName);
                 return;
             }
@@ -120,6 +139,8 @@ namespace NX_Game_Info
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
             folderBrowserDialog.SelectedPath = String.IsNullOrEmpty(Properties.Settings.Default.SDCardDirectory) ? Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()) : Properties.Settings.Default.SDCardDirectory;
 
+            Process.log?.WriteLine("Open SD Card");
+
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
                 objectListView.Items.Clear();
@@ -127,6 +148,8 @@ namespace NX_Game_Info
 
                 Properties.Settings.Default.SDCardDirectory = folderBrowserDialog.SelectedPath;
                 Properties.Settings.Default.Save();
+
+                Process.log?.WriteLine("SD card selected");
 
                 progressDialog = (IProgressDialog)new ProgressDialog();
                 progressDialog.StartProgressDialog(Handle, "Opening SD card on " + folderBrowserDialog.SelectedPath);
@@ -138,6 +161,32 @@ namespace NX_Game_Info
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Environment.Exit(-1);
+        }
+
+        private void debugLogToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.DebugLog = debugLogToolStripMenuItem.Checked;
+            Properties.Settings.Default.Save();
+
+            if (Properties.Settings.Default.DebugLog)
+            {
+                try
+                {
+                    Process.log = File.AppendText(Process.path_prefix + Common.LOG_FILE);
+                    Process.log.AutoFlush = true;
+                }
+                catch { }
+            }
+            else
+            {
+                Process.log?.Close();
+                Process.log = null;
+            }
+        }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(String.Format("{0}\n{1}", Application.ProductName, Application.ProductVersion), "About");
         }
 
         private void backgroundWorkerProcess_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
@@ -167,6 +216,8 @@ namespace NX_Game_Info
                 {
                     worker.ReportProgress(100, "");
                 }
+
+                Process.log?.WriteLine("\n{0} titles processed", titles.Count);
             }
             else if (e.Argument is string sdpath)
             {
@@ -190,6 +241,8 @@ namespace NX_Game_Info
                 {
                     worker.ReportProgress(100, "");
                 }
+
+                Process.log?.WriteLine("\n{0} titles processed", titles.Count);
             }
 
             e.Result = titles;

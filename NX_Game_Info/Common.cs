@@ -6,11 +6,16 @@ using System.Runtime.InteropServices;
 using System.Text;
 using LibHac;
 
+#pragma warning disable IDE1006 // Naming rule violation: These words must begin with upper case characters
+
 namespace NX_Game_Info
 {
     class Common
     {
-        public static readonly string PATH_PREFIX = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.switch/";
+        public static readonly string APPLICATION_DIRECTORY_PATH_PREFIX = "";
+        public static readonly string USER_PROFILE_PATH_PREFIX = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.switch/";
+
+        public static readonly string LOG_FILE = "debug.log";
 
         public static readonly string PROD_KEYS = "prod.keys";
         public static readonly string TITLE_KEYS = "title.keys";
@@ -37,6 +42,13 @@ namespace NX_Game_Info
             {
                 get { return (string)this["SDCardDirectory"]; }
                 set { this["SDCardDirectory"] = value; }
+            }
+
+            [UserScopedSettingAttribute()]
+            public bool DebugLog
+            {
+                get { return (bool)this["DebugLog"]; }
+                set { this["DebugLog"] = value; }
             }
 
             public static Settings Default = new Settings();

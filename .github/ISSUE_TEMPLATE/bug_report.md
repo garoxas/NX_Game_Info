@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Create a bug report
 title: ''
 labels: bug
 assignees: ''
@@ -19,11 +19,15 @@ A clear description of the bug
 4. 
 
 **Application information**
- - OS:
- - Version: (macOS: Menu > About, Windows: Right-click in Explorer > Properties > Details)
- - Application Path:
- - prod.keys Path:
+ - OS name and version:
+ - Version:
+ - Application path:
+ - prod.keys path:
+ - Game filename:
+ - Game source (scene release, CDN rip, converted from other formats):
 
-**Error log (if any)**
+**Debug log**
+
+**Crash log (if any)**
 
 **Other information**

@@ -46,5 +46,17 @@ namespace NX_Game_Info.Properties {
                 this["SDCardDirectory"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DebugLog {
+            get {
+                return ((bool)(this["DebugLog"]));
+            }
+            set {
+                this["DebugLog"] = value;
+            }
+        }
     }
 }
