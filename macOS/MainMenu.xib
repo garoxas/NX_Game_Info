@@ -71,7 +71,14 @@
                             </menuItem>
                             <menuItem title="Open SD Card" keyEquivalent="S" id="CgR-tA-zxd">
                                 <connections>
-                                    <action selector="newDocument:" target="-1" id="8rV-3J-OYG"/>
+                                    <action selector="save:" target="-1" id="tMy-cq-Stn"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="qjl-x6-J91"/>
+                            <menuItem title="Debug Log" id="9rY-DL-2nP">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="debugLog:" target="-1" id="IW7-Qg-4l0"/>
                                 </connections>
                             </menuItem>
                         </items>

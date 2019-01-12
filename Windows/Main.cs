@@ -154,7 +154,7 @@ namespace NX_Game_Info
                 Process.log?.WriteLine("SD card selected");
 
                 progressDialog = (IProgressDialog)new ProgressDialog();
-                progressDialog.StartProgressDialog(Handle, "Opening SD card on " + folderBrowserDialog.SelectedPath);
+                progressDialog.StartProgressDialog(Handle, String.Format("Opening SD card on {0}", folderBrowserDialog.SelectedPath));
 
                 backgroundWorkerProcess.RunWorkerAsync(folderBrowserDialog.SelectedPath);
             }
@@ -287,7 +287,7 @@ namespace NX_Game_Info
                 }
             }
 
-            toolStripStatusLabel.Text = titles.Count + " files";
+            toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
 
             progressDialog.StopProgressDialog();
             Activate();

@@ -32,17 +32,15 @@ namespace NX_Game_Info
 
 		[Action ("cancelProgress:")]
 		partial void cancelProgress (Foundation.NSObject sender);
+
+		[Action ("debugLog:")]
+		partial void debugLog (Foundation.NSObject sender);
 		
 		void ReleaseDesignerOutlets ()
 		{
 			if (cancel != null) {
 				cancel.Dispose ();
 				cancel = null;
-			}
-
-			if (title != null) {
-				title.Dispose ();
-				title = null;
 			}
 
 			if (message != null) {
@@ -63,6 +61,11 @@ namespace NX_Game_Info
 			if (tableView != null) {
 				tableView.Dispose ();
 				tableView = null;
+			}
+
+			if (title != null) {
+				title.Dispose ();
+				title = null;
 			}
 		}
 	}

@@ -7,6 +7,7 @@ using Foundation;
 using AppKit;
 using Title = NX_Game_Info.Common.Title;
 
+#pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body
 #pragma warning disable RECS0061 // Warns when a culture-aware 'EndsWith' call is used by default.
 #pragma warning disable RECS0063 // Warns when a culture-aware 'StartsWith' call is used by default.
 #pragma warning disable RECS0117 // Local variable has the same name as a member and hides it
@@ -52,6 +53,12 @@ namespace NX_Game_Info
 
             tableView.DataSource = tableViewDataSource;
             tableView.Delegate = tableViewDelegate;
+
+            NSMenuItem debugLog = Window.Menu?.ItemWithTitle("File")?.Submenu.ItemWithTitle("Debug Log");
+            if (debugLog != null)
+            {
+                debugLog.State = Common.Settings.Default.DebugLog ? NSCellStateValue.On : NSCellStateValue.Off;
+            }
 
             bool init = Process.initialize(out List<string> messages);
 
@@ -101,25 +108,32 @@ namespace NX_Game_Info
             openPanel.AllowedFileTypes = new string[] { "xci", "nsp" };
             openPanel.DirectoryUrl = new NSUrl(Common.Settings.Default.InitialDirectory ?? "");
 
-            if (openPanel.RunModal() == (int)NSModalResponse.OK)
+            Process.log?.WriteLine("\nOpen File");
+
+            openPanel.BeginSheet(Window, (nint result) =>
             {
-                tableViewDataSource.Titles.Clear();
-                tableView.ReloadData();
+                if (result == (int)NSModalResponse.OK)
+                {
+                    tableViewDataSource.Titles.Clear();
+                    tableView.ReloadData();
 
-                List<string> filenames = openPanel.Urls.Select((arg) => arg.Path).ToList();
-                filenames.Sort();
+                    List<string> filenames = openPanel.Urls.Select((arg) => arg.Path).ToList();
+                    filenames.Sort();
 
-                Common.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
-                Common.Settings.Default.Save();
+                    Common.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
+                    Common.Settings.Default.Save();
 
-                title.StringValue = "Opening " + filenames.Count + " files";
-                message.StringValue = "";
-                progress.DoubleValue = 0;
+                    Process.log?.WriteLine("{0} files selected", filenames.Count);
 
-                Window.BeginSheet(sheet, ProgressComplete);
+                    title.StringValue = String.Format("Opening {0} files", filenames.Count);
+                    message.StringValue = "";
+                    progress.DoubleValue = 0;
 
-                backgroundWorker.RunWorkerAsync(filenames);
-            }
+                    Window.BeginSheet(sheet, ProgressComplete);
+
+                    backgroundWorker.RunWorkerAsync(filenames);
+                }
+            });
         }
 
         [Export("open:")]
@@ -141,44 +155,58 @@ namespace NX_Game_Info
             openPanel.CanChooseDirectories = true;
             openPanel.DirectoryUrl = new NSUrl(Common.Settings.Default.InitialDirectory ?? "");
 
-            if (openPanel.RunModal() == (int)NSModalResponse.OK)
+            Process.log?.WriteLine("\nOpen Directory");
+
+            openPanel.BeginSheet(Window, (nint result) =>
             {
-                tableViewDataSource.Titles.Clear();
-                tableView.ReloadData();
+                if (result == (int)NSModalResponse.OK)
+                {
+                    tableViewDataSource.Titles.Clear();
+                    tableView.ReloadData();
 
-                List<string> filenames = Directory.EnumerateFiles(openPanel.Urls.First().Path, "*.*", SearchOption.AllDirectories)
-                    .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp")).ToList();
-                filenames.Sort();
+                    List<string> filenames = Directory.EnumerateFiles(openPanel.Urls.First().Path, "*.*", SearchOption.AllDirectories)
+                        .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp")).ToList();
+                    filenames.Sort();
 
-                Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
-                Common.Settings.Default.Save();
+                    Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
+                    Common.Settings.Default.Save();
 
-                title.StringValue = "Opening " + filenames.Count + " files from directory " + openPanel.Urls.First().Path;
-                message.StringValue = "";
-                progress.DoubleValue = 0;
+                    Process.log?.WriteLine("{0} files selected", filenames.Count);
 
-                Window.BeginSheet(sheet, ProgressComplete);
+                    title.StringValue = String.Format("Opening {0} files from directory {1}", filenames.Count, openPanel.Urls.First().Path);
+                    message.StringValue = "";
+                    progress.DoubleValue = 0;
 
-                backgroundWorker.RunWorkerAsync(filenames);
-            }
+                    Window.BeginSheet(sheet, ProgressComplete);
+
+                    backgroundWorker.RunWorkerAsync(filenames);
+                }
+            });
         }
 
-        [Export("newDocument:")]
+        [Export("save:")]
         public void OpenSDCard(NSMenuItem menuItem)
         {
-            if (Process.keyset?.SdSeed.All(b => b == 0) ?? true)
+            if (Process.keyset?.SdSeed?.All(b => b == 0) ?? true)
             {
+                string error = "sd_seed is missing from Console Keys";
+                Process.log?.WriteLine(error);
+
                 var alert = new NSAlert()
                 {
-                    InformativeText = "sd_seed is missing from Console Keys.\nOpen SD Card will not be available.",
+                    InformativeText = String.Format("{0}.\nOpen SD Card will not be available.", error),
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
                 };
                 alert.RunModal();
                 return;
             }
 
-            if ((Process.keyset?.SdCardKekSource.All(b => b == 0) ?? true) || (Process.keyset?.SdCardKeySources[1].All(b => b == 0) ?? true))
+            if ((Process.keyset?.SdCardKekSource?.All(b => b == 0) ?? true) || (Process.keyset?.SdCardKeySources?[1]?.All(b => b == 0) ?? true))
             {
+                Process.log?.WriteLine("Keyfile missing required keys");
+                Process.log?.WriteLine(" - {0} ({1}exists)", "sd_card_kek_source", (bool)Process.keyset?.SdCardKekSource?.Any(b => b != 0) ? "" : "not ");
+                Process.log?.WriteLine(" - {0} ({1}exists)", "sd_card_nca_key_source", (bool)Process.keyset?.SdCardKeySources?[1]?.Any(b => b != 0) ? "" : "not ");
+
                 var alert = new NSAlert()
                 {
                     InformativeText = "sd_card_kek_source and sd_card_nca_key_source are missing from Keyfile.\nOpen SD Card will not be available.",
@@ -204,21 +232,50 @@ namespace NX_Game_Info
             openPanel.CanChooseDirectories = true;
             openPanel.DirectoryUrl = new NSUrl(Common.Settings.Default.InitialDirectory ?? "");
 
-            if (openPanel.RunModal() == (int)NSModalResponse.OK)
+            Process.log?.WriteLine("\nOpen SD Card");
+
+            openPanel.BeginSheet(Window, (nint result) =>
             {
-                tableViewDataSource.Titles.Clear();
-                tableView.ReloadData();
+                if (result == (int)NSModalResponse.OK)
+                {
+                    tableViewDataSource.Titles.Clear();
+                    tableView.ReloadData();
 
-                Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
-                Common.Settings.Default.Save();
+                    Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
+                    Common.Settings.Default.Save();
 
-                title.StringValue = "Opening SD card on " + openPanel.Urls.First().Path;
-                message.StringValue = "";
-                progress.DoubleValue = 0;
+                    title.StringValue = String.Format("Opening SD card on {0}", openPanel.Urls.First().Path);
+                    message.StringValue = "";
+                    progress.DoubleValue = 0;
 
-                Window.BeginSheet(sheet, ProgressComplete);
+                    Window.BeginSheet(sheet, ProgressComplete);
 
-                backgroundWorker.RunWorkerAsync(openPanel.Urls.First().Path);
+                    backgroundWorker.RunWorkerAsync(openPanel.Urls.First().Path);
+                }
+            });
+        }
+
+        [Export("debugLog:")]
+        public void DebugLog(NSMenuItem menuItem)
+        {
+            menuItem.State = menuItem.State == NSCellStateValue.On ? NSCellStateValue.Off : NSCellStateValue.On;
+
+            Common.Settings.Default.DebugLog = menuItem.State == NSCellStateValue.On;
+            Common.Settings.Default.Save();
+
+            if (Common.Settings.Default.DebugLog)
+            {
+                try
+                {
+                    Process.log = File.AppendText(Process.path_prefix + Common.LOG_FILE);
+                    Process.log.AutoFlush = true;
+                }
+                catch { }
+            }
+            else
+            {
+                Process.log?.Close();
+                Process.log = null;
             }
         }
 
@@ -249,6 +306,8 @@ namespace NX_Game_Info
                 {
                     worker.ReportProgress(100, "");
                 }
+
+                Process.log?.WriteLine("\n{0} titles processed", titles.Count);
             }
             else if (e.Argument is string sdpath)
             {
@@ -272,6 +331,8 @@ namespace NX_Game_Info
                 {
                     worker.ReportProgress(100, "");
                 }
+
+                Process.log?.WriteLine("\n{0} titles processed", titles.Count);
             }
 
             e.Result = titles;

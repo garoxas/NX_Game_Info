@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+#if MACOS
+using Foundation;
+#endif
 using LibHac;
 
 #pragma warning disable IDE1006 // Naming rule violation: These words must begin with upper case characters
@@ -12,7 +16,12 @@ namespace NX_Game_Info
 {
     class Common
     {
-        public static readonly string APPLICATION_DIRECTORY_PATH_PREFIX = "";
+        public static readonly string APPLICATION_DIRECTORY_PATH_PREFIX =
+#if MACOS
+            Path.GetDirectoryName(NSBundle.MainBundle.BundleUrl.Path) + "/";
+#else
+            "";
+#endif
         public static readonly string USER_PROFILE_PATH_PREFIX = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "/.switch/";
 
         public static readonly string LOG_FILE = "debug.log";
