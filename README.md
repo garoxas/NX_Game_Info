@@ -54,7 +54,7 @@ NX Game Info uses `prod.keys`, `title.keys` and `console.keys` in the format as 
 
 The application will look for these files at the following locations (other file locations will follow wherever `prod.keys` file was found)
 
- - Directory of the executable file (.exe) for Windows or the application bundle (.app) for macOS
+ - Directory of the executable file (.exe) for Windows
  - `$HOME/.switch` e.g. C:\\Users\\_yourname_\\.switch for Windows or /Users/_yourname_/.switch for macOS
 
 # macOS
