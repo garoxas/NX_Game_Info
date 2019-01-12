@@ -25,6 +25,8 @@ namespace NX_Game_Info
 
             debugLogToolStripMenuItem.Checked = Properties.Settings.Default.DebugLog;
 
+            aboutToolStripMenuItem.Text = String.Format("&About {0}", Application.ProductName);
+
             bool init = Process.initialize(out List<string> messages);
 
             foreach (var message in messages)
@@ -53,7 +55,7 @@ namespace NX_Game_Info
             openFileDialog.RestoreDirectory = true;
             openFileDialog.InitialDirectory = Properties.Settings.Default.InitialDirectory;
 
-            Process.log?.WriteLine("Open File");
+            Process.log?.WriteLine("\nOpen File");
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
@@ -66,10 +68,10 @@ namespace NX_Game_Info
                 Properties.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
                 Properties.Settings.Default.Save();
 
-                Process.log?.WriteLine("{0} file{1} selected", filenames.Count, filenames.Count == 1 ? "" : "s");
+                Process.log?.WriteLine("{0} files selected", filenames.Count);
 
                 progressDialog = (IProgressDialog)new ProgressDialog();
-                progressDialog.StartProgressDialog(Handle, String.Format("Opening {0} file{1}", filenames.Count, filenames.Count == 1 ? "" : "s"));
+                progressDialog.StartProgressDialog(Handle, String.Format("Opening {0} files", filenames.Count));
 
                 backgroundWorkerProcess.RunWorkerAsync(filenames);
             }
@@ -86,7 +88,7 @@ namespace NX_Game_Info
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
             folderBrowserDialog.SelectedPath = Properties.Settings.Default.InitialDirectory;
 
-            Process.log?.WriteLine("Open Directory");
+            Process.log?.WriteLine("\nOpen Directory");
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
@@ -100,10 +102,10 @@ namespace NX_Game_Info
                 Properties.Settings.Default.InitialDirectory = folderBrowserDialog.SelectedPath;
                 Properties.Settings.Default.Save();
 
-                Process.log?.WriteLine("{0} file{1} selected", filenames.Count, filenames.Count == 1 ? "" : "s");
+                Process.log?.WriteLine("{0} files selected", filenames.Count);
 
                 progressDialog = (IProgressDialog)new ProgressDialog();
-                progressDialog.StartProgressDialog(Handle, String.Format("Opening {0} file{1} from directory {2}", filenames.Count, filenames.Count == 1 ? "" : "s", folderBrowserDialog.SelectedPath));
+                progressDialog.StartProgressDialog(Handle, String.Format("Opening {0} files from directory {1}", filenames.Count, folderBrowserDialog.SelectedPath));
 
                 backgroundWorkerProcess.RunWorkerAsync(filenames);
             }
@@ -139,7 +141,7 @@ namespace NX_Game_Info
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
             folderBrowserDialog.SelectedPath = String.IsNullOrEmpty(Properties.Settings.Default.SDCardDirectory) ? Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()) : Properties.Settings.Default.SDCardDirectory;
 
-            Process.log?.WriteLine("Open SD Card");
+            Process.log?.WriteLine("\nOpen SD Card");
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
@@ -156,11 +158,6 @@ namespace NX_Game_Info
 
                 backgroundWorkerProcess.RunWorkerAsync(folderBrowserDialog.SelectedPath);
             }
-        }
-
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Environment.Exit(-1);
         }
 
         private void debugLogToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
@@ -186,7 +183,13 @@ namespace NX_Game_Info
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(String.Format("{0}\n{1}", Application.ProductName, Application.ProductVersion), "About");
+            AboutBox aboutBox = new AboutBox();
+            aboutBox.Show();
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Environment.Exit(-1);
         }
 
         private void backgroundWorkerProcess_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)
@@ -284,7 +287,7 @@ namespace NX_Game_Info
                 }
             }
 
-            toolStripStatusLabel.Text = titles.Count + " file" + (titles.Count == 1 ? "" : "s");
+            toolStripStatusLabel.Text = titles.Count + " files";
 
             progressDialog.StopProgressDialog();
             Activate();

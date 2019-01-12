@@ -108,7 +108,7 @@ namespace NX_Game_Info
             }
             catch { }
 
-            log?.WriteLine("Initialization success\n");
+            log?.WriteLine("Initialization success");
 
             return true;
         }
@@ -363,7 +363,7 @@ namespace NX_Game_Info
 
         public static Title processTitle(LibHac.Title sdtitle)
         {
-            log?.WriteLine("\nProcessing title [{0}] {1}", sdtitle.Id, sdtitle.Name);
+            log?.WriteLine("\nProcessing title [{0:X16}] {1}", sdtitle.Id, sdtitle.Name);
 
             Title title = new Title
             {
@@ -658,11 +658,15 @@ namespace NX_Game_Info
                 }
             }
 
-            if (nca.Header.ContentType == ContentType.Program)
+            if (((title.type == TitleType.Application || title.type == TitleType.Patch) && nca.Header.ContentType == ContentType.Program) ||
+                (title.type == TitleType.AddOnContent && nca.Header.ContentType == ContentType.AocData))
             {
                 title.masterkey = (uint)nca.Header.CryptoType == 2 ? (uint)Math.Max(nca.Header.CryptoType2 - 1, 0) : 0;
 
-                processNpdm(nca, ref title);
+                if (nca.Header.ContentType == ContentType.Program)
+                {
+                    processNpdm(nca, ref title);
+                }
             }
         }
 

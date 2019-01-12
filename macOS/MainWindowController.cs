@@ -112,7 +112,7 @@ namespace NX_Game_Info
                 Common.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
                 Common.Settings.Default.Save();
 
-                title.StringValue = "Opening " + filenames.Count + " file" + (filenames.Count == 1 ? "" : "s");
+                title.StringValue = "Opening " + filenames.Count + " files";
                 message.StringValue = "";
                 progress.DoubleValue = 0;
 
@@ -153,7 +153,7 @@ namespace NX_Game_Info
                 Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
                 Common.Settings.Default.Save();
 
-                title.StringValue = "Opening " + filenames.Count + " file" + (filenames.Count == 1 ? "" : "s") + " from directory " + openPanel.Urls.First().Path;
+                title.StringValue = "Opening " + filenames.Count + " files from directory " + openPanel.Urls.First().Path;
                 message.StringValue = "";
                 progress.DoubleValue = 0;
 
