@@ -119,6 +119,7 @@
             // 
             // debugLogToolStripMenuItem
             // 
+            this.debugLogToolStripMenuItem.CheckOnClick = true;
             this.debugLogToolStripMenuItem.Name = "debugLogToolStripMenuItem";
             this.debugLogToolStripMenuItem.Size = new System.Drawing.Size(252, 30);
             this.debugLogToolStripMenuItem.Text = "Debug &Log";
@@ -147,7 +148,7 @@
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(252, 30);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(146, 30);
             this.aboutToolStripMenuItem.Text = "&About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
