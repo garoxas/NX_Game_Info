@@ -312,27 +312,39 @@ namespace NX_Game_Info
             else if (e.Argument is string sdpath)
             {
                 List<LibHac.Title> sdtitles = Process.processSd(sdpath);
-                int count = sdtitles.Count, index = 0;
 
-                foreach (var sdtitle in sdtitles)
+                if (sdtitles != null)
                 {
-                    if (worker.CancellationPending) break;
+                    int count = sdtitles.Count, index = 0;
 
-                    worker.ReportProgress(100 * index++ / count, sdtitle.MainNca?.Filename);
-
-                    Title title = Process.processTitle(sdtitle);
-                    if (title != null)
+                    foreach (var sdtitle in sdtitles)
                     {
-                        titles.Add(title);
+                        if (worker.CancellationPending) break;
+
+                        worker.ReportProgress(100 * index++ / count, sdtitle.MainNca?.Filename);
+
+                        Title title = Process.processTitle(sdtitle);
+                        if (title != null)
+                        {
+                            titles.Add(title);
+                        }
                     }
-                }
 
-                if (!worker.CancellationPending)
+                    if (!worker.CancellationPending)
+                    {
+                        worker.ReportProgress(100, "");
+                    }
+
+                    Process.log?.WriteLine("\n{0} titles processed", titles.Count);
+                }
+                else
                 {
-                    worker.ReportProgress(100, "");
-                }
+                    string error = "SD card \"Contents\" directory could not be found";
+                    Process.log?.WriteLine(error);
 
-                Process.log?.WriteLine("\n{0} titles processed", titles.Count);
+                    e.Result = error;
+                    return;
+                }
             }
 
             e.Result = titles;
@@ -346,11 +358,25 @@ namespace NX_Game_Info
 
         void BackgroundWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            tableViewDataSource.Titles.AddRange((List<Title>)e.Result);
+            if (e.Result is List<Title> titles)
+            {
+                tableViewDataSource.Titles.AddRange(titles);
 
-            tableView.ReloadData();
+                tableView.ReloadData();
 
-            Window.EndSheet(sheet);
+                Window.EndSheet(sheet);
+            }
+            else if (e.Result is string error)
+            {
+                Window.EndSheet(sheet);
+
+                var alert = new NSAlert()
+                {
+                    InformativeText = String.Format("{0}.", error),
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                };
+                alert.RunModal();
+            }
         }
 
         [Export("cancelProgress:")]

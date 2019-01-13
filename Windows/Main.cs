@@ -225,27 +225,41 @@ namespace NX_Game_Info
             else if (e.Argument is string sdpath)
             {
                 List<LibHac.Title> sdtitles = Process.processSd(sdpath);
-                int count = sdtitles.Count, index = 0;
 
-                foreach (var sdtitle in sdtitles)
+                if (sdtitles != null)
                 {
-                    if (worker.CancellationPending) break;
+                    int count = sdtitles.Count, index = 0;
 
-                    worker.ReportProgress(100 * index++ / count, sdtitle.MainNca?.Filename);
-
-                    Title title = Process.processTitle(sdtitle);
-                    if (title != null)
+                    foreach (var sdtitle in sdtitles)
                     {
-                        titles.Add(title);
+                        if (worker.CancellationPending) break;
+
+                        worker.ReportProgress(100 * index++ / count, sdtitle.MainNca?.Filename);
+
+                        Title title = Process.processTitle(sdtitle);
+                        if (title != null)
+                        {
+                            titles.Add(title);
+                        }
                     }
-                }
 
-                if (!worker.CancellationPending)
+                    if (!worker.CancellationPending)
+                    {
+                        worker.ReportProgress(100, "");
+                    }
+
+                    Process.log?.WriteLine("\n{0} titles processed", titles.Count);
+                }
+                else
                 {
-                    worker.ReportProgress(100, "");
-                }
+                    worker.ReportProgress(0, "");
 
-                Process.log?.WriteLine("\n{0} titles processed", titles.Count);
+                    string error = "SD card \"Contents\" directory could not be found";
+                    Process.log?.WriteLine(error);
+
+                    e.Result = error;
+                    return;
+                }
             }
 
             e.Result = titles;
@@ -264,33 +278,40 @@ namespace NX_Game_Info
 
         private void backgroundWorkerProcess_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
         {
-            List<Title> titles = (List<Title>)e.Result;
-
-            objectListView.SetObjects(titles);
-
-            foreach (OLVListItem listItem in objectListView.Items)
+            if (e.Result is List<Title> titles)
             {
-                Title title = listItem.RowObject as Title;
+                objectListView.SetObjects(titles);
 
-                if (title.signature != true)
+                foreach (OLVListItem listItem in objectListView.Items)
                 {
-                    listItem.BackColor = Color.WhiteSmoke;
+                    Title title = listItem.RowObject as Title;
+
+                    if (title.signature != true)
+                    {
+                        listItem.BackColor = Color.WhiteSmoke;
+                    }
+
+                    if (title.permission == Title.Permission.Dangerous)
+                    {
+                        listItem.ForeColor = Color.DarkRed;
+                    }
+                    else if (title.permission == Title.Permission.Unsafe)
+                    {
+                        listItem.ForeColor = Color.Indigo;
+                    }
                 }
 
-                if (title.permission == Title.Permission.Dangerous)
-                {
-                    listItem.ForeColor = Color.DarkRed;
-                }
-                else if (title.permission == Title.Permission.Unsafe)
-                {
-                    listItem.ForeColor = Color.Indigo;
-                }
+                toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
+
+                progressDialog.StopProgressDialog();
+                Activate();
             }
+            else if (e.Result is string error)
+            {
+                progressDialog.StopProgressDialog();
 
-            toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
-
-            progressDialog.StopProgressDialog();
-            Activate();
+                MessageBox.Show(String.Format("{0}.", error), Application.ProductName);
+            }
         }
     }
 

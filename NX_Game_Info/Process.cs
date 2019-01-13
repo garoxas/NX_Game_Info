@@ -65,6 +65,8 @@ namespace NX_Game_Info
                 log?.WriteLine(" - {0} ({1}exists)", console_keys, File.Exists(console_keys) ? "" : "not ");
 
                 keyset = ExternalKeys.ReadKeyFile(prod_keys, title_keys, console_keys);
+
+                log?.WriteLine("Found {0} title keys", keyset?.TitleKeys?.Count);
             }
             catch { }
 
@@ -130,9 +132,11 @@ namespace NX_Game_Info
             {
                 log?.WriteLine("Missing {0}: {1}", ex.Type == KeyType.Title ? "Title Key" : "Key", ex.Name.Replace("key_area_key_application", "master_key"));
             }
-            catch (NullReferenceException)
+            catch (NullReferenceException ex)
             {
-                log?.WriteLine("File {0} has failed to process", filename);
+                log?.WriteLine(ex.StackTrace);
+
+                log?.WriteLine("\nFile {0} has failed to process", filename);
             }
 
             return null;
