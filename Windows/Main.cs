@@ -53,7 +53,7 @@ namespace NX_Game_Info
             openFileDialog.Filter = "NX Game Files (*.xci;*.nsp)|*.xci;*.nsp|Gamecard Files (*.xci)|*.xci|Package Files (*.nsp)|*.nsp|All Files (*.*)|*.*";
             openFileDialog.Multiselect = true;
             openFileDialog.RestoreDirectory = true;
-            openFileDialog.InitialDirectory = Properties.Settings.Default.InitialDirectory;
+            folderBrowserDialog.SelectedPath = !String.IsNullOrEmpty(Properties.Settings.Default.InitialDirectory) && Directory.Exists(Properties.Settings.Default.InitialDirectory) ? Properties.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
             Process.log?.WriteLine("\nOpen File");
 
@@ -86,7 +86,7 @@ namespace NX_Game_Info
             }
 
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            folderBrowserDialog.SelectedPath = Properties.Settings.Default.InitialDirectory;
+            folderBrowserDialog.SelectedPath = !String.IsNullOrEmpty(Properties.Settings.Default.InitialDirectory) && Directory.Exists(Properties.Settings.Default.InitialDirectory) ? Properties.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
             Process.log?.WriteLine("\nOpen Directory");
 
@@ -139,7 +139,7 @@ namespace NX_Game_Info
             }
 
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            folderBrowserDialog.SelectedPath = String.IsNullOrEmpty(Properties.Settings.Default.SDCardDirectory) ? Directory.GetDirectoryRoot(Directory.GetCurrentDirectory()) : Properties.Settings.Default.SDCardDirectory;
+            folderBrowserDialog.SelectedPath = !String.IsNullOrEmpty(Properties.Settings.Default.SDCardDirectory) && Directory.Exists(Properties.Settings.Default.SDCardDirectory) ? Properties.Settings.Default.SDCardDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
             Process.log?.WriteLine("\nOpen SD Card");
 
