@@ -53,7 +53,7 @@ namespace NX_Game_Info
             openFileDialog.Filter = "NX Game Files (*.xci;*.nsp)|*.xci;*.nsp|Gamecard Files (*.xci)|*.xci|Package Files (*.nsp)|*.nsp|All Files (*.*)|*.*";
             openFileDialog.Multiselect = true;
             openFileDialog.RestoreDirectory = true;
-            folderBrowserDialog.SelectedPath = !String.IsNullOrEmpty(Properties.Settings.Default.InitialDirectory) && Directory.Exists(Properties.Settings.Default.InitialDirectory) ? Properties.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+            openFileDialog.InitialDirectory = !String.IsNullOrEmpty(Properties.Settings.Default.InitialDirectory) && Directory.Exists(Properties.Settings.Default.InitialDirectory) ? Properties.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
             Process.log?.WriteLine("\nOpen File");
 
