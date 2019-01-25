@@ -7,6 +7,7 @@ using System.Xml.Linq;
 using LibHac;
 using LibHac.IO;
 using Newtonsoft.Json;
+using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
 
 #if WINDOWS
@@ -26,6 +27,9 @@ namespace NX_Game_Info
     {
         public static Keyset keyset;
         public static Dictionary<string, uint> versionList = new Dictionary<string, uint>();
+
+        public static Dictionary<string, string> titleNames = new Dictionary<string, string>();
+        public static Dictionary<string, uint> titleVersions = new Dictionary<string, uint>();
 
         public static string path_prefix = File.Exists(Common.APPLICATION_DIRECTORY_PATH_PREFIX + Common.PROD_KEYS) ? Common.APPLICATION_DIRECTORY_PATH_PREFIX : Common.USER_PROFILE_PATH_PREFIX;
         public static StreamWriter log;
@@ -67,6 +71,9 @@ namespace NX_Game_Info
                 keyset = ExternalKeys.ReadKeyFile(prod_keys, title_keys, console_keys);
 
                 log?.WriteLine("Found {0} title keys", keyset?.TitleKeys?.Count);
+
+                titleNames = keyset.TitleNames.ToDictionary(p => BitConverter.ToString(p.Key.Take(8).ToArray()).Replace("-", "").ToUpper(), p => p.Value);
+                titleVersions = keyset.TitleVersions.ToDictionary(p => BitConverter.ToString(p.Key.Take(8).ToArray()).Replace("-", "").ToUpper(), p => p.Value);
             }
             catch { }
 
@@ -349,15 +356,39 @@ namespace NX_Game_Info
             return title;
         }
 
-        public static List<LibHac.Title> processSd(string sdpath)
+        public static List<FsTitle> processSd(string path)
         {
             try
             {
-                var fs = new SwitchFs(keyset, new FileSystem(sdpath));
+                var fs = new SwitchFs(keyset, new FileSystem(path));
 
                 log?.WriteLine("{0} of {1} NCA processed", fs?.Titles?.Select(title => title.Value.Ncas.Count)?.Sum(), fs?.Ncas?.Count);
 
-                return fs?.Titles?.Values?.ToList();
+                List<Application> applications = fs?.Applications?.Values?.ToList() ?? new List<Application>();
+
+                log?.WriteLine("Found {0} applications", applications?.Count);
+
+                List<FsTitle> fsTitles = new List<FsTitle>();
+
+                foreach (Application application in applications)
+                {
+                    if (application.Main != null)
+                    {
+                        if (application.Main.MetaNca != null || application.Patch?.MetaNca == null)
+                        {
+                            fsTitles.Add(application.Main);
+                        }
+                    }
+
+                    if (application.Patch?.MetaNca != null)
+                    {
+                        fsTitles.Add(application.Patch);
+                    }
+
+                    fsTitles.AddRange(application.AddOnContent);
+                }
+
+                return fsTitles.OrderBy(fsTitle => fsTitle.Id).ToList();
             }
             catch (DirectoryNotFoundException)
             {
@@ -365,19 +396,29 @@ namespace NX_Game_Info
             }
         }
 
-        public static Title processTitle(LibHac.Title sdtitle)
+        public static Title processTitle(FsTitle fsTitle)
         {
-            log?.WriteLine("\nProcessing title [{0:X16}] {1}", sdtitle.Id, sdtitle.Name);
+            log?.WriteLine("\nProcessing title [{0:X16}] {1}", fsTitle.Id, fsTitle.Name);
 
             Title title = new Title
             {
-                filesize = sdtitle.GetSize(),
+                titleID = String.Format("{0:X16}", fsTitle.Id),
+                type = fsTitle.Metadata.Type,
+                filesize = fsTitle.GetSize(),
                 distribution = Title.Distribution.Filesystem
             };
 
-            foreach (Nca nca in sdtitle.Ncas)
+            foreach (Nca nca in fsTitle.Ncas)
             {
                 if (nca.Header.ContentType == ContentType.Program)
+                {
+                    title.filename = nca.Filename;
+
+                    log?.WriteLine("Found Biggest NCA {0}", nca.Filename);
+
+                    processBiggestNca(nca, ref title);
+                }
+                if (nca.Header.ContentType == ContentType.Data)
                 {
                     title.filename = nca.Filename;
 
@@ -531,10 +572,7 @@ namespace NX_Game_Info
                     {
                         title.type = cnmt.Type;
 
-                        byte[] titleID = BitConverter.GetBytes(cnmt.TitleId);
-                        Array.Reverse(titleID);
-                        title.titleID = BitConverter.ToString(titleID).Replace("-", "").ToUpper();
-
+                        title.titleID = String.Format("{0:X16}", cnmt.TitleId);
                         title.version = cnmt.TitleVersion?.Version ?? title.version;
 
                         uint firmware = cnmt.MinimumSystemVersion?.Version ?? 0;
@@ -645,6 +683,7 @@ namespace NX_Game_Info
             log?.WriteLine("Processing Biggest NCA");
 
             if (((title.type == TitleType.Application || title.type == TitleType.Patch) && nca.Header.ContentType == ContentType.Program) ||
+                (title.type == TitleType.Patch && nca.Header.ContentType == ContentType.Data) ||
                 (title.type == TitleType.AddOnContent && nca.Header.ContentType == ContentType.AocData))
             {
                 title.signature = (nca.Header.FixedSigValidity == Validity.Valid);
@@ -661,8 +700,29 @@ namespace NX_Game_Info
                     title.latestVersion = titleVersion;
                 }
             }
+            else
+            {
+                if (titleNames.TryGetValue(title.titleID, out string titleName))
+                {
+                    title.titleName = titleName;
+                }
+                else if (titleNames.TryGetValue(title.titleIDApplication, out titleName))
+                {
+                    title.titleName = titleName;
+
+                    if (title.type == TitleType.AddOnContent)
+                    {
+                        title.titleName += " [DLC]";
+                    }
+                }
+                if (titleVersions.TryGetValue(title.titleID, out uint titleVersion))
+                {
+                    title.latestVersion = titleVersion;
+                }
+            }
 
             if (((title.type == TitleType.Application || title.type == TitleType.Patch) && nca.Header.ContentType == ContentType.Program) ||
+                (title.type == TitleType.Patch && nca.Header.ContentType == ContentType.Data) ||
                 (title.type == TitleType.AddOnContent && nca.Header.ContentType == ContentType.AocData))
             {
                 title.masterkey = (uint)nca.Header.CryptoType == 2 ? (uint)Math.Max(nca.Header.CryptoType2 - 1, 0) : 0;
@@ -687,9 +747,7 @@ namespace NX_Game_Info
 
             if (nca.Header.ContentType == ContentType.Control)
             {
-                byte[] titleID = BitConverter.GetBytes(nca.Header.TitleId);
-                Array.Reverse(titleID);
-                title.titleID = BitConverter.ToString(titleID).Replace("-", "").ToUpper();
+                title.titleID = String.Format("{0:X16}", nca.Header.TitleId);
 
                 if (title.type == TitleType.Patch)
                 {

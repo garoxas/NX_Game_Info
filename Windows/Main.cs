@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Application = System.Windows.Forms.Application;
 using BrightIdeasSoftware;
+using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
 
 #pragma warning disable IDE1006 // Naming rule violation: These words must begin with upper case characters
@@ -222,21 +223,21 @@ namespace NX_Game_Info
 
                 Process.log?.WriteLine("\n{0} titles processed", titles.Count);
             }
-            else if (e.Argument is string sdpath)
+            else if (e.Argument is string path)
             {
-                List<LibHac.Title> sdtitles = Process.processSd(sdpath);
+                List<FsTitle> fsTitles = Process.processSd(path);
 
-                if (sdtitles != null)
+                if (fsTitles != null)
                 {
-                    int count = sdtitles.Count, index = 0;
+                    int count = fsTitles.Count, index = 0;
 
-                    foreach (var sdtitle in sdtitles)
+                    foreach (var fsTitle in fsTitles)
                     {
                         if (worker.CancellationPending) break;
 
-                        worker.ReportProgress(100 * index++ / count, sdtitle.MainNca?.Filename);
+                        worker.ReportProgress(100 * index++ / count, fsTitle.MainNca?.Filename);
 
-                        Title title = Process.processTitle(sdtitle);
+                        Title title = Process.processTitle(fsTitle);
                         if (title != null)
                         {
                             titles.Add(title);
