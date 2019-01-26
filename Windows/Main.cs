@@ -41,6 +41,28 @@ namespace NX_Game_Info
             }
         }
 
+        private void Main_Load(object sender, EventArgs e)
+        {
+            Location = Properties.Settings.Default.WindowLocation;
+            Size = Properties.Settings.Default.WindowSize;
+        }
+
+        private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (WindowState == FormWindowState.Normal)
+            {
+                Properties.Settings.Default.WindowLocation = Location;
+                Properties.Settings.Default.WindowSize = Size;
+            }
+            else
+            {
+                Properties.Settings.Default.WindowLocation = RestoreBounds.Location;
+                Properties.Settings.Default.WindowSize = RestoreBounds.Size;
+            }
+
+            Properties.Settings.Default.Save();
+        }
+
         private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (backgroundWorkerProcess.IsBusy)
