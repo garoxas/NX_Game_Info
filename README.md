@@ -1,7 +1,7 @@
 # NX Game Info
 
 # Features
-- NSP, XCI and installed titles on Switch SD card
+- NSP, XCI, NRO and installed titles on Switch SD card
 - Game files structure (Scene Release, CDN Rip, Authoring Tool, Converted from other formats)
 - NCA signature to verify official Nintendo titles. Unmodified titles should pass this verification, although titles converted from other formats will not
 - Filesystem services permissions. Game titles should not have excessive permissions, and only trust titles with `Unsafe` and `Dangerous` from reliable source
@@ -25,6 +25,7 @@
 - Distribution
   - *Digital:* eShop titles (NSP)
   - *Cartridge:* Gamecard titles (XCI)
+  - *Homebrew:* Homebrew titles (NRO)
   - *Filesystem:* Installed titles on Switch SD card (NAX0)
 - Structure
   - *Scene (for XCI files):* XCI files with `Update Partition`, `Normal Partition` and `Secure Partition`
@@ -50,7 +51,7 @@ NX Game Info uses `prod.keys`, `title.keys` and `console.keys` in the format as 
   `master_key_##`, `key_area_key_application_##` and `titlekek_##` will also be necessary to decrypt titles with higher MasterKey requirement
  - *title.keys*: Optional, but required for `Permission` check
  - *console.keys*: Optional, but `sd_seed` key required for `Open SD Card` feature
- - *hac_versionlist.json*: Optional, but required for `Latest Version` feature
+ - *hac_versionlist.json*: [Optional](https://pastebin.com/raw/9N26Bx10), but required for `Latest Version` feature
 
 The application will look for these files at the following locations (other file locations will follow wherever `prod.keys` file was found)
 
