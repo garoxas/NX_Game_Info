@@ -73,7 +73,7 @@ namespace NX_Game_Info
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "Open NX Game Files";
-            openFileDialog.Filter = "NX Game Files (*.xci;*.nsp)|*.xci;*.nsp|Gamecard Files (*.xci)|*.xci|Package Files (*.nsp)|*.nsp|All Files (*.*)|*.*";
+            openFileDialog.Filter = "NX Game Files (*.xci;*.nsp;*.nro)|*.xci;*.nsp;*.nro|Gamecard Files (*.xci)|*.xci|Package Files (*.nsp)|*.nsp|Homebrew Files (*.nro)|*.nro|All Files (*.*)|*.*";
             openFileDialog.Multiselect = true;
             openFileDialog.RestoreDirectory = true;
             openFileDialog.InitialDirectory = !String.IsNullOrEmpty(Properties.Settings.Default.InitialDirectory) && Directory.Exists(Properties.Settings.Default.InitialDirectory) ? Properties.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
@@ -119,7 +119,7 @@ namespace NX_Game_Info
                 toolStripStatusLabel.Text = "";
 
                 List<string> filenames = Directory.EnumerateFiles(folderBrowserDialog.SelectedPath, "*.*", SearchOption.AllDirectories)
-                    .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp")).ToList();
+                    .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro")).ToList();
                 filenames.Sort();
 
                 Properties.Settings.Default.InitialDirectory = folderBrowserDialog.SelectedPath;

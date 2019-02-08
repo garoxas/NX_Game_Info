@@ -105,7 +105,7 @@ namespace NX_Game_Info
             openPanel.CanChooseFiles = true;
             openPanel.CanChooseDirectories = false;
             openPanel.AllowsMultipleSelection = true;
-            openPanel.AllowedFileTypes = new string[] { "xci", "nsp" };
+            openPanel.AllowedFileTypes = new string[] { "xci", "nsp", "nro" };
             openPanel.DirectoryUrl = new NSUrl(!String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
 
             Process.log?.WriteLine("\nOpen File");
@@ -165,7 +165,7 @@ namespace NX_Game_Info
                     tableView.ReloadData();
 
                     List<string> filenames = Directory.EnumerateFiles(openPanel.Urls.First().Path, "*.*", SearchOption.AllDirectories)
-                        .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp")).ToList();
+                        .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro")).ToList();
                     filenames.Sort();
 
                     Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;

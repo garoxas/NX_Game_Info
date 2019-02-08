@@ -77,18 +77,27 @@ namespace NX_Game_Info
             }
             catch { }
 
-            if (!(bool)keyset?.HeaderKey?.Any(b => b != 0) ||
-                !(bool)keyset?.AesKekGenerationSource?.Any(b => b != 0) || !(bool)keyset?.AesKeyGenerationSource?.Any(b => b != 0) || !(bool)keyset?.KeyAreaKeyApplicationSource?.Any(b => b != 0) ||
-                !((bool)keyset?.MasterKeys?[0]?.Any(b => b != 0) || (bool)keyset?.KeyAreaKeys?[0]?[0]?.Any(b => b != 0)))
+            try
             {
-                log?.WriteLine("Keyfile missing required keys");
-                log?.WriteLine(" - {0} ({1}exists)", "header_key", (bool)keyset?.HeaderKey?.Any(b => b != 0) ? "" : "not ");
-                log?.WriteLine(" - {0} ({1}exists)", "aes_kek_generation_source", (bool)keyset?.AesKekGenerationSource?.Any(b => b != 0) ? "" : "not ");
-                log?.WriteLine(" - {0} ({1}exists)", "aes_key_generation_source", (bool)keyset?.AesKeyGenerationSource?.Any(b => b != 0) ? "" : "not ");
-                log?.WriteLine(" - {0} ({1}exists)", "key_area_key_application_source", (bool)keyset?.KeyAreaKeyApplicationSource?.Any(b => b != 0) ? "" : "not ");
-                log?.WriteLine(" - {0} ({1}exists)", "master_key_00", (bool)keyset?.MasterKeys[0]?.Any(b => b != 0) ? "" : "not ");
-                log?.WriteLine(" - {0} ({1}exists)", "key_area_key_application_00", (bool)keyset?.KeyAreaKeys[0][0]?.Any(b => b != 0) ? "" : "not ");
+                if (!(bool)keyset?.HeaderKey?.Any(b => b != 0) ||
+                    !(bool)keyset?.AesKekGenerationSource?.Any(b => b != 0) || !(bool)keyset?.AesKeyGenerationSource?.Any(b => b != 0) || !(bool)keyset?.KeyAreaKeyApplicationSource?.Any(b => b != 0) ||
+                    !((bool)keyset?.MasterKeys?[0]?.Any(b => b != 0) || (bool)keyset?.KeyAreaKeys?[0]?[0]?.Any(b => b != 0)))
+                {
+                    log?.WriteLine("Keyfile missing required keys");
+                    log?.WriteLine(" - {0} ({1}exists)", "header_key", (bool)keyset?.HeaderKey?.Any(b => b != 0) ? "" : "not ");
+                    log?.WriteLine(" - {0} ({1}exists)", "aes_kek_generation_source", (bool)keyset?.AesKekGenerationSource?.Any(b => b != 0) ? "" : "not ");
+                    log?.WriteLine(" - {0} ({1}exists)", "aes_key_generation_source", (bool)keyset?.AesKeyGenerationSource?.Any(b => b != 0) ? "" : "not ");
+                    log?.WriteLine(" - {0} ({1}exists)", "key_area_key_application_source", (bool)keyset?.KeyAreaKeyApplicationSource?.Any(b => b != 0) ? "" : "not ");
+                    log?.WriteLine(" - {0} ({1}exists)", "master_key_00", (bool)keyset?.MasterKeys[0]?.Any(b => b != 0) ? "" : "not ");
+                    log?.WriteLine(" - {0} ({1}exists)", "key_area_key_application_00", (bool)keyset?.KeyAreaKeys[0][0]?.Any(b => b != 0) ? "" : "not ");
 
+                    messages.Add("Keyfile missing required keys. Check if these keys exist and try again.\n" +
+                        "header_key, aes_kek_generation_source, aes_key_generation_source, key_area_key_application_source, master_key_00 or key_area_key_application_00.");
+                    return false;
+                }
+            }
+            catch
+            {
                 messages.Add("Keyfile missing required keys. Check if these keys exist and try again.\n" +
                     "header_key, aes_kek_generation_source, aes_key_generation_source, key_area_key_application_source, master_key_00 or key_area_key_application_00.");
                 return false;
@@ -128,7 +137,7 @@ namespace NX_Game_Info
 
             try
             {
-                Title title = processXci(filename) ?? processNsp(filename);
+                Title title = processXci(filename) ?? processNsp(filename) ?? processNro(filename);
 
                 title.filename = filename;
                 title.filesize = new FileInfo(filename).Length;
@@ -352,6 +361,38 @@ namespace NX_Game_Info
             }
 
             log?.WriteLine("NSP information for {0}: [{1}] {2}", filename, title.titleID, title.titleName);
+
+            return title;
+        }
+
+        public static Title processNro(string filename)
+        {
+            Title title = new Title();
+
+            using (var filestream = new FileStream(filename, FileMode.Open, FileAccess.Read))
+            {
+                Nro nro;
+
+                try
+                {
+                    nro = new Nro(filestream.AsStorage());
+
+                    title.distribution = Title.Distribution.Homebrew;
+                }
+                catch (InvalidDataException)
+                {
+                    return null;
+                }
+
+                log?.WriteLine("Processing NRO {0}", filename);
+
+                using (var control = nro.OpenNacp().AsStream())
+                {
+                    processControlNacp(control, ref title);
+                }
+            }
+
+            log?.WriteLine("NRO information for {0}: [{1}] {2}", filename, title.titleName, title.displayVersion);
 
             return title;
         }

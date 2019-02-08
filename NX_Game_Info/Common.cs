@@ -69,6 +69,7 @@ namespace NX_Game_Info
             {
                 Digital,
                 Cartridge,
+                Homebrew,
                 Filesystem,
                 Invalid = -1
             }
@@ -130,6 +131,8 @@ namespace NX_Game_Info
                             return masterkey.ToString() + " (6.0.0-6.1.0)";
                         case 6:
                             return masterkey.ToString() + " (6.2.0)";
+                        case 7:
+                            return masterkey.ToString() + " (7.0.0)";
                         case unchecked((uint)-1):
                             return "";
                         default:
