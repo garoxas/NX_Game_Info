@@ -18,7 +18,10 @@ namespace NX_Game_Info
 {
     public partial class Main : Form
     {
+        internal AboutBox aboutBox = new AboutBox();
         internal IProgressDialog progressDialog;
+
+        private List<Title> titles = new List<Title>();
 
         public Main()
         {
@@ -204,9 +207,70 @@ namespace NX_Game_Info
             }
         }
 
+        private void exportToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Title = "Export Titles";
+            saveFileDialog.Filter = "Text Documents (*.txt)|*.txt|All Files (*.*)|*.*";
+            saveFileDialog.RestoreDirectory = true;
+            saveFileDialog.InitialDirectory = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+
+            Process.log?.WriteLine("\nExport Titles");
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                using (var writer = new StreamWriter(saveFileDialog.FileName))
+                {
+                    progressDialog = (IProgressDialog)new ProgressDialog();
+                    progressDialog.StartProgressDialog(Handle, "Exporting titles");
+
+                    writer.WriteLine("{0} {1}", aboutBox.AssemblyTitle, aboutBox.AssemblyVersion);
+                    writer.WriteLine("--------------------------------------------------------------\n");
+
+                    writer.WriteLine("Export titles starts at {0}\n", String.Format("{0:F}", DateTime.Now));
+
+                    uint index = 0, count = (uint)titles.Count;
+
+                    foreach (var title in titles)
+                    {
+                        if (progressDialog.HasUserCancelled())
+                        {
+                            break;
+                        }
+
+                        progressDialog.SetLine(2, title.titleName, true, IntPtr.Zero);
+                        progressDialog.SetProgress(index++, count);
+
+                        writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}",
+                            title.titleID,
+                            title.titleName,
+                            title.displayVersion,
+                            title.versionString,
+                            title.latestVersionString,
+                            title.firmware,
+                            title.masterkeyString,
+                            title.filename,
+                            title.filesizeString,
+                            title.typeString,
+                            title.distribution,
+                            title.structureString,
+                            title.signatureString,
+                            title.permissionString,
+                            title.error);
+                    }
+
+                    writer.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
+
+                    Process.log?.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
+
+                    progressDialog.StopProgressDialog();
+                    Activate();
+                }
+            }
+        }
+
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AboutBox aboutBox = new AboutBox();
             aboutBox.Show();
         }
 
@@ -219,7 +283,7 @@ namespace NX_Game_Info
         {
             BackgroundWorker worker = sender as BackgroundWorker;
 
-            List<Title> titles = new List<Title>();
+            titles.Clear();
 
             if (e.Argument is List<string> filenames)
             {
