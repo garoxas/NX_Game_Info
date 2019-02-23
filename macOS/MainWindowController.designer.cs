@@ -35,6 +35,9 @@ namespace NX_Game_Info
 
 		[Action ("debugLog:")]
 		partial void debugLog (Foundation.NSObject sender);
+
+		[Action ("export:")]
+		partial void export (Foundation.NSObject sender);
 		
 		void ReleaseDesignerOutlets ()
 		{

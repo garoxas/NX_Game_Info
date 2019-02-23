@@ -21,6 +21,9 @@ namespace NX_Game_Info
         private TableViewDelegate tableViewDelegate;
 
         private BackgroundWorker backgroundWorker;
+        private bool userCancelled;
+
+        private List<Title> titles = new List<Title>();
 
         public MainWindowController(IntPtr handle) : base(handle)
         {
@@ -108,6 +111,7 @@ namespace NX_Game_Info
             openPanel.AllowsMultipleSelection = true;
             openPanel.AllowedFileTypes = new string[] { "xci", "nsp", "nro" };
             openPanel.DirectoryUrl = new NSUrl(!String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+            openPanel.Title = "Open NX Game Files";
 
             Process.log?.WriteLine("\nOpen File");
 
@@ -118,19 +122,21 @@ namespace NX_Game_Info
                     tableViewDataSource.Titles.Clear();
                     tableView.ReloadData();
 
-                    List<string> filenames = openPanel.Urls.Select((arg) => arg.Path).ToList();
-                    filenames.Sort();
-
-                    Common.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
+                    Common.Settings.Default.InitialDirectory = Path.GetDirectoryName(openPanel.Urls.First().Path);
                     Common.Settings.Default.Save();
 
-                    Process.log?.WriteLine("{0} files selected", filenames.Count);
-
-                    title.StringValue = String.Format("Opening {0} files", filenames.Count);
+                    title.StringValue = String.Format("Opening files");
                     message.StringValue = "";
                     progress.DoubleValue = 0;
 
                     Window.BeginSheet(sheet, ProgressComplete);
+
+                    List<string> filenames = openPanel.Urls.Select((arg) => arg.Path).ToList();
+                    filenames.Sort();
+
+                    Process.log?.WriteLine("{0} files selected", filenames.Count);
+
+                    title.StringValue = String.Format("Opening {0} files", filenames.Count);
 
                     backgroundWorker.RunWorkerAsync(filenames);
                 }
@@ -155,6 +161,7 @@ namespace NX_Game_Info
             openPanel.CanChooseFiles = false;
             openPanel.CanChooseDirectories = true;
             openPanel.DirectoryUrl = new NSUrl(!String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+            openPanel.Title = "Open NX Game Directory";
 
             Process.log?.WriteLine("\nOpen Directory");
 
@@ -165,20 +172,22 @@ namespace NX_Game_Info
                     tableViewDataSource.Titles.Clear();
                     tableView.ReloadData();
 
-                    List<string> filenames = Directory.EnumerateFiles(openPanel.Urls.First().Path, "*.*", SearchOption.AllDirectories)
-                        .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro")).ToList();
-                    filenames.Sort();
-
                     Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
                     Common.Settings.Default.Save();
 
-                    Process.log?.WriteLine("{0} files selected", filenames.Count);
-
-                    title.StringValue = String.Format("Opening {0} files from directory {1}", filenames.Count, openPanel.Urls.First().Path);
+                    title.StringValue = String.Format("Opening files from directory {0}", openPanel.Urls.First().Path);
                     message.StringValue = "";
                     progress.DoubleValue = 0;
 
                     Window.BeginSheet(sheet, ProgressComplete);
+
+                    List<string> filenames = Directory.EnumerateFiles(openPanel.Urls.First().Path, "*.*", SearchOption.AllDirectories)
+                        .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro")).ToList();
+                    filenames.Sort();
+
+                    Process.log?.WriteLine("{0} files selected", filenames.Count);
+
+                    title.StringValue = String.Format("Opening {0} files from directory {1}", filenames.Count, openPanel.Urls.First().Path);
 
                     backgroundWorker.RunWorkerAsync(filenames);
                 }
@@ -232,6 +241,7 @@ namespace NX_Game_Info
             openPanel.CanChooseFiles = false;
             openPanel.CanChooseDirectories = true;
             openPanel.DirectoryUrl = new NSUrl(!String.IsNullOrEmpty(Common.Settings.Default.SDCardDirectory) && Directory.Exists(Common.Settings.Default.SDCardDirectory) ? Common.Settings.Default.SDCardDirectory : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+            openPanel.Title = "Open SD Card";
 
             Process.log?.WriteLine("\nOpen SD Card");
 
@@ -248,6 +258,8 @@ namespace NX_Game_Info
                     title.StringValue = String.Format("Opening SD card on {0}", openPanel.Urls.First().Path);
                     message.StringValue = "";
                     progress.DoubleValue = 0;
+
+                    Process.log?.WriteLine("SD card selected");
 
                     Window.BeginSheet(sheet, ProgressComplete);
 
@@ -280,11 +292,75 @@ namespace NX_Game_Info
             }
         }
 
+        [Export("export:")]
+        public void Export(NSMenuItem menuItem)
+        {
+            NSSavePanel savePanel = NSSavePanel.SavePanel;
+            savePanel.AllowedFileTypes = new string[] { "txt" };
+            savePanel.Title = "Export Titles";
+
+            Process.log?.WriteLine("\nExport Titles");
+
+            savePanel.BeginSheet(Window, (nint result) =>
+            {
+                if (result == (int)NSModalResponse.OK)
+                {
+                    using (var writer = new StreamWriter(savePanel.Url.Path))
+                    {
+                        Window.BeginSheet(sheet, ProgressComplete);
+                        userCancelled = false;
+
+                        writer.WriteLine("{0} {1}", NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleName").ToString(), NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleShortVersionString").ToString());
+                        writer.WriteLine("--------------------------------------------------------------\n");
+
+                        writer.WriteLine("Export titles starts at {0}\n", String.Format("{0:F}", DateTime.Now));
+
+                        uint index = 0, count = (uint)titles.Count;
+
+                        foreach (var title in titles)
+                        {
+                            if (userCancelled)
+                            {
+                                userCancelled = false;
+                                break;
+                            }
+
+                            message.StringValue = title.titleName ?? "";
+                            progress.DoubleValue = 100f * index++ / count;
+
+                            writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}",
+                                title.titleID,
+                                title.titleName,
+                                title.displayVersion,
+                                title.versionString,
+                                title.latestVersionString,
+                                title.firmware,
+                                title.masterkeyString,
+                                title.filename,
+                                NSByteCountFormatter.Format(title.filesize, NSByteCountFormatterCountStyle.File),
+                                title.typeString,
+                                title.distribution,
+                                title.structureString,
+                                title.signatureString,
+                                title.permissionString,
+                                title.error);
+                        }
+
+                        writer.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
+
+                        Process.log?.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
+
+                        Window.EndSheet(sheet);
+                    }
+                }
+            });
+        }
+
         void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
 
-            List<Title> titles = new List<Title>();
+            titles.Clear();
 
             if (e.Argument is List<string> filenames)
             {
@@ -385,7 +461,12 @@ namespace NX_Game_Info
         {
             message.StringValue = "Please wait until the current process is finished";
 
-            backgroundWorker.CancelAsync();
+            if (backgroundWorker.IsBusy)
+            {
+                backgroundWorker.CancelAsync();
+            }
+
+            userCancelled = true;
         }
 
         void ProgressComplete(nint obj)
