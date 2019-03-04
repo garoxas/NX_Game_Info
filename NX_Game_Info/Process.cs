@@ -213,6 +213,22 @@ namespace NX_Game_Info
 
                             title.structure.Add(Title.Structure.CnmtNca);
                         }
+                        else if (entry.Name.EndsWith(".cert"))
+                        {
+                            title.structure.Add(Title.Structure.Cert);
+                        }
+                        else if (entry.Name.EndsWith(".tik"))
+                        {
+                            using (var tik = xci.SecurePartition.OpenFile(entry))
+                            {
+                                if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
+                                {
+                                    processTik(tik, rightsId, ref keyset);
+                                }
+                            }
+
+                            title.structure.Add(Title.Structure.Tik);
+                        }
                     }
 
                     if (!String.IsNullOrEmpty(biggestNca))
@@ -306,6 +322,14 @@ namespace NX_Game_Info
                     }
                     else if (entry.Name.EndsWith(".tik"))
                     {
+                        using (var tik = pfs.OpenFile(entry))
+                        {
+                            if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
+                            {
+                                processTik(tik, rightsId, ref keyset);
+                            }
+                        }
+
                         title.structure.Add(Title.Structure.Tik);
                     }
                     else if (entry.Name.EndsWith(".legalinfo.xml"))
@@ -885,6 +909,24 @@ namespace NX_Game_Info
             }
 
             title.displayVersion = nacp.DisplayVersion;
+        }
+
+        private static void processTik(IStorage tik, byte[] rightsId, ref Keyset keyset)
+        {
+            log?.WriteLine("Processing TIK");
+
+            const int TitleKeySize = 0x10;
+            byte[] titleKey = new byte[TitleKeySize];
+
+            Stream stream = tik.AsStream();
+            stream.Seek(0x180, SeekOrigin.Begin);
+            stream.Read(titleKey, 0, titleKey.Length);
+            stream.Close();
+
+            if (rightsId.Length == TitleKeySize)
+            {
+                keyset.TitleKeys[rightsId] = titleKey;
+            }
         }
     }
 }

@@ -78,7 +78,6 @@ namespace NX_Game_Info
             openFileDialog.Title = "Open NX Game Files";
             openFileDialog.Filter = "NX Game Files (*.xci;*.nsp;*.nro)|*.xci;*.nsp;*.nro|Gamecard Files (*.xci)|*.xci|Package Files (*.nsp)|*.nsp|Homebrew Files (*.nro)|*.nro|All Files (*.*)|*.*";
             openFileDialog.Multiselect = true;
-            openFileDialog.RestoreDirectory = true;
             openFileDialog.InitialDirectory = !String.IsNullOrEmpty(Properties.Settings.Default.InitialDirectory) && Directory.Exists(Properties.Settings.Default.InitialDirectory) ? Properties.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
             Process.log?.WriteLine("\nOpen File");
@@ -212,7 +211,6 @@ namespace NX_Game_Info
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "Export Titles";
             saveFileDialog.Filter = "Text Documents (*.txt)|*.txt|All Files (*.*)|*.*";
-            saveFileDialog.RestoreDirectory = true;
             saveFileDialog.InitialDirectory = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
             Process.log?.WriteLine("\nExport Titles");

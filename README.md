@@ -49,9 +49,9 @@ NX Game Info uses `prod.keys`, `title.keys` and `console.keys` in the format as 
 
  - *prod.keys*: Mandatory keys includes `header_key`, `aes_kek_generation_source`, `aes_key_generation_source`, `key_area_key_application_source` and `master_key_00`. Failing to provide these keys will make the application quit
   `master_key_##`, `key_area_key_application_##` and `titlekek_##` will also be necessary to decrypt titles with higher MasterKey requirement
- - *title.keys*: Optional, but required for `Permission` check
- - *console.keys*: Optional, but `sd_seed` key required for `Open SD Card` feature
- - *hac_versionlist.json*: [Optional](https://pastebin.com/raw/9N26Bx10), but required for `Latest Version` feature
+ - *title.keys*: Optional, required for `Permission` check if `.tik` file not available
+ - *console.keys*: Optional, `sd_seed` key required for `Open SD Card` feature
+ - *hac_versionlist.json*: [Optional](https://pastebin.com/raw/9N26Bx10), required for `Latest Version` feature
 
 The application will look for these files at the following locations (other file locations will follow wherever `prod.keys` file was found)
 
