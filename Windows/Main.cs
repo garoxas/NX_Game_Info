@@ -87,16 +87,18 @@ namespace NX_Game_Info
                 objectListView.Items.Clear();
                 toolStripStatusLabel.Text = "";
 
+                Properties.Settings.Default.InitialDirectory = Path.GetDirectoryName(openFileDialog.FileNames.First());
+                Properties.Settings.Default.Save();
+
+                progressDialog = (IProgressDialog)new ProgressDialog();
+                progressDialog.StartProgressDialog(Handle, "Opening files");
+
                 List<string> filenames = openFileDialog.FileNames.ToList();
                 filenames.Sort();
 
-                Properties.Settings.Default.InitialDirectory = Path.GetDirectoryName(filenames.First());
-                Properties.Settings.Default.Save();
-
                 Process.log?.WriteLine("{0} files selected", filenames.Count);
 
-                progressDialog = (IProgressDialog)new ProgressDialog();
-                progressDialog.StartProgressDialog(Handle, String.Format("Opening {0} files", filenames.Count));
+                progressDialog.SetTitle(String.Format("Opening {0} files", filenames.Count));
 
                 backgroundWorkerProcess.RunWorkerAsync(filenames);
             }
@@ -120,17 +122,19 @@ namespace NX_Game_Info
                 objectListView.Items.Clear();
                 toolStripStatusLabel.Text = "";
 
+                Properties.Settings.Default.InitialDirectory = folderBrowserDialog.SelectedPath;
+                Properties.Settings.Default.Save();
+
+                progressDialog = (IProgressDialog)new ProgressDialog();
+                progressDialog.StartProgressDialog(Handle, String.Format("Opening files from directory {0}", folderBrowserDialog.SelectedPath));
+
                 List<string> filenames = Directory.EnumerateFiles(folderBrowserDialog.SelectedPath, "*.*", SearchOption.AllDirectories)
                     .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro")).ToList();
                 filenames.Sort();
 
-                Properties.Settings.Default.InitialDirectory = folderBrowserDialog.SelectedPath;
-                Properties.Settings.Default.Save();
-
                 Process.log?.WriteLine("{0} files selected", filenames.Count);
 
-                progressDialog = (IProgressDialog)new ProgressDialog();
-                progressDialog.StartProgressDialog(Handle, String.Format("Opening {0} files from directory {1}", filenames.Count, folderBrowserDialog.SelectedPath));
+                progressDialog.SetTitle(String.Format("Opening {0} files from directory {1}", filenames.Count, folderBrowserDialog.SelectedPath));
 
                 backgroundWorkerProcess.RunWorkerAsync(filenames);
             }
@@ -211,7 +215,6 @@ namespace NX_Game_Info
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "Export Titles";
             saveFileDialog.Filter = "Text Documents (*.txt)|*.txt|All Files (*.*)|*.*";
-            saveFileDialog.InitialDirectory = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
             Process.log?.WriteLine("\nExport Titles");
 
@@ -354,7 +357,10 @@ namespace NX_Game_Info
         {
             if (progressDialog.HasUserCancelled())
             {
-                backgroundWorkerProcess.CancelAsync();
+                if (backgroundWorkerProcess.IsBusy)
+                {
+                    backgroundWorkerProcess.CancelAsync();
+                }
             }
 
             progressDialog.SetLine(2, e.UserState as string, true, IntPtr.Zero);

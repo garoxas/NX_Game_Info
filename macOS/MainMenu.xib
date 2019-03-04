@@ -75,10 +75,14 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="qjl-x6-J91"/>
-                            <menuItem title="Debug Log" id="9rY-DL-2nP">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="Debug Log" keyEquivalent="L" id="9rY-DL-2nP">
                                 <connections>
                                     <action selector="debugLog:" target="-1" id="IW7-Qg-4l0"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Export" keyEquivalent="X" id="MXh-5X-bzI">
+                                <connections>
+                                    <action selector="export:" target="-1" id="UFR-7n-xR5"/>
                                 </connections>
                             </menuItem>
                         </items>
