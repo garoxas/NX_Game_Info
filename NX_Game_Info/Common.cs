@@ -132,7 +132,7 @@ namespace NX_Game_Info
                         case 6:
                             return masterkey.ToString() + " (6.2.0)";
                         case 7:
-                            return masterkey.ToString() + " (7.0.0)";
+                            return masterkey.ToString() + " (7.0.0-7.0.1)";
                         case unchecked((uint)-1):
                             return "";
                         default:

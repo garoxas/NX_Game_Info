@@ -21,6 +21,14 @@ namespace NX_Game_Info
         internal AboutBox aboutBox = new AboutBox();
         internal IProgressDialog progressDialog;
 
+        public enum Worker
+        {
+            File,
+            Directory,
+            SDCard,
+            Invalid = -1
+        }
+
         private List<Title> titles = new List<Title>();
 
         public Main()
@@ -93,14 +101,7 @@ namespace NX_Game_Info
                 progressDialog = (IProgressDialog)new ProgressDialog();
                 progressDialog.StartProgressDialog(Handle, "Opening files");
 
-                List<string> filenames = openFileDialog.FileNames.ToList();
-                filenames.Sort();
-
-                Process.log?.WriteLine("{0} files selected", filenames.Count);
-
-                progressDialog.SetTitle(String.Format("Opening {0} files", filenames.Count));
-
-                backgroundWorkerProcess.RunWorkerAsync(filenames);
+                backgroundWorkerProcess.RunWorkerAsync((Worker.File, openFileDialog.FileNames));
             }
         }
 
@@ -128,15 +129,7 @@ namespace NX_Game_Info
                 progressDialog = (IProgressDialog)new ProgressDialog();
                 progressDialog.StartProgressDialog(Handle, String.Format("Opening files from directory {0}", folderBrowserDialog.SelectedPath));
 
-                List<string> filenames = Directory.EnumerateFiles(folderBrowserDialog.SelectedPath, "*.*", SearchOption.AllDirectories)
-                    .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro")).ToList();
-                filenames.Sort();
-
-                Process.log?.WriteLine("{0} files selected", filenames.Count);
-
-                progressDialog.SetTitle(String.Format("Opening {0} files from directory {1}", filenames.Count, folderBrowserDialog.SelectedPath));
-
-                backgroundWorkerProcess.RunWorkerAsync(filenames);
+                backgroundWorkerProcess.RunWorkerAsync((Worker.Directory, folderBrowserDialog.SelectedPath));
             }
         }
 
@@ -185,7 +178,7 @@ namespace NX_Game_Info
                 progressDialog = (IProgressDialog)new ProgressDialog();
                 progressDialog.StartProgressDialog(Handle, String.Format("Opening SD card on {0}", folderBrowserDialog.SelectedPath));
 
-                backgroundWorkerProcess.RunWorkerAsync(folderBrowserDialog.SelectedPath);
+                backgroundWorkerProcess.RunWorkerAsync((Worker.SDCard, folderBrowserDialog.SelectedPath));
             }
         }
 
@@ -286,45 +279,26 @@ namespace NX_Game_Info
 
             titles.Clear();
 
-            if (e.Argument is List<string> filenames)
+            if (e.Argument is ValueTuple<Worker, string[]> argumentFile)
             {
-                int count = filenames.Count, index = 0;
-
-                foreach (var filename in filenames)
+                if (argumentFile.Item1 == Worker.File && argumentFile.Item2 is string[] files)
                 {
-                    if (worker.CancellationPending) break;
+                    List<string> filenames = files.ToList();
+                    filenames.Sort();
 
-                    worker.ReportProgress(100 * index++ / count, filename);
+                    Process.log?.WriteLine("{0} files selected", filenames.Count);
 
-                    Title title = Process.processFile(filename);
-                    if (title != null)
-                    {
-                        titles.Add(title);
-                    }
-                }
+                    worker.ReportProgress(-1, String.Format("Opening {0} files", filenames.Count));
 
-                if (!worker.CancellationPending)
-                {
-                    worker.ReportProgress(100, "");
-                }
+                    int count = filenames.Count, index = 0;
 
-                Process.log?.WriteLine("\n{0} titles processed", titles.Count);
-            }
-            else if (e.Argument is string path)
-            {
-                List<FsTitle> fsTitles = Process.processSd(path);
-
-                if (fsTitles != null)
-                {
-                    int count = fsTitles.Count, index = 0;
-
-                    foreach (var fsTitle in fsTitles)
+                    foreach (var filename in filenames)
                     {
                         if (worker.CancellationPending) break;
 
-                        worker.ReportProgress(100 * index++ / count, fsTitle.MainNca?.Filename);
+                        worker.ReportProgress(100 * index++ / count, filename);
 
-                        Title title = Process.processTitle(fsTitle);
+                        Title title = Process.processFile(filename);
                         if (title != null)
                         {
                             titles.Add(title);
@@ -338,15 +312,79 @@ namespace NX_Game_Info
 
                     Process.log?.WriteLine("\n{0} titles processed", titles.Count);
                 }
-                else
+            }
+            else if (e.Argument is ValueTuple<Worker, string> argumentPath)
+            {
+                if (argumentPath.Item1 == Worker.Directory && argumentPath.Item2 is string path)
                 {
-                    worker.ReportProgress(0, "");
+                    List<string> filenames = filenames = Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories)
+                        .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro")).ToList();
+                    filenames.Sort();
 
-                    string error = "SD card \"Contents\" directory could not be found";
-                    Process.log?.WriteLine(error);
+                    Process.log?.WriteLine("{0} files selected", filenames.Count);
 
-                    e.Result = error;
-                    return;
+                    worker.ReportProgress(-1, String.Format("Opening {0} files from directory {1}", filenames.Count, path));
+
+                    int count = filenames.Count, index = 0;
+
+                    foreach (var filename in filenames)
+                    {
+                        if (worker.CancellationPending) break;
+
+                        worker.ReportProgress(100 * index++ / count, filename);
+
+                        Title title = Process.processFile(filename);
+                        if (title != null)
+                        {
+                            titles.Add(title);
+                        }
+                    }
+
+                    if (!worker.CancellationPending)
+                    {
+                        worker.ReportProgress(100, "");
+                    }
+
+                    Process.log?.WriteLine("\n{0} titles processed", titles.Count);
+                }
+                else if (argumentPath.Item1 == Worker.SDCard && argumentPath.Item2 is string pathSd)
+                {
+                    List<FsTitle> fsTitles = Process.processSd(pathSd);
+
+                    if (fsTitles != null)
+                    {
+                        int count = fsTitles.Count, index = 0;
+
+                        foreach (var fsTitle in fsTitles)
+                        {
+                            if (worker.CancellationPending) break;
+
+                            worker.ReportProgress(100 * index++ / count, fsTitle.MainNca?.Filename);
+
+                            Title title = Process.processTitle(fsTitle);
+                            if (title != null)
+                            {
+                                titles.Add(title);
+                            }
+                        }
+
+                        if (!worker.CancellationPending)
+                        {
+                            worker.ReportProgress(100, "");
+                        }
+
+                        Process.log?.WriteLine("\n{0} titles processed", titles.Count);
+                    }
+                    else
+                    {
+                        worker.ReportProgress(0, "");
+
+                        string error = "SD card \"Contents\" directory could not be found";
+                        Process.log?.WriteLine(error);
+
+                        e.Result = error;
+                        return;
+                    }
                 }
             }
 
@@ -363,8 +401,15 @@ namespace NX_Game_Info
                 }
             }
 
-            progressDialog.SetLine(2, e.UserState as string, true, IntPtr.Zero);
-            progressDialog.SetProgress((uint)e.ProgressPercentage, 100);
+            if (e.ProgressPercentage == -1)
+            {
+                progressDialog.SetLine(1, e.UserState as string, false, IntPtr.Zero);
+            }
+            else
+            {
+                progressDialog.SetLine(2, e.UserState as string, true, IntPtr.Zero);
+                progressDialog.SetProgress((uint)e.ProgressPercentage, 100);
+            }
         }
 
         private void backgroundWorkerProcess_RunWorkerCompleted(object sender, System.ComponentModel.RunWorkerCompletedEventArgs e)
