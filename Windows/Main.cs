@@ -317,7 +317,7 @@ namespace NX_Game_Info
             {
                 if (argumentPath.Item1 == Worker.Directory && argumentPath.Item2 is string path)
                 {
-                    List<string> filenames = filenames = Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories)
+                    List<string> filenames = Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories)
                         .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro")).ToList();
                     filenames.Sort();
 

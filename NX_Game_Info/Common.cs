@@ -142,7 +142,17 @@ namespace NX_Game_Info
             }
             public string filename { get; set; }
             public long filesize { get; set; }
-            public string filesizeString { get { StringBuilder builder = new StringBuilder(20); StrFormatByteSize(filesize, builder, 20); return builder.ToString(); } }
+            public string filesizeString
+            {
+                get
+                {
+#if MACOS
+                    return NSByteCountFormatter.Format(filesize, NSByteCountFormatterCountStyle.File);
+#else
+                    StringBuilder builder = new StringBuilder(20); StrFormatByteSize(filesize, builder, 20); return builder.ToString();
+#endif
+                }
+            }
             public TitleType type { get; set; }
             public string typeString
             {
