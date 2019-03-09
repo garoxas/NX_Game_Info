@@ -9,6 +9,7 @@ using LibHac.IO;
 using Newtonsoft.Json;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
+using nsZip;
 
 #if WINDOWS
 using Settings = NX_Game_Info.Properties.Settings;
@@ -291,12 +292,19 @@ namespace NX_Game_Info
 
                 log?.WriteLine("Processing NSP {0}", filename);
 
+                bool compressed = false;
+
                 PfsFileEntry[] fileEntries = pfs.Files;
                 foreach (PfsFileEntry entry in fileEntries)
                 {
-                    if (entry.Name.EndsWith(".cnmt.xml"))
+                    if (entry.Name.EndsWith(".nsz"))
                     {
-                        using (var cnmtXml = pfs.OpenFile(entry))
+                        compressed = true;
+                    }
+
+                    if (entry.Name.EndsWith(".cnmt.xml") || entry.Name.EndsWith(".cnmt.xml.nsz"))
+                    {
+                        using (var cnmtXml = compressed ? pfs.DecompressFile(entry) : pfs.OpenFile(entry))
                         {
                             (biggestNca, controlNca) = processCnmtXml(cnmtXml, ref title);
                         }
@@ -361,17 +369,17 @@ namespace NX_Game_Info
 
                 if (!String.IsNullOrEmpty(biggestNca))
                 {
-                    using (var biggest = pfs.OpenFile(biggestNca))
+                    using (var biggest = compressed ? pfs.DecompressFile(biggestNca + ".nsz") : pfs.OpenFile(biggestNca))
                     {
-                        processBiggestNca(biggest, ref title);
+                        processBiggestNca(compressed ? EncryptNCA.Encrypt(keyset, biggest) : biggest, ref title);
                     }
                 }
 
                 if (!String.IsNullOrEmpty(controlNca))
                 {
-                    using (var control = pfs.OpenFile(controlNca))
+                    using (var control = compressed ? pfs.DecompressFile(controlNca + ".nsz") : pfs.OpenFile(controlNca))
                     {
-                        processControlNca(control, ref title);
+                        processControlNca(compressed ? EncryptNCA.Encrypt(keyset, control) : control, ref title);
                     }
                 }
             }
