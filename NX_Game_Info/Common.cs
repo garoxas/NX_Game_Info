@@ -30,6 +30,7 @@ namespace NX_Game_Info
         public static readonly string TITLE_KEYS = "title.keys";
         public static readonly string CONSOLE_KEYS = "console.keys";
         public static readonly string HAC_VERSIONLIST = "hac_versionlist.json";
+        public static readonly string TAGAYA_VERSIONLIST = "https://pastebin.com/raw/9N26Bx10";
 
         [DllImport("Shlwapi.dll", CharSet = CharSet.Auto)]
         public static extern Int32 StrFormatByteSize(

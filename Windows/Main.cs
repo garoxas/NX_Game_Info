@@ -183,27 +183,6 @@ namespace NX_Game_Info
             }
         }
 
-        private void debugLogToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.DebugLog = debugLogToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
-
-            if (Properties.Settings.Default.DebugLog)
-            {
-                try
-                {
-                    Process.log = File.AppendText(Process.path_prefix + Common.LOG_FILE);
-                    Process.log.AutoFlush = true;
-                }
-                catch { }
-            }
-            else
-            {
-                Process.log?.Close();
-                Process.log = null;
-            }
-        }
-
         private void exportToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -260,18 +239,120 @@ namespace NX_Game_Info
 
                     progressDialog.StopProgressDialog();
                     Activate();
+
+                    MessageBox.Show(String.Format("{0} of {1} titles exported", index, titles.Count), Application.ProductName);
                 }
+            }
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Environment.Exit(-1);
+        }
+
+        private void updateVersionListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            progressDialog = (IProgressDialog)new ProgressDialog();
+            progressDialog.StartProgressDialog(Handle, "Downloading version list");
+
+            progressDialog.SetLine(2, String.Format("Downloading from {0}", Common.TAGAYA_VERSIONLIST), true, IntPtr.Zero);
+
+            if (Process.updateVersionList())
+            {
+                uint index = 0, count = 0;
+
+                foreach (var title in titles)
+                {
+                    if (title.type == TitleType.Application || title.type == TitleType.Patch)
+                    {
+                        if (Process.versionList.TryGetValue(title.titleIDApplication, out uint version))
+                        {
+                            if (title.latestVersion == unchecked((uint)-1) || version > title.latestVersion)
+                            {
+                                title.latestVersion = version;
+                                count++;
+                            }
+                        }
+                    }
+                }
+
+                if (count != 0)
+                {
+                    objectListView.SetObjects(titles);
+
+                    foreach (OLVListItem listItem in objectListView.Items)
+                    {
+                        Title title = listItem.RowObject as Title;
+
+                        progressDialog.SetLine(2, title.titleName, true, IntPtr.Zero);
+                        progressDialog.SetProgress(index++, count);
+
+                        string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+
+                        Process.latestVersions.TryGetValue(titleID, out uint latestVersion);
+                        Process.versionList.TryGetValue(titleID, out uint version);
+                        Process.titleVersions.TryGetValue(titleID, out uint titleVersion);
+
+                        if (latestVersion < version || latestVersion < titleVersion)
+                        {
+                            listItem.BackColor = title.signature != true ? Color.OldLace : Color.LightYellow;
+                        }
+                        else if (title.signature != true)
+                        {
+                            listItem.BackColor = Color.WhiteSmoke;
+                        }
+
+                        if (title.permission == Title.Permission.Dangerous)
+                        {
+                            listItem.ForeColor = Color.DarkRed;
+                        }
+                        else if (title.permission == Title.Permission.Unsafe)
+                        {
+                            listItem.ForeColor = Color.Indigo;
+                        }
+                    }
+                }
+
+                Process.log?.WriteLine("\n{0} titles have updated version", count);
+
+                progressDialog.StopProgressDialog();
+                Activate();
+
+                MessageBox.Show(String.Format("{0} titles have updated version", count), Application.ProductName);
+            }
+            else
+            {
+                progressDialog.StopProgressDialog();
+                Activate();
+
+                MessageBox.Show("Failed to download version list", Application.ProductName);
+            }
+        }
+
+        private void debugLogToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.DebugLog = debugLogToolStripMenuItem.Checked;
+            Properties.Settings.Default.Save();
+
+            if (Properties.Settings.Default.DebugLog)
+            {
+                try
+                {
+                    Process.log = File.AppendText(Process.path_prefix + Common.LOG_FILE);
+                    Process.log.AutoFlush = true;
+                }
+                catch { }
+            }
+            else
+            {
+                Process.log?.Close();
+                Process.log = null;
             }
         }
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             aboutBox.Show();
-        }
-
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Environment.Exit(-1);
         }
 
         private void backgroundWorkerProcess_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)

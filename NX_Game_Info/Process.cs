@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Xml.Linq;
 using LibHac;
@@ -131,6 +132,52 @@ namespace NX_Game_Info
             log?.WriteLine("Initialization success");
 
             return true;
+        }
+
+        public static bool updateVersionList()
+        {
+            string hac_versionlist = path_prefix + Common.HAC_VERSIONLIST;
+
+            try
+            {
+                log?.WriteLine("\nDownloading version list");
+
+                using (var httpClient = new HttpClient())
+                {
+                    var response = httpClient.GetAsync(Common.TAGAYA_VERSIONLIST).Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = response.Content.ReadAsStringAsync().Result;
+                        if (!string.IsNullOrEmpty(content))
+                        {
+                            var versionlist = JsonConvert.DeserializeObject<Common.VersionList>(content);
+
+                            versionList.Clear();
+
+                            foreach (var title in versionlist.titles)
+                            {
+                                string titleID = title.id;
+                                if (titleID.EndsWith("800"))
+                                {
+                                    titleID = titleID.Substring(0, Math.Min(titleID.Length, 13)) + "000";
+                                }
+
+                                versionList.Add(titleID.ToUpper(), title.version);
+                            }
+
+                            log?.WriteLine("Found {0} titles, last modified at {1}", versionList.Count, versionlist.last_modified);
+
+                            File.WriteAllText(hac_versionlist, content);
+
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return false;
         }
 
         public static Title processFile(string filename)
