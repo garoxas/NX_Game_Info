@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Foundation;
 using AppKit;
+using LibHac;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
 
@@ -651,7 +652,17 @@ namespace NX_Game_Info
                     break;
             }
 
-            if (title.signature != true)
+            string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+
+            Process.latestVersions.TryGetValue(titleID, out uint latestVersion);
+            Process.versionList.TryGetValue(titleID, out uint version);
+            Process.titleVersions.TryGetValue(titleID, out uint titleVersion);
+
+            if (latestVersion < version || latestVersion < titleVersion)
+            {
+                textField.BackgroundColor = title.signature != true ? NSColor.Orange.ColorWithAlphaComponent((nfloat)0.1) : NSColor.Yellow.ColorWithAlphaComponent((nfloat)0.1);
+            }
+            else if (title.signature != true)
             {
                 textField.BackgroundColor = NSColor.Gray.ColorWithAlphaComponent((nfloat)0.1);
             }

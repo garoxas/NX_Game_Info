@@ -31,6 +31,8 @@ namespace NX_Game_Info
         public static Dictionary<string, string> titleNames = new Dictionary<string, string>();
         public static Dictionary<string, uint> titleVersions = new Dictionary<string, uint>();
 
+        public static Dictionary<string, uint> latestVersions = new Dictionary<string, uint>();
+
         public static string path_prefix = File.Exists(Common.APPLICATION_DIRECTORY_PATH_PREFIX + Common.PROD_KEYS) ? Common.APPLICATION_DIRECTORY_PATH_PREFIX : Common.USER_PROFILE_PATH_PREFIX;
         public static StreamWriter log;
 
@@ -142,13 +144,27 @@ namespace NX_Game_Info
                 title.filename = filename;
                 title.filesize = new FileInfo(filename).Length;
 
+                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+
+                if (latestVersions.TryGetValue(titleID, out uint version))
+                {
+                    if (title.version > version)
+                    {
+                        latestVersions[titleID] = title.version;
+                    }
+                }
+                else
+                {
+                    latestVersions.Add(titleID, title.version);
+                }
+
                 return title;
             }
             catch (MissingKeyException ex)
             {
                 log?.WriteLine("Missing {0}: {1}", ex.Type == KeyType.Title ? "Title Key" : "Key", ex.Name.Replace("key_area_key_application", "master_key"));
             }
-            catch (NullReferenceException ex)
+            catch (SystemException ex) when (ex is NullReferenceException || ex is ArgumentException)
             {
                 log?.WriteLine(ex.StackTrace);
 

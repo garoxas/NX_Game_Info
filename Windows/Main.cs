@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Application = System.Windows.Forms.Application;
 using BrightIdeasSoftware;
+using LibHac;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
 
@@ -422,7 +423,17 @@ namespace NX_Game_Info
                 {
                     Title title = listItem.RowObject as Title;
 
-                    if (title.signature != true)
+                    string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+
+                    Process.latestVersions.TryGetValue(titleID, out uint latestVersion);
+                    Process.versionList.TryGetValue(titleID, out uint version);
+                    Process.titleVersions.TryGetValue(titleID, out uint titleVersion);
+
+                    if (latestVersion < version || latestVersion < titleVersion)
+                    {
+                        listItem.BackColor = title.signature != true ? Color.OldLace : Color.LightYellow;
+                    }
+                    else if (title.signature != true)
                     {
                         listItem.BackColor = Color.WhiteSmoke;
                     }
