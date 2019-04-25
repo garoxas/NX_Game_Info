@@ -1,4 +1,5 @@
 # NX Game Info
+[![Build status](https://ci.appveyor.com/api/projects/status/kgdq8btq7v2th8ne?svg=true)](https://ci.appveyor.com/project/garoxas/nx-game-info)
 
 # Features
 - NSP, XCI, NRO and installed titles on Switch SD card
