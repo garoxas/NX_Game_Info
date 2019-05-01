@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -26,6 +27,8 @@ namespace NX_Game_Info
 
         public static readonly string LOG_FILE = "debug.log";
 
+        public static readonly string USER_SETTINGS = "user.settings";
+
         public static readonly string PROD_KEYS = "prod.keys";
         public static readonly string TITLE_KEYS = "title.keys";
         public static readonly string CONSOLE_KEYS = "console.keys";
@@ -40,28 +43,47 @@ namespace NX_Game_Info
 
         public class Settings : ApplicationSettingsBase
         {
-            [UserScopedSettingAttribute()]
+            [UserScopedSetting()]
+            [DefaultSettingValue("")]
             public string InitialDirectory
             {
                 get { return (string)this["InitialDirectory"]; }
                 set { this["InitialDirectory"] = value; }
             }
 
-            [UserScopedSettingAttribute()]
+            [UserScopedSetting()]
+            [DefaultSettingValue("")]
             public string SDCardDirectory
             {
                 get { return (string)this["SDCardDirectory"]; }
                 set { this["SDCardDirectory"] = value; }
             }
 
-            [UserScopedSettingAttribute()]
+            [UserScopedSetting()]
+            [DefaultSettingValue("False")]
             public bool DebugLog
             {
                 get { return (bool)this["DebugLog"]; }
                 set { this["DebugLog"] = value; }
             }
 
-            public static Settings Default = new Settings();
+            [UserScopedSetting()]
+            [DefaultSettingValue("0, 0")]
+            public Point WindowLocation
+            {
+                get { return (Point)this["WindowLocation"]; }
+                set { this["WindowLocation"] = value; }
+            }
+
+            [UserScopedSetting()]
+            [DefaultSettingValue("800, 600")]
+            public Size WindowSize
+            {
+                get { return (Size)this["WindowSize"]; }
+                set { this["WindowSize"] = value; }
+            }
+
+            public static Settings Default = (Settings)Synchronized(new Settings());
         }
 
         public class Title

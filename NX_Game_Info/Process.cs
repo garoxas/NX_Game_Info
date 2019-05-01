@@ -11,12 +11,6 @@ using Newtonsoft.Json;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
 
-#if WINDOWS
-using Settings = NX_Game_Info.Properties.Settings;
-#elif MACOS
-using Settings = NX_Game_Info.Common.Settings;
-#endif
-
 #pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body
 #pragma warning disable RECS0061 // Warns when a culture-aware 'EndsWith' call is used by default.
 #pragma warning disable RECS0063 // Warns when a culture-aware 'StartsWith' call is used by default.
@@ -51,7 +45,7 @@ namespace NX_Game_Info
                 return false;
             }
 
-            if (Settings.Default.DebugLog)
+            if (Common.Settings.Default.DebugLog)
             {
                 try
                 {

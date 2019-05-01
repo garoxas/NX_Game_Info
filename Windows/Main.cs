@@ -12,6 +12,7 @@ using BrightIdeasSoftware;
 using LibHac;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
+using Bluegrams.Application;
 
 #pragma warning disable IDE1006 // Naming rule violation: These words must begin with upper case characters
 
@@ -36,7 +37,13 @@ namespace NX_Game_Info
         {
             InitializeComponent();
 
-            debugLogToolStripMenuItem.Checked = Properties.Settings.Default.DebugLog;
+            PortableSettingsProvider.SettingsFileName = Common.USER_SETTINGS;
+            PortableSettingsProviderBase.SettingsDirectory = Process.path_prefix;
+            PortableSettingsProvider.ApplyProvider(Common.Settings.Default);
+
+            Common.Settings.Default.Upgrade();
+
+            debugLogToolStripMenuItem.Checked = Common.Settings.Default.DebugLog;
 
             aboutToolStripMenuItem.Text = String.Format("&About {0}", Application.ProductName);
 
@@ -55,24 +62,24 @@ namespace NX_Game_Info
 
         private void Main_Load(object sender, EventArgs e)
         {
-            Location = Properties.Settings.Default.WindowLocation;
-            Size = Properties.Settings.Default.WindowSize;
+            Location = Common.Settings.Default.WindowLocation;
+            Size = Common.Settings.Default.WindowSize;
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (WindowState == FormWindowState.Normal)
             {
-                Properties.Settings.Default.WindowLocation = Location;
-                Properties.Settings.Default.WindowSize = Size;
+                Common.Settings.Default.WindowLocation = Location;
+                Common.Settings.Default.WindowSize = Size;
             }
             else
             {
-                Properties.Settings.Default.WindowLocation = RestoreBounds.Location;
-                Properties.Settings.Default.WindowSize = RestoreBounds.Size;
+                Common.Settings.Default.WindowLocation = RestoreBounds.Location;
+                Common.Settings.Default.WindowSize = RestoreBounds.Size;
             }
 
-            Properties.Settings.Default.Save();
+            Common.Settings.Default.Save();
         }
 
         private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -87,7 +94,7 @@ namespace NX_Game_Info
             openFileDialog.Title = "Open NX Game Files";
             openFileDialog.Filter = "NX Game Files (*.xci;*.nsp;*.nro)|*.xci;*.nsp;*.nro|Gamecard Files (*.xci)|*.xci|Package Files (*.nsp)|*.nsp|Homebrew Files (*.nro)|*.nro|All Files (*.*)|*.*";
             openFileDialog.Multiselect = true;
-            openFileDialog.InitialDirectory = !String.IsNullOrEmpty(Properties.Settings.Default.InitialDirectory) && Directory.Exists(Properties.Settings.Default.InitialDirectory) ? Properties.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+            openFileDialog.InitialDirectory = !String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
             Process.log?.WriteLine("\nOpen File");
 
@@ -96,8 +103,8 @@ namespace NX_Game_Info
                 objectListView.Items.Clear();
                 toolStripStatusLabel.Text = "";
 
-                Properties.Settings.Default.InitialDirectory = Path.GetDirectoryName(openFileDialog.FileNames.First());
-                Properties.Settings.Default.Save();
+                Common.Settings.Default.InitialDirectory = Path.GetDirectoryName(openFileDialog.FileNames.First());
+                Common.Settings.Default.Save();
 
                 progressDialog = (IProgressDialog)new ProgressDialog();
                 progressDialog.StartProgressDialog(Handle, "Opening files");
@@ -115,7 +122,7 @@ namespace NX_Game_Info
             }
 
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            folderBrowserDialog.SelectedPath = !String.IsNullOrEmpty(Properties.Settings.Default.InitialDirectory) && Directory.Exists(Properties.Settings.Default.InitialDirectory) ? Properties.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+            folderBrowserDialog.SelectedPath = !String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
             Process.log?.WriteLine("\nOpen Directory");
 
@@ -124,8 +131,8 @@ namespace NX_Game_Info
                 objectListView.Items.Clear();
                 toolStripStatusLabel.Text = "";
 
-                Properties.Settings.Default.InitialDirectory = folderBrowserDialog.SelectedPath;
-                Properties.Settings.Default.Save();
+                Common.Settings.Default.InitialDirectory = folderBrowserDialog.SelectedPath;
+                Common.Settings.Default.Save();
 
                 progressDialog = (IProgressDialog)new ProgressDialog();
                 progressDialog.StartProgressDialog(Handle, String.Format("Opening files from directory {0}", folderBrowserDialog.SelectedPath));
@@ -162,7 +169,7 @@ namespace NX_Game_Info
             }
 
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
-            folderBrowserDialog.SelectedPath = !String.IsNullOrEmpty(Properties.Settings.Default.SDCardDirectory) && Directory.Exists(Properties.Settings.Default.SDCardDirectory) ? Properties.Settings.Default.SDCardDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
+            folderBrowserDialog.SelectedPath = !String.IsNullOrEmpty(Common.Settings.Default.SDCardDirectory) && Directory.Exists(Common.Settings.Default.SDCardDirectory) ? Common.Settings.Default.SDCardDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
             Process.log?.WriteLine("\nOpen SD Card");
 
@@ -171,8 +178,8 @@ namespace NX_Game_Info
                 objectListView.Items.Clear();
                 toolStripStatusLabel.Text = "";
 
-                Properties.Settings.Default.SDCardDirectory = folderBrowserDialog.SelectedPath;
-                Properties.Settings.Default.Save();
+                Common.Settings.Default.SDCardDirectory = folderBrowserDialog.SelectedPath;
+                Common.Settings.Default.Save();
 
                 Process.log?.WriteLine("SD card selected");
 
@@ -331,10 +338,10 @@ namespace NX_Game_Info
 
         private void debugLogToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
-            Properties.Settings.Default.DebugLog = debugLogToolStripMenuItem.Checked;
-            Properties.Settings.Default.Save();
+            Common.Settings.Default.DebugLog = debugLogToolStripMenuItem.Checked;
+            Common.Settings.Default.Save();
 
-            if (Properties.Settings.Default.DebugLog)
+            if (Common.Settings.Default.DebugLog)
             {
                 try
                 {

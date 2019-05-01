@@ -67,6 +67,12 @@ namespace NX_Game_Info
             tableView.DataSource = tableViewDataSource;
             tableView.Delegate = tableViewDelegate;
 
+            PortableSettingsProvider.SettingsFileName = Common.USER_SETTINGS;
+            PortableSettingsProviderBase.SettingsDirectory = Process.path_prefix;
+            PortableSettingsProvider.ApplyProvider(Common.Settings.Default);
+
+            Common.Settings.Default.Upgrade();
+
             NSMenuItem debugLog = Window.Menu?.ItemWithTitle("File")?.Submenu.ItemWithTitle("Debug Log");
             if (debugLog != null)
             {
