@@ -60,13 +60,7 @@ namespace NX_Game_Info
             }
         }
 
-        private void Main_Load(object sender, EventArgs e)
-        {
-            Location = Common.Settings.Default.WindowLocation;
-            Size = Common.Settings.Default.WindowSize;
-        }
-
-        private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        public void saveWindowState()
         {
             if (WindowState == FormWindowState.Normal)
             {
@@ -80,6 +74,17 @@ namespace NX_Game_Info
             }
 
             Common.Settings.Default.Save();
+        }
+
+        private void Main_Load(object sender, EventArgs e)
+        {
+            Location = Common.Settings.Default.WindowLocation;
+            Size = Common.Settings.Default.WindowSize;
+        }
+
+        private void Main_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            saveWindowState();
         }
 
         private void openFileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -254,6 +259,8 @@ namespace NX_Game_Info
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            saveWindowState();
+
             Environment.Exit(-1);
         }
 
