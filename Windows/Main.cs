@@ -8,11 +8,11 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Application = System.Windows.Forms.Application;
+using Bluegrams.Application;
 using BrightIdeasSoftware;
 using LibHac;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
-using Bluegrams.Application;
 
 #pragma warning disable IDE1006 // Naming rule violation: These words must begin with upper case characters
 
@@ -39,10 +39,10 @@ namespace NX_Game_Info
 
             PortableSettingsProvider.SettingsFileName = Common.USER_SETTINGS;
             PortableSettingsProviderBase.SettingsDirectory = Process.path_prefix;
-            PortableSettingsProvider.ApplyProvider(Common.Settings.Default, Common.Cache.Default);
+            PortableSettingsProvider.ApplyProvider(Common.Settings.Default, Common.History.Default);
 
             Common.Settings.Default.Upgrade();
-            Common.Cache.Default.Upgrade();
+            Common.History.Default.Upgrade();
 
             debugLogToolStripMenuItem.Checked = Common.Settings.Default.DebugLog;
 
@@ -60,26 +60,11 @@ namespace NX_Game_Info
                 Environment.Exit(-1);
             }
 
-            titles = Common.Cache.Default.Titles.LastOrDefault()?.ToList() ?? titles;
-
-            foreach (var title in titles)
-            {
-                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
-
-                if (Process.latestVersions.TryGetValue(titleID, out uint version))
-                {
-                    if (title.version > version)
-                    {
-                        Process.latestVersions[titleID] = title.version;
-                    }
-                }
-                else
-                {
-                    Process.latestVersions.Add(titleID, title.version);
-                }
-            }
+            titles = Process.processHistory();
 
             reloadData();
+
+            toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
         }
 
         public void reloadData()
@@ -355,12 +340,12 @@ namespace NX_Game_Info
                 {
                     reloadData();
 
-                    Common.Cache.Default.Titles.Add(titles.ToList());
-                    if (Common.Cache.Default.Titles.Count > Common.CACHE_SIZE)
+                    Common.History.Default.Titles.Add(titles.ToList());
+                    if (Common.History.Default.Titles.Count > Common.HISTORY_SIZE)
                     {
-                        Common.Cache.Default.Titles.RemoveRange(0, Common.Cache.Default.Titles.Count - Common.CACHE_SIZE);
+                        Common.History.Default.Titles.RemoveRange(0, Common.History.Default.Titles.Count - Common.HISTORY_SIZE);
                     }
-                    Common.Cache.Default.Save();
+                    Common.History.Default.Save();
                 }
 
                 Process.log?.WriteLine("\n{0} titles have updated version", count);
@@ -550,12 +535,12 @@ namespace NX_Game_Info
             {
                 reloadData();
 
-                Common.Cache.Default.Titles.Add(titles.ToList());
-                if (Common.Cache.Default.Titles.Count > Common.CACHE_SIZE)
+                Common.History.Default.Titles.Add(titles.ToList());
+                if (Common.History.Default.Titles.Count > Common.HISTORY_SIZE)
                 {
-                    Common.Cache.Default.Titles.RemoveRange(0, Common.Cache.Default.Titles.Count - Common.CACHE_SIZE);
+                    Common.History.Default.Titles.RemoveRange(0, Common.History.Default.Titles.Count - Common.HISTORY_SIZE);
                 }
-                Common.Cache.Default.Save();
+                Common.History.Default.Save();
 
                 toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
 

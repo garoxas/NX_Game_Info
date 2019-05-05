@@ -985,5 +985,29 @@ namespace NX_Game_Info
                 keyset.TitleKeys[rightsId] = titleKey;
             }
         }
+
+        public static List<Title> processHistory()
+        {
+            List<Title> titles = Common.History.Default.Titles.LastOrDefault()?.ToList() ?? new List<Title>();
+
+            foreach (var title in titles)
+            {
+                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+
+                if (latestVersions.TryGetValue(titleID, out uint version))
+                {
+                    if (title.version > version)
+                    {
+                        latestVersions[titleID] = title.version;
+                    }
+                }
+                else
+                {
+                    latestVersions.Add(titleID, title.version);
+                }
+            }
+
+            return titles;
+        }
     }
 }

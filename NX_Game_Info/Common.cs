@@ -29,7 +29,7 @@ namespace NX_Game_Info
         public static readonly string LOG_FILE = "debug.log";
 
         public static readonly string USER_SETTINGS = "user.settings";
-        public static readonly int CACHE_SIZE = 10;
+        public static readonly int HISTORY_SIZE = 10;
 
         public static readonly string PROD_KEYS = "prod.keys";
         public static readonly string TITLE_KEYS = "title.keys";
@@ -88,7 +88,7 @@ namespace NX_Game_Info
             public static Settings Default = (Settings)Synchronized(new Settings());
         }
 
-        public class Cache : ApplicationSettingsBase
+        public class History : ApplicationSettingsBase
         {
             [UserScopedSetting()]
             [DefaultSettingValue("")]
@@ -99,7 +99,7 @@ namespace NX_Game_Info
                 set { this["Titles"] = value; }
             }
 
-            public static Cache Default = (Cache)Synchronized(new Cache());
+            public static History Default = (History)Synchronized(new History());
         }
 
         [Serializable]
