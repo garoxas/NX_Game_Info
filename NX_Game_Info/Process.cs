@@ -18,7 +18,7 @@ using Title = NX_Game_Info.Common.Title;
 
 namespace NX_Game_Info
 {
-    class Process
+    public class Process
     {
         public static Keyset keyset;
         public static Dictionary<string, uint> versionList = new Dictionary<string, uint>();

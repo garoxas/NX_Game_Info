@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Xml.Serialization;
 #if MACOS
 using Foundation;
 #endif
@@ -15,7 +16,7 @@ using LibHac;
 
 namespace NX_Game_Info
 {
-    class Common
+    public class Common
     {
         public static readonly string APPLICATION_DIRECTORY_PATH_PREFIX =
 #if MACOS
@@ -28,6 +29,7 @@ namespace NX_Game_Info
         public static readonly string LOG_FILE = "debug.log";
 
         public static readonly string USER_SETTINGS = "user.settings";
+        public static readonly int CACHE_SIZE = 10;
 
         public static readonly string PROD_KEYS = "prod.keys";
         public static readonly string TITLE_KEYS = "title.keys";
@@ -86,6 +88,21 @@ namespace NX_Game_Info
             public static Settings Default = (Settings)Synchronized(new Settings());
         }
 
+        public class Cache : ApplicationSettingsBase
+        {
+            [UserScopedSetting()]
+            [DefaultSettingValue("")]
+            [SettingsSerializeAs(SettingsSerializeAs.Xml)]
+            public List<List<Title>> Titles
+            {
+                get { return (List<List<Title>>)this["Titles"]; }
+                set { this["Titles"] = value; }
+            }
+
+            public static Cache Default = (Cache)Synchronized(new Cache());
+        }
+
+        [Serializable]
         public class Title
         {
             public enum Distribution
@@ -124,15 +141,25 @@ namespace NX_Game_Info
                 Invalid = -1
             }
 
+            public Title() { }
+
+            [XmlElement("TitleID")]
             public string titleID { get; set; }
+            [XmlElement("titleIDApplication")]
             public string titleIDApplication { get { return String.IsNullOrEmpty(titleID) ? "" : titleID.Substring(0, Math.Min(titleID.Length, 13)) + "000"; } }
+            [XmlElement("TitleName")]
             public string titleName { get; set; }
+            [XmlElement("DisplayVersion")]
             public string displayVersion { get; set; }
+            [XmlElement("Version")]
             public uint version { get; set; } = unchecked((uint)-1);
             public string versionString { get { return version != unchecked((uint)-1) ? version.ToString() : ""; } }
+            [XmlElement("LatestVersion")]
             public uint latestVersion { get; set; } = unchecked((uint)-1);
             public string latestVersionString { get { return latestVersion != unchecked((uint)-1) ? latestVersion.ToString() : ""; } }
+            [XmlElement("Firmware")]
             public string firmware { get; set; }
+            [XmlElement("Masterkey")]
             public uint masterkey { get; set; } = unchecked((uint)-1);
             public string masterkeyString
             {
@@ -163,7 +190,9 @@ namespace NX_Game_Info
                     }
                 }
             }
+            [XmlElement("Filename")]
             public string filename { get; set; }
+            [XmlElement("Filesize")]
             public long filesize { get; set; }
             public string filesizeString
             {
@@ -176,7 +205,8 @@ namespace NX_Game_Info
 #endif
                 }
             }
-            public TitleType type { get; set; }
+            [XmlElement("Type")]
+            public TitleType type { get; set; } = TitleType.Application;
             public string typeString
             {
                 get
@@ -194,7 +224,9 @@ namespace NX_Game_Info
                     }
                 }
             }
+            [XmlElement("Distribution")]
             public Distribution distribution { get; set; } = Distribution.Invalid;
+            [XmlElement("Structure")]
             public HashSet<Structure> structure { get; set; } = new HashSet<Structure>();
             public string structureString
             {
@@ -247,10 +279,13 @@ namespace NX_Game_Info
                     return "";
                 }
             }
+            [XmlElement("Signature")]
             public bool? signature { get; set; } = null;
             public string signatureString { get { return signature == null ? "" : (bool)signature ? "Passed" : "Not Passed"; } }
+            [XmlElement("Permission")]
             public Permission permission { get; set; } = Permission.Invalid;
             public string permissionString { get { return permission == Permission.Invalid ? "" : permission.ToString(); } }
+            [XmlElement("Error")]
             public string error { get; set; }
         }
 

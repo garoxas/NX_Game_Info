@@ -39,9 +39,10 @@ namespace NX_Game_Info
 
             PortableSettingsProvider.SettingsFileName = Common.USER_SETTINGS;
             PortableSettingsProviderBase.SettingsDirectory = Process.path_prefix;
-            PortableSettingsProvider.ApplyProvider(Common.Settings.Default);
+            PortableSettingsProvider.ApplyProvider(Common.Settings.Default, Common.Cache.Default);
 
             Common.Settings.Default.Upgrade();
+            Common.Cache.Default.Upgrade();
 
             debugLogToolStripMenuItem.Checked = Common.Settings.Default.DebugLog;
 
@@ -57,6 +58,66 @@ namespace NX_Game_Info
             if (!init)
             {
                 Environment.Exit(-1);
+            }
+
+            titles = Common.Cache.Default.Titles.LastOrDefault()?.ToList() ?? titles;
+
+            foreach (var title in titles)
+            {
+                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+
+                if (Process.latestVersions.TryGetValue(titleID, out uint version))
+                {
+                    if (title.version > version)
+                    {
+                        Process.latestVersions[titleID] = title.version;
+                    }
+                }
+                else
+                {
+                    Process.latestVersions.Add(titleID, title.version);
+                }
+            }
+
+            reloadData();
+        }
+
+        public void reloadData()
+        {
+            uint index = 0, count = (uint)titles.Count;
+
+            objectListView.SetObjects(titles);
+
+            foreach (OLVListItem listItem in objectListView.Items)
+            {
+                Title title = listItem.RowObject as Title;
+
+                progressDialog?.SetLine(2, title.titleName, true, IntPtr.Zero);
+                progressDialog?.SetProgress(index++, count);
+
+                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+
+                Process.latestVersions.TryGetValue(titleID, out uint latestVersion);
+                Process.versionList.TryGetValue(titleID, out uint version);
+                Process.titleVersions.TryGetValue(titleID, out uint titleVersion);
+
+                if (latestVersion < version || latestVersion < titleVersion)
+                {
+                    listItem.BackColor = title.signature != true ? Color.OldLace : Color.LightYellow;
+                }
+                else if (title.signature != true)
+                {
+                    listItem.BackColor = Color.WhiteSmoke;
+                }
+
+                if (title.permission == Title.Permission.Dangerous)
+                {
+                    listItem.ForeColor = Color.DarkRed;
+                }
+                else if (title.permission == Title.Permission.Unsafe)
+                {
+                    listItem.ForeColor = Color.Indigo;
+                }
             }
         }
 
@@ -273,7 +334,7 @@ namespace NX_Game_Info
 
             if (Process.updateVersionList())
             {
-                uint index = 0, count = 0;
+                uint count = 0;
 
                 foreach (var title in titles)
                 {
@@ -292,39 +353,14 @@ namespace NX_Game_Info
 
                 if (count != 0)
                 {
-                    objectListView.SetObjects(titles);
+                    reloadData();
 
-                    foreach (OLVListItem listItem in objectListView.Items)
+                    Common.Cache.Default.Titles.Add(titles.ToList());
+                    if (Common.Cache.Default.Titles.Count > Common.CACHE_SIZE)
                     {
-                        Title title = listItem.RowObject as Title;
-
-                        progressDialog.SetLine(2, title.titleName, true, IntPtr.Zero);
-                        progressDialog.SetProgress(index++, count);
-
-                        string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
-
-                        Process.latestVersions.TryGetValue(titleID, out uint latestVersion);
-                        Process.versionList.TryGetValue(titleID, out uint version);
-                        Process.titleVersions.TryGetValue(titleID, out uint titleVersion);
-
-                        if (latestVersion < version || latestVersion < titleVersion)
-                        {
-                            listItem.BackColor = title.signature != true ? Color.OldLace : Color.LightYellow;
-                        }
-                        else if (title.signature != true)
-                        {
-                            listItem.BackColor = Color.WhiteSmoke;
-                        }
-
-                        if (title.permission == Title.Permission.Dangerous)
-                        {
-                            listItem.ForeColor = Color.DarkRed;
-                        }
-                        else if (title.permission == Title.Permission.Unsafe)
-                        {
-                            listItem.ForeColor = Color.Indigo;
-                        }
+                        Common.Cache.Default.Titles.RemoveRange(0, Common.Cache.Default.Titles.Count - Common.CACHE_SIZE);
                     }
+                    Common.Cache.Default.Save();
                 }
 
                 Process.log?.WriteLine("\n{0} titles have updated version", count);
@@ -512,36 +548,14 @@ namespace NX_Game_Info
         {
             if (e.Result is List<Title> titles)
             {
-                objectListView.SetObjects(titles);
+                reloadData();
 
-                foreach (OLVListItem listItem in objectListView.Items)
+                Common.Cache.Default.Titles.Add(titles.ToList());
+                if (Common.Cache.Default.Titles.Count > Common.CACHE_SIZE)
                 {
-                    Title title = listItem.RowObject as Title;
-
-                    string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
-
-                    Process.latestVersions.TryGetValue(titleID, out uint latestVersion);
-                    Process.versionList.TryGetValue(titleID, out uint version);
-                    Process.titleVersions.TryGetValue(titleID, out uint titleVersion);
-
-                    if (latestVersion < version || latestVersion < titleVersion)
-                    {
-                        listItem.BackColor = title.signature != true ? Color.OldLace : Color.LightYellow;
-                    }
-                    else if (title.signature != true)
-                    {
-                        listItem.BackColor = Color.WhiteSmoke;
-                    }
-
-                    if (title.permission == Title.Permission.Dangerous)
-                    {
-                        listItem.ForeColor = Color.DarkRed;
-                    }
-                    else if (title.permission == Title.Permission.Unsafe)
-                    {
-                        listItem.ForeColor = Color.Indigo;
-                    }
+                    Common.Cache.Default.Titles.RemoveRange(0, Common.Cache.Default.Titles.Count - Common.CACHE_SIZE);
                 }
+                Common.Cache.Default.Save();
 
                 toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
 
