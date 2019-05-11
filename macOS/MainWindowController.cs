@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using Foundation;
 using AppKit;
+using Bluegrams.Application;
 using LibHac;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
@@ -69,9 +70,10 @@ namespace NX_Game_Info
 
             PortableSettingsProvider.SettingsFileName = Common.USER_SETTINGS;
             PortableSettingsProviderBase.SettingsDirectory = Process.path_prefix;
-            PortableSettingsProvider.ApplyProvider(Common.Settings.Default);
+            PortableSettingsProvider.ApplyProvider(Common.Settings.Default, Common.History.Default);
 
             Common.Settings.Default.Upgrade();
+            Common.History.Default.Upgrade();
 
             NSMenuItem debugLog = Window.Menu?.ItemWithTitle("File")?.Submenu.ItemWithTitle("Debug Log");
             if (debugLog != null)
@@ -104,6 +106,12 @@ namespace NX_Game_Info
             backgroundWorker.DoWork += BackgroundWorker_DoWork;
             backgroundWorker.ProgressChanged += BackgroundWorker_ProgressChanged;
             backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
+
+            titles = Process.processHistory();
+
+            tableViewDataSource.Titles.AddRange(titles);
+
+            tableView.ReloadData();
         }
 
         [Export("openDocument:")]
@@ -268,30 +276,6 @@ namespace NX_Game_Info
             });
         }
 
-        [Export("debugLog:")]
-        public void DebugLog(NSMenuItem menuItem)
-        {
-            menuItem.State = menuItem.State == NSCellStateValue.On ? NSCellStateValue.Off : NSCellStateValue.On;
-
-            Common.Settings.Default.DebugLog = menuItem.State == NSCellStateValue.On;
-            Common.Settings.Default.Save();
-
-            if (Common.Settings.Default.DebugLog)
-            {
-                try
-                {
-                    Process.log = File.AppendText(Process.path_prefix + Common.LOG_FILE);
-                    Process.log.AutoFlush = true;
-                }
-                catch { }
-            }
-            else
-            {
-                Process.log?.Close();
-                Process.log = null;
-            }
-        }
-
         [Export("export:")]
         public void Export(NSMenuItem menuItem)
         {
@@ -351,9 +335,107 @@ namespace NX_Game_Info
                         Process.log?.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
 
                         Window.EndSheet(sheet);
+
+                        var alert = new NSAlert()
+                        {
+                            InformativeText = String.Format("{0} of {1} titles exported", index, titles.Count),
+                            MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                        };
+                        alert.RunModal();
                     }
                 }
             });
+        }
+
+        [Export("updateVersionList:")]
+        public void UpdateVersionList(NSMenuItem menuItem)
+        {
+            Window.BeginSheet(sheet, ProgressComplete);
+
+            message.StringValue = String.Format("Downloading from {0}", Common.TAGAYA_VERSIONLIST);
+            progress.DoubleValue = 0;
+
+            if (Process.updateVersionList())
+            {
+                uint count = 0;
+
+                foreach (var title in titles)
+                {
+                    if (title.type == TitleType.Application || title.type == TitleType.Patch)
+                    {
+                        if (Process.versionList.TryGetValue(title.titleIDApplication, out uint version))
+                        {
+                            if (title.latestVersion == unchecked((uint)-1) || version > title.latestVersion)
+                            {
+                                title.latestVersion = version;
+                                count++;
+                            }
+                        }
+                    }
+                }
+
+                if (count != 0)
+                {
+                    tableView.ReloadData();
+
+                    List<List<Title>> history = new List<List<Title>>();
+                    history.AddRange(Common.History.Default.Titles);
+                    history.Add(titles.ToList());
+
+                    Common.History.Default.Titles = new List<List<Title>>(history);
+                    if (Common.History.Default.Titles.Count > Common.HISTORY_SIZE)
+                    {
+                        Common.History.Default.Titles.RemoveRange(0, Common.History.Default.Titles.Count - Common.HISTORY_SIZE);
+                    }
+                    Common.History.Default.Save();
+                }
+
+                Process.log?.WriteLine("\n{0} titles have updated version", count);
+
+                Window.EndSheet(sheet);
+
+                var alert = new NSAlert()
+                {
+                    InformativeText = String.Format("{0} titles have updated version", count),
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                };
+                alert.RunModal();
+            }
+            else
+            {
+                Window.EndSheet(sheet);
+
+                var alert = new NSAlert()
+                {
+                    InformativeText = "Failed to download version list",
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                };
+                alert.RunModal();
+            }
+        }
+
+        [Export("debugLog:")]
+        public void DebugLog(NSMenuItem menuItem)
+        {
+            menuItem.State = menuItem.State == NSCellStateValue.On ? NSCellStateValue.Off : NSCellStateValue.On;
+
+            Common.Settings.Default.DebugLog = menuItem.State == NSCellStateValue.On;
+            Common.Settings.Default.Save();
+
+            if (Common.Settings.Default.DebugLog)
+            {
+                try
+                {
+                    Process.log = File.AppendText(Process.path_prefix + Common.LOG_FILE);
+                    Process.log.AutoFlush = true;
+                }
+                catch { }
+            }
+            else
+            {
+                Process.log?.Close();
+                Process.log = null;
+            }
         }
 
         void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
@@ -493,6 +575,17 @@ namespace NX_Game_Info
                 tableViewDataSource.Titles.AddRange(titles);
 
                 tableView.ReloadData();
+
+                List<List<Title>> history = new List<List<Title>>();
+                history.AddRange(Common.History.Default.Titles);
+                history.Add(titles.ToList());
+
+                Common.History.Default.Titles = new List<List<Title>>(history);
+                if (Common.History.Default.Titles.Count > Common.HISTORY_SIZE)
+                {
+                    Common.History.Default.Titles.RemoveRange(0, Common.History.Default.Titles.Count - Common.HISTORY_SIZE);
+                }
+                Common.History.Default.Save();
 
                 Window.EndSheet(sheet);
             }

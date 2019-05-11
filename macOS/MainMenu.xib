@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.31"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
     </dependencies>
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
@@ -75,14 +75,27 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="qjl-x6-J91"/>
-                            <menuItem title="Debug Log" keyEquivalent="L" id="9rY-DL-2nP">
-                                <connections>
-                                    <action selector="debugLog:" target="-1" id="IW7-Qg-4l0"/>
-                                </connections>
-                            </menuItem>
                             <menuItem title="Export" keyEquivalent="X" id="MXh-5X-bzI">
                                 <connections>
                                     <action selector="export:" target="-1" id="UFR-7n-xR5"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Options" id="ieD-Nr-wY1">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="Options" id="cPl-OO-7ff">
+                        <items>
+                            <menuItem title="Update Version List" keyEquivalent="V" id="2ZD-1S-gOF">
+                                <connections>
+                                    <action selector="updateVersionList:" target="-1" id="tyf-nr-kco"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="Ewp-hH-lxl"/>
+                            <menuItem title="Debug Log" keyEquivalent="L" id="9rY-DL-2nP">
+                                <connections>
+                                    <action selector="debugLog:" target="-1" id="IW7-Qg-4l0"/>
                                 </connections>
                             </menuItem>
                         </items>

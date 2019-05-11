@@ -9,67 +9,70 @@ using System.CodeDom.Compiler;
 
 namespace NX_Game_Info
 {
-	[Register ("MainWindowController")]
-	partial class MainWindowController
-	{
-		[Outlet]
-		AppKit.NSButton cancel { get; set; }
+    [Register ("MainWindowController")]
+    partial class MainWindowController
+    {
+        [Outlet]
+        AppKit.NSButton cancel { get; set; }
 
-		[Outlet]
-		AppKit.NSTextField message { get; set; }
+        [Outlet]
+        AppKit.NSTextField message { get; set; }
 
-		[Outlet]
-		AppKit.NSProgressIndicator progress { get; set; }
+        [Outlet]
+        AppKit.NSProgressIndicator progress { get; set; }
 
-		[Outlet]
-		AppKit.NSWindow sheet { get; set; }
+        [Outlet]
+        AppKit.NSWindow sheet { get; set; }
 
-		[Outlet]
-		AppKit.NSTableView tableView { get; set; }
+        [Outlet]
+        AppKit.NSTableView tableView { get; set; }
 
-		[Outlet]
-		AppKit.NSTextField title { get; set; }
+        [Outlet]
+        AppKit.NSTextField title { get; set; }
 
-		[Action ("cancelProgress:")]
-		partial void cancelProgress (Foundation.NSObject sender);
+        [Action ("cancelProgress:")]
+        partial void cancelProgress (Foundation.NSObject sender);
 
-		[Action ("debugLog:")]
-		partial void debugLog (Foundation.NSObject sender);
+        [Action ("debugLog:")]
+        partial void debugLog (Foundation.NSObject sender);
 
-		[Action ("export:")]
-		partial void export (Foundation.NSObject sender);
-		
-		void ReleaseDesignerOutlets ()
-		{
-			if (cancel != null) {
-				cancel.Dispose ();
-				cancel = null;
-			}
+        [Action ("export:")]
+        partial void export (Foundation.NSObject sender);
 
-			if (message != null) {
-				message.Dispose ();
-				message = null;
-			}
+        [Action ("updateVersionList:")]
+        partial void updateVersionList (Foundation.NSObject sender);
+        
+        void ReleaseDesignerOutlets ()
+        {
+            if (cancel != null) {
+                cancel.Dispose ();
+                cancel = null;
+            }
 
-			if (progress != null) {
-				progress.Dispose ();
-				progress = null;
-			}
+            if (message != null) {
+                message.Dispose ();
+                message = null;
+            }
 
-			if (sheet != null) {
-				sheet.Dispose ();
-				sheet = null;
-			}
+            if (progress != null) {
+                progress.Dispose ();
+                progress = null;
+            }
 
-			if (tableView != null) {
-				tableView.Dispose ();
-				tableView = null;
-			}
+            if (sheet != null) {
+                sheet.Dispose ();
+                sheet = null;
+            }
 
-			if (title != null) {
-				title.Dispose ();
-				title = null;
-			}
-		}
-	}
+            if (tableView != null) {
+                tableView.Dispose ();
+                tableView = null;
+            }
+
+            if (title != null) {
+                title.Dispose ();
+                title = null;
+            }
+        }
+    }
 }

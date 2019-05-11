@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+#if !MACOS
 using System.Drawing;
+#endif
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -69,6 +71,7 @@ namespace NX_Game_Info
                 set { this["DebugLog"] = value; }
             }
 
+#if !MACOS
             [UserScopedSetting()]
             [DefaultSettingValue("0, 0")]
             public Point WindowLocation
@@ -84,6 +87,7 @@ namespace NX_Game_Info
                 get { return (Size)this["WindowSize"]; }
                 set { this["WindowSize"] = value; }
             }
+#endif
 
             public static Settings Default = (Settings)Synchronized(new Settings());
         }
