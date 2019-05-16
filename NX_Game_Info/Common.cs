@@ -87,6 +87,14 @@ namespace NX_Game_Info
                 get { return (Size)this["WindowSize"]; }
                 set { this["WindowSize"] = value; }
             }
+
+            [UserScopedSetting()]
+            [DefaultSettingValue("")]
+            public List<int> ColumnWidth
+            {
+                get { return (List<int>)this["ColumnWidth"]; }
+                set { this["ColumnWidth"] = value; }
+            }
 #endif
 
             public static Settings Default = (Settings)Synchronized(new Settings());

@@ -119,6 +119,13 @@ namespace NX_Game_Info
                 Common.Settings.Default.WindowSize = RestoreBounds.Size;
             }
 
+            List<int> columnWidth = new List<int>();
+            foreach (ColumnHeader column in objectListView.Columns)
+            {
+                columnWidth.Add(column.Width);
+            }
+            Common.Settings.Default.ColumnWidth = columnWidth;
+
             Common.Settings.Default.Save();
         }
 
@@ -126,6 +133,11 @@ namespace NX_Game_Info
         {
             Location = Common.Settings.Default.WindowLocation;
             Size = Common.Settings.Default.WindowSize;
+
+            foreach (var column in objectListView.Columns.Cast<ColumnHeader>().Zip(Common.Settings.Default.ColumnWidth, Tuple.Create))
+            {
+                column.Item1.Width = column.Item2;
+            }
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
