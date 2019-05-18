@@ -59,12 +59,6 @@ namespace NX_Game_Info
             {
                 Environment.Exit(-1);
             }
-
-            titles = Process.processHistory();
-
-            reloadData();
-
-            toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
         }
 
         public void reloadData()
@@ -119,6 +113,8 @@ namespace NX_Game_Info
                 Common.Settings.Default.WindowSize = RestoreBounds.Size;
             }
 
+            Common.Settings.Default.Columns = objectListView.ColumnsInDisplayOrder.Select(x => x.AspectName).ToList();
+
             List<int> columnWidth = new List<int>();
             foreach (ColumnHeader column in objectListView.Columns)
             {
@@ -134,10 +130,28 @@ namespace NX_Game_Info
             Location = Common.Settings.Default.WindowLocation;
             Size = Common.Settings.Default.WindowSize;
 
+            if (Common.Settings.Default.Columns.Any())
+            {
+                foreach (var column in objectListView.AllColumns)
+                {
+                    if (!Common.Settings.Default.Columns.Union(new List<string> { "titleID", "titleName", "error" }).ToList().Contains(column.AspectName))
+                    {
+                        column.IsVisible = false;
+                    }
+                }
+                objectListView.RebuildColumns();
+            }
+
             foreach (var column in objectListView.Columns.Cast<ColumnHeader>().Zip(Common.Settings.Default.ColumnWidth, Tuple.Create))
             {
                 column.Item1.Width = column.Item2;
             }
+
+            titles = Process.processHistory();
+
+            reloadData();
+
+            toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
         }
 
         private void Main_FormClosing(object sender, FormClosingEventArgs e)
@@ -400,6 +414,14 @@ namespace NX_Game_Info
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             aboutBox.Show();
+        }
+
+        private void objectListView_Freezing(object sender, FreezeEventArgs e)
+        {
+            if (e.FreezeLevel == 0)
+            {
+                reloadData();
+            }
         }
 
         private void backgroundWorkerProcess_DoWork(object sender, System.ComponentModel.DoWorkEventArgs e)

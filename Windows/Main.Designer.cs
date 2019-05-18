@@ -154,20 +154,20 @@
             // updateVersionListToolStripMenuItem
             // 
             this.updateVersionListToolStripMenuItem.Name = "updateVersionListToolStripMenuItem";
-            this.updateVersionListToolStripMenuItem.Size = new System.Drawing.Size(252, 30);
+            this.updateVersionListToolStripMenuItem.Size = new System.Drawing.Size(248, 30);
             this.updateVersionListToolStripMenuItem.Text = "Update &Version List";
             this.updateVersionListToolStripMenuItem.Click += new System.EventHandler(this.updateVersionListToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(249, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(245, 6);
             // 
             // debugLogToolStripMenuItem
             // 
             this.debugLogToolStripMenuItem.CheckOnClick = true;
             this.debugLogToolStripMenuItem.Name = "debugLogToolStripMenuItem";
-            this.debugLogToolStripMenuItem.Size = new System.Drawing.Size(252, 30);
+            this.debugLogToolStripMenuItem.Size = new System.Drawing.Size(248, 30);
             this.debugLogToolStripMenuItem.Text = "Debug &Log";
             this.debugLogToolStripMenuItem.CheckedChanged += new System.EventHandler(this.debugLogToolStripMenuItem_CheckedChanged);
             // 
@@ -253,11 +253,13 @@
             this.objectListView.TabIndex = 3;
             this.objectListView.UseCompatibleStateImageBehavior = false;
             this.objectListView.View = System.Windows.Forms.View.Details;
+            this.objectListView.Freezing += new System.EventHandler<BrightIdeasSoftware.FreezeEventArgs>(this.objectListView_Freezing);
             // 
             // olvColumnTitleID
             // 
             this.olvColumnTitleID.AspectName = "titleID";
             this.olvColumnTitleID.CellPadding = null;
+            this.olvColumnTitleID.Hideable = false;
             this.olvColumnTitleID.Text = "Title ID";
             this.olvColumnTitleID.Width = 120;
             // 
@@ -265,6 +267,7 @@
             // 
             this.olvColumnTitleName.AspectName = "titleName";
             this.olvColumnTitleName.CellPadding = null;
+            this.olvColumnTitleName.Hideable = false;
             this.olvColumnTitleName.Text = "Title Name";
             this.olvColumnTitleName.Width = 200;
             // 
@@ -351,6 +354,7 @@
             // 
             this.olvColumnError.AspectName = "error";
             this.olvColumnError.CellPadding = null;
+            this.olvColumnError.Hideable = false;
             this.olvColumnError.Text = "";
             this.olvColumnError.Width = 260;
             // 

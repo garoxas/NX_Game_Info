@@ -90,6 +90,14 @@ namespace NX_Game_Info
 
             [UserScopedSetting()]
             [DefaultSettingValue("")]
+            public List<string> Columns
+            {
+                get { return (List<string>)this["Columns"]; }
+                set { this["Columns"] = value; }
+            }
+
+            [UserScopedSetting()]
+            [DefaultSettingValue("")]
             public List<int> ColumnWidth
             {
                 get { return (List<int>)this["ColumnWidth"]; }
