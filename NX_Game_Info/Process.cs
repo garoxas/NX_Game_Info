@@ -143,7 +143,7 @@ namespace NX_Game_Info
                     if (response.IsSuccessStatusCode)
                     {
                         var content = response.Content.ReadAsStringAsync().Result;
-                        if (!string.IsNullOrEmpty(content))
+                        if (!String.IsNullOrEmpty(content))
                         {
                             var versionlist = JsonConvert.DeserializeObject<Common.VersionList>(content);
 
@@ -817,12 +817,21 @@ namespace NX_Game_Info
                 {
                     title.titleName = titleName;
                 }
+                else if (keyset.TitleNames.TryGetValue(BitConverter.GetBytes(nca.Header.TitleId).Concat(new byte[8]).ToArray(), out titleName))
+                {
+                    title.titleName = titleName;
+                }
                 if (keyset.TitleVersions.TryGetValue(nca.Header.RightsId, out uint titleVersion))
                 {
                     title.latestVersion = titleVersion;
                 }
+                else if (keyset.TitleVersions.TryGetValue(BitConverter.GetBytes(nca.Header.TitleId).Concat(new byte[8]).ToArray(), out titleVersion))
+                {
+                    title.latestVersion = titleVersion;
+                }
             }
-            else
+
+            if (String.IsNullOrEmpty(title.titleName))
             {
                 if (titleNames.TryGetValue(title.titleID, out string titleName))
                 {
