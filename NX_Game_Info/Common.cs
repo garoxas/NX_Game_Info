@@ -203,6 +203,8 @@ namespace NX_Game_Info
                             return masterkey.ToString() + " (6.2.0)";
                         case 7:
                             return masterkey.ToString() + " (7.0.0-8.0.1)";
+                        case 8:
+                            return masterkey.ToString() + " (8.1.0)";
                         case unchecked((uint)-1):
                             return "";
                         default:
