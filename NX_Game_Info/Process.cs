@@ -229,87 +229,87 @@ namespace NX_Game_Info
                     xci = new Xci(keyset, filestream.AsStorage());
 
                     title.distribution = Title.Distribution.Cartridge;
+
+                    log?.WriteLine("Processing XCI {0}", filename);
+
+                    if (xci.RootPartition?.Files.Length > 0)
+                    {
+                        title.structure.Add(Title.Structure.RootPartition);
+                    }
+
+                    if (xci.UpdatePartition?.Files.Length > 0)
+                    {
+                        title.structure.Add(Title.Structure.UpdatePartition);
+                    }
+
+                    if (xci.NormalPartition?.Files.Length > 0)
+                    {
+                        title.structure.Add(Title.Structure.NormalPartition);
+                    }
+
+                    if (xci.SecurePartition?.Files.Length > 0)
+                    {
+                        PfsFileEntry[] fileEntries = xci.SecurePartition.Files;
+                        foreach (PfsFileEntry entry in fileEntries)
+                        {
+                            if (entry.Name.EndsWith(".cnmt.nca"))
+                            {
+                                using (var cnmtNca = xci.SecurePartition.OpenFile(entry))
+                                {
+                                    var nca = processCnmtNca(cnmtNca, ref title);
+                                    if (nca.Item1 != null && (nca.Item2 != null || title.type == TitleType.AddOnContent))
+                                    {
+                                        (biggestNca, controlNca) = nca;
+                                    }
+                                }
+
+                                title.structure.Add(Title.Structure.CnmtNca);
+                            }
+                            else if (entry.Name.EndsWith(".cert"))
+                            {
+                                title.structure.Add(Title.Structure.Cert);
+                            }
+                            else if (entry.Name.EndsWith(".tik"))
+                            {
+                                using (var tik = xci.SecurePartition.OpenFile(entry))
+                                {
+                                    if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
+                                    {
+                                        processTik(tik, rightsId, ref keyset);
+                                    }
+                                }
+
+                                title.structure.Add(Title.Structure.Tik);
+                            }
+                        }
+
+                        if (!String.IsNullOrEmpty(biggestNca))
+                        {
+                            using (var biggest = xci.SecurePartition.OpenFile(biggestNca))
+                            {
+                                processBiggestNca(biggest, ref title);
+                            }
+                        }
+
+                        if (!String.IsNullOrEmpty(controlNca))
+                        {
+                            using (var control = xci.SecurePartition.OpenFile(controlNca))
+                            {
+                                processControlNca(control, ref title);
+                            }
+                        }
+
+                        title.structure.Add(Title.Structure.SecurePartition);
+                    }
+
+                    if (xci.LogoPartition?.Files.Length > 0)
+                    {
+                        title.structure.Add(Title.Structure.LogoPartition);
+                    }
                 }
                 catch (InvalidDataException)
                 {
                     return null;
-                }
-
-                log?.WriteLine("Processing XCI {0}", filename);
-
-                if (xci.RootPartition?.Files.Length > 0)
-                {
-                    title.structure.Add(Title.Structure.RootPartition);
-                }
-
-                if (xci.UpdatePartition?.Files.Length > 0)
-                {
-                    title.structure.Add(Title.Structure.UpdatePartition);
-                }
-
-                if (xci.NormalPartition?.Files.Length > 0)
-                {
-                    title.structure.Add(Title.Structure.NormalPartition);
-                }
-
-                if (xci.SecurePartition?.Files.Length > 0)
-                {
-                    PfsFileEntry[] fileEntries = xci.SecurePartition.Files;
-                    foreach (PfsFileEntry entry in fileEntries)
-                    {
-                        if (entry.Name.EndsWith(".cnmt.nca"))
-                        {
-                            using (var cnmtNca = xci.SecurePartition.OpenFile(entry))
-                            {
-                                var nca = processCnmtNca(cnmtNca, ref title);
-                                if (nca.Item1 != null && (nca.Item2 != null || title.type == TitleType.AddOnContent))
-                                {
-                                    (biggestNca, controlNca) = nca;
-                                }
-                            }
-
-                            title.structure.Add(Title.Structure.CnmtNca);
-                        }
-                        else if (entry.Name.EndsWith(".cert"))
-                        {
-                            title.structure.Add(Title.Structure.Cert);
-                        }
-                        else if (entry.Name.EndsWith(".tik"))
-                        {
-                            using (var tik = xci.SecurePartition.OpenFile(entry))
-                            {
-                                if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
-                                {
-                                    processTik(tik, rightsId, ref keyset);
-                                }
-                            }
-
-                            title.structure.Add(Title.Structure.Tik);
-                        }
-                    }
-
-                    if (!String.IsNullOrEmpty(biggestNca))
-                    {
-                        using (var biggest = xci.SecurePartition.OpenFile(biggestNca))
-                        {
-                            processBiggestNca(biggest, ref title);
-                        }
-                    }
-
-                    if (!String.IsNullOrEmpty(controlNca))
-                    {
-                        using (var control = xci.SecurePartition.OpenFile(controlNca))
-                        {
-                            processControlNca(control, ref title);
-                        }
-                    }
-
-                    title.structure.Add(Title.Structure.SecurePartition);
-                }
-
-                if (xci.LogoPartition?.Files.Length > 0)
-                {
-                    title.structure.Add(Title.Structure.LogoPartition);
                 }
             }
 
@@ -340,96 +340,96 @@ namespace NX_Game_Info
                     pfs = new Pfs(filestream.AsStorage());
 
                     title.distribution = Title.Distribution.Digital;
+
+                    log?.WriteLine("Processing NSP {0}", filename);
+
+                    PfsFileEntry[] fileEntries = pfs.Files;
+                    foreach (PfsFileEntry entry in fileEntries)
+                    {
+                        if (entry.Name.EndsWith(".cnmt.xml"))
+                        {
+                            using (var cnmtXml = pfs.OpenFile(entry))
+                            {
+                                (biggestNca, controlNca) = processCnmtXml(cnmtXml, ref title);
+                            }
+
+                            title.structure.Add(Title.Structure.CnmtXml);
+                        }
+                        else if (entry.Name.EndsWith(".cnmt.nca"))
+                        {
+                            using (var cnmtNca = pfs.OpenFile(entry))
+                            {
+                                var nca = processCnmtNca(cnmtNca, ref title);
+                                if (nca.Item1 != null && (nca.Item2 != null || title.type == TitleType.AddOnContent))
+                                {
+                                    (biggestNca, controlNca) = nca;
+                                }
+                            }
+
+                            title.structure.Add(Title.Structure.CnmtNca);
+                        }
+                        else if (entry.Name.EndsWith(".cert"))
+                        {
+                            title.structure.Add(Title.Structure.Cert);
+                        }
+                        else if (entry.Name.EndsWith(".tik"))
+                        {
+                            using (var tik = pfs.OpenFile(entry))
+                            {
+                                if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
+                                {
+                                    processTik(tik, rightsId, ref keyset);
+                                }
+                            }
+
+                            title.structure.Add(Title.Structure.Tik);
+                        }
+                        else if (entry.Name.EndsWith(".legalinfo.xml"))
+                        {
+                            title.structure.Add(Title.Structure.LegalinfoXml);
+                        }
+                        else if (entry.Name.EndsWith(".nacp.xml"))
+                        {
+                            using (var nacpXml = pfs.OpenFile(entry))
+                            {
+                                processNacpXml(nacpXml, ref title);
+                            }
+
+                            title.structure.Add(Title.Structure.NacpXml);
+                        }
+                        else if (entry.Name.EndsWith(".programinfo.xml"))
+                        {
+                            title.structure.Add(Title.Structure.PrograminfoXml);
+                        }
+                        else if (entry.Name.Equals("cardspec.xml"))
+                        {
+                            title.structure.Add(Title.Structure.CardspecXml);
+                        }
+                        else if (entry.Name.Equals("authoringtoolinfo.xml"))
+                        {
+                            title.structure.Add(Title.Structure.AuthoringtoolinfoXml);
+                        }
+                    }
+
+                    if (!String.IsNullOrEmpty(biggestNca))
+                    {
+                        using (var biggest = pfs.OpenFile(biggestNca))
+                        {
+                            processBiggestNca(biggest, ref title);
+                        }
+                    }
+
+                    if (!String.IsNullOrEmpty(controlNca))
+                    {
+                        using (var control = pfs.OpenFile(controlNca))
+                        {
+                            processControlNca(control, ref title);
+                        }
+                    }
                 }
                 catch (InvalidDataException)
                 {
                     return null;
-                }
-
-                log?.WriteLine("Processing NSP {0}", filename);
-
-                PfsFileEntry[] fileEntries = pfs.Files;
-                foreach (PfsFileEntry entry in fileEntries)
-                {
-                    if (entry.Name.EndsWith(".cnmt.xml"))
-                    {
-                        using (var cnmtXml = pfs.OpenFile(entry))
-                        {
-                            (biggestNca, controlNca) = processCnmtXml(cnmtXml, ref title);
-                        }
-
-                        title.structure.Add(Title.Structure.CnmtXml);
-                    }
-                    else if (entry.Name.EndsWith(".cnmt.nca"))
-                    {
-                        using (var cnmtNca = pfs.OpenFile(entry))
-                        {
-                            var nca = processCnmtNca(cnmtNca, ref title);
-                            if (nca.Item1 != null && (nca.Item2 != null || title.type == TitleType.AddOnContent))
-                            {
-                                (biggestNca, controlNca) = nca;
-                            }
-                        }
-
-                        title.structure.Add(Title.Structure.CnmtNca);
-                    }
-                    else if (entry.Name.EndsWith(".cert"))
-                    {
-                        title.structure.Add(Title.Structure.Cert);
-                    }
-                    else if (entry.Name.EndsWith(".tik"))
-                    {
-                        using (var tik = pfs.OpenFile(entry))
-                        {
-                            if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
-                            {
-                                processTik(tik, rightsId, ref keyset);
-                            }
-                        }
-
-                        title.structure.Add(Title.Structure.Tik);
-                    }
-                    else if (entry.Name.EndsWith(".legalinfo.xml"))
-                    {
-                        title.structure.Add(Title.Structure.LegalinfoXml);
-                    }
-                    else if (entry.Name.EndsWith(".nacp.xml"))
-                    {
-                        using (var nacpXml = pfs.OpenFile(entry))
-                        {
-                            processNacpXml(nacpXml, ref title);
-                        }
-
-                        title.structure.Add(Title.Structure.NacpXml);
-                    }
-                    else if (entry.Name.EndsWith(".programinfo.xml"))
-                    {
-                        title.structure.Add(Title.Structure.PrograminfoXml);
-                    }
-                    else if (entry.Name.Equals("cardspec.xml"))
-                    {
-                        title.structure.Add(Title.Structure.CardspecXml);
-                    }
-                    else if (entry.Name.Equals("authoringtoolinfo.xml"))
-                    {
-                        title.structure.Add(Title.Structure.AuthoringtoolinfoXml);
-                    }
-                }
-
-                if (!String.IsNullOrEmpty(biggestNca))
-                {
-                    using (var biggest = pfs.OpenFile(biggestNca))
-                    {
-                        processBiggestNca(biggest, ref title);
-                    }
-                }
-
-                if (!String.IsNullOrEmpty(controlNca))
-                {
-                    using (var control = pfs.OpenFile(controlNca))
-                    {
-                        processControlNca(control, ref title);
-                    }
                 }
             }
 
@@ -459,17 +459,17 @@ namespace NX_Game_Info
                     nro = new Nro(filestream.AsStorage());
 
                     title.distribution = Title.Distribution.Homebrew;
+
+                    log?.WriteLine("Processing NRO {0}", filename);
+
+                    using (var control = nro.OpenNacp().AsStream())
+                    {
+                        processControlNacp(control, ref title);
+                    }
                 }
                 catch (InvalidDataException)
                 {
                     return null;
-                }
-
-                log?.WriteLine("Processing NRO {0}", filename);
-
-                using (var control = nro.OpenNacp().AsStream())
-                {
-                    processControlNacp(control, ref title);
                 }
             }
 
@@ -482,35 +482,36 @@ namespace NX_Game_Info
         {
             try
             {
-                var fs = new SwitchFs(keyset, new FileSystem(path));
-
-                log?.WriteLine("{0} of {1} NCA processed", fs?.Titles?.Select(title => title.Value.Ncas.Count)?.Sum(), fs?.Ncas?.Count);
-
-                List<Application> applications = fs?.Applications?.Values?.ToList() ?? new List<Application>();
-
-                log?.WriteLine("Found {0} applications", applications?.Count);
-
-                List<FsTitle> fsTitles = new List<FsTitle>();
-
-                foreach (Application application in applications)
+                using (var fs = new SwitchFs(keyset, new FileSystem(path)))
                 {
-                    if (application.Main != null)
+                    log?.WriteLine("{0} of {1} NCA processed", fs?.Titles?.Select(title => title.Value.Ncas.Count)?.Sum(), fs?.Ncas?.Count);
+
+                    List<Application> applications = fs?.Applications?.Values?.ToList() ?? new List<Application>();
+
+                    log?.WriteLine("Found {0} applications", applications?.Count);
+
+                    List<FsTitle> fsTitles = new List<FsTitle>();
+
+                    foreach (Application application in applications)
                     {
-                        if (application.Main.MetaNca != null || application.Patch?.MetaNca == null)
+                        if (application.Main != null)
                         {
-                            fsTitles.Add(application.Main);
+                            if (application.Main.MetaNca != null || application.Patch?.MetaNca == null)
+                            {
+                                fsTitles.Add(application.Main);
+                            }
                         }
+
+                        if (application.Patch?.MetaNca != null)
+                        {
+                            fsTitles.Add(application.Patch);
+                        }
+
+                        fsTitles.AddRange(application.AddOnContent);
                     }
 
-                    if (application.Patch?.MetaNca != null)
-                    {
-                        fsTitles.Add(application.Patch);
-                    }
-
-                    fsTitles.AddRange(application.AddOnContent);
+                    return fsTitles.OrderBy(fsTitle => fsTitle.Id).ToList();
                 }
-
-                return fsTitles.OrderBy(fsTitle => fsTitle.Id).ToList();
             }
             catch (DirectoryNotFoundException)
             {
