@@ -582,6 +582,23 @@ namespace NX_Game_Info
                 title.titleID = title.titleID.Substring(0, Math.Min(title.titleID.Length, 13)) + "800";
             }
 
+            if (title.version > 0)
+            {
+                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+
+                if (latestVersions.TryGetValue(titleID, out uint version))
+                {
+                    if (title.version > version)
+                    {
+                        latestVersions[titleID] = title.version;
+                    }
+                }
+                else
+                {
+                    latestVersions.Add(titleID, title.version);
+                }
+            }
+
             log?.WriteLine("Title information for {0}: [{1}] {2}", title.filename, title.titleID, title.titleName);
 
             return title;
