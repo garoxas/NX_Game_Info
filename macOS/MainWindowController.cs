@@ -133,7 +133,7 @@ namespace NX_Game_Info
             openPanel.CanChooseDirectories = false;
             openPanel.AllowsMultipleSelection = true;
             openPanel.AllowedFileTypes = new string[] { "xci", "nsp", "nro" };
-            openPanel.DirectoryUrl = new NSUrl(!String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+            openPanel.DirectoryUrl = NSUrl.FromFilename(!String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
             openPanel.Title = "Open NX Game Files";
 
             Process.log?.WriteLine("\nOpen File");
@@ -176,7 +176,7 @@ namespace NX_Game_Info
             NSOpenPanel openPanel = NSOpenPanel.OpenPanel;
             openPanel.CanChooseFiles = false;
             openPanel.CanChooseDirectories = true;
-            openPanel.DirectoryUrl = new NSUrl(!String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+            openPanel.DirectoryUrl = NSUrl.FromFilename(!String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
             openPanel.Title = "Open NX Game Directory";
 
             Process.log?.WriteLine("\nOpen Directory");
@@ -248,7 +248,7 @@ namespace NX_Game_Info
             NSOpenPanel openPanel = NSOpenPanel.OpenPanel;
             openPanel.CanChooseFiles = false;
             openPanel.CanChooseDirectories = true;
-            openPanel.DirectoryUrl = new NSUrl(!String.IsNullOrEmpty(Common.Settings.Default.SDCardDirectory) && Directory.Exists(Common.Settings.Default.SDCardDirectory) ? Common.Settings.Default.SDCardDirectory : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
+            openPanel.DirectoryUrl = NSUrl.FromFilename(!String.IsNullOrEmpty(Common.Settings.Default.SDCardDirectory) && Directory.Exists(Common.Settings.Default.SDCardDirectory) ? Common.Settings.Default.SDCardDirectory : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
             openPanel.Title = "Open SD Card";
 
             Process.log?.WriteLine("\nOpen SD Card");
