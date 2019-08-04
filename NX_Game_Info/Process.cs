@@ -482,7 +482,7 @@ namespace NX_Game_Info
         {
             try
             {
-                using (var fs = new SwitchFs(keyset, new FileSystem(path)))
+                using (var fs = new SwitchFs(keyset, new FileSystem(path), true))
                 {
                     log?.WriteLine("{0} of {1} NCA processed", fs?.Titles?.Select(title => title.Value.Ncas.Count)?.Sum(), fs?.Ncas?.Count);
 
