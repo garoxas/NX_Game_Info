@@ -49,11 +49,14 @@
             this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.objectListView = new BrightIdeasSoftware.ObjectListView();
             this.olvColumnTitleID = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumnBaseTitleID = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnTitleName = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnDisplayVersion = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnVersion = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnLatestVersion = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
-            this.olvColumnFirmware = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumnSystemUpdate = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumnSystemVersion = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumnApplicationVersion = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnMasterKey = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnFileName = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnFileSize = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
@@ -213,11 +216,14 @@
             // objectListView
             // 
             this.objectListView.AllColumns.Add(this.olvColumnTitleID);
+            this.objectListView.AllColumns.Add(this.olvColumnBaseTitleID);
             this.objectListView.AllColumns.Add(this.olvColumnTitleName);
             this.objectListView.AllColumns.Add(this.olvColumnDisplayVersion);
             this.objectListView.AllColumns.Add(this.olvColumnVersion);
             this.objectListView.AllColumns.Add(this.olvColumnLatestVersion);
-            this.objectListView.AllColumns.Add(this.olvColumnFirmware);
+            this.objectListView.AllColumns.Add(this.olvColumnSystemUpdate);
+            this.objectListView.AllColumns.Add(this.olvColumnSystemVersion);
+            this.objectListView.AllColumns.Add(this.olvColumnApplicationVersion);
             this.objectListView.AllColumns.Add(this.olvColumnMasterKey);
             this.objectListView.AllColumns.Add(this.olvColumnFileName);
             this.objectListView.AllColumns.Add(this.olvColumnFileSize);
@@ -229,11 +235,14 @@
             this.objectListView.AllColumns.Add(this.olvColumnError);
             this.objectListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.olvColumnTitleID,
+            this.olvColumnBaseTitleID,
             this.olvColumnTitleName,
             this.olvColumnDisplayVersion,
             this.olvColumnVersion,
             this.olvColumnLatestVersion,
-            this.olvColumnFirmware,
+            this.olvColumnSystemUpdate,
+            this.olvColumnSystemVersion,
+            this.olvColumnApplicationVersion,
             this.olvColumnMasterKey,
             this.olvColumnFileName,
             this.olvColumnFileSize,
@@ -262,6 +271,13 @@
             this.olvColumnTitleID.Hideable = false;
             this.olvColumnTitleID.Text = "Title ID";
             this.olvColumnTitleID.Width = 120;
+            // 
+            // olvColumnBaseTitleID
+            // 
+            this.olvColumnBaseTitleID.AspectName = "baseTitleID";
+            this.olvColumnBaseTitleID.CellPadding = null;
+            this.olvColumnBaseTitleID.Text = "Base Title ID";
+            this.olvColumnBaseTitleID.Width = 120;
             // 
             // olvColumnTitleName
             // 
@@ -294,9 +310,24 @@
             // 
             // olvColumnFirmware
             // 
-            this.olvColumnFirmware.AspectName = "firmware";
-            this.olvColumnFirmware.CellPadding = null;
-            this.olvColumnFirmware.Text = "Firmware";
+            this.olvColumnSystemUpdate.AspectName = "systemUpdateString";
+            this.olvColumnSystemUpdate.CellPadding = null;
+            this.olvColumnSystemUpdate.Text = "System Update";
+            this.olvColumnSystemUpdate.Width = 100;
+            // 
+            // olvColumnSystemVersion
+            // 
+            this.olvColumnSystemVersion.AspectName = "systemVersionString";
+            this.olvColumnSystemVersion.CellPadding = null;
+            this.olvColumnSystemVersion.Text = "System Version";
+            this.olvColumnSystemVersion.Width = 100;
+            // 
+            // olvColumnApplicationVersion
+            // 
+            this.olvColumnApplicationVersion.AspectName = "applicationVersionString";
+            this.olvColumnApplicationVersion.CellPadding = null;
+            this.olvColumnApplicationVersion.Text = "Application Version";
+            this.olvColumnApplicationVersion.Width = 100;
             // 
             // olvColumnMasterKey
             // 
@@ -403,11 +434,14 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel;
         private BrightIdeasSoftware.ObjectListView objectListView;
         private BrightIdeasSoftware.OLVColumn olvColumnTitleID;
+        private BrightIdeasSoftware.OLVColumn olvColumnBaseTitleID;
         private BrightIdeasSoftware.OLVColumn olvColumnTitleName;
         private BrightIdeasSoftware.OLVColumn olvColumnDisplayVersion;
         private BrightIdeasSoftware.OLVColumn olvColumnVersion;
         private BrightIdeasSoftware.OLVColumn olvColumnLatestVersion;
-        private BrightIdeasSoftware.OLVColumn olvColumnFirmware;
+        private BrightIdeasSoftware.OLVColumn olvColumnSystemUpdate;
+        private BrightIdeasSoftware.OLVColumn olvColumnSystemVersion;
+        private BrightIdeasSoftware.OLVColumn olvColumnApplicationVersion;
         private BrightIdeasSoftware.OLVColumn olvColumnMasterKey;
         private BrightIdeasSoftware.OLVColumn olvColumnFileName;
         private BrightIdeasSoftware.OLVColumn olvColumnFileSize;

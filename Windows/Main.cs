@@ -74,7 +74,7 @@ namespace NX_Game_Info
                 progressDialog?.SetLine(2, title.titleName, true, IntPtr.Zero);
                 progressDialog?.SetProgress(index++, count);
 
-                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.baseTitleID ?? "";
 
                 Process.latestVersions.TryGetValue(titleID, out uint latestVersion);
                 Process.versionList.TryGetValue(titleID, out uint version);
@@ -305,7 +305,7 @@ namespace NX_Game_Info
                             title.displayVersion,
                             title.versionString,
                             title.latestVersionString,
-                            title.firmware,
+                            title.systemUpdate,
                             title.masterkeyString,
                             title.filename,
                             title.filesizeString,
@@ -351,7 +351,7 @@ namespace NX_Game_Info
                 {
                     if (title.type == TitleType.Application || title.type == TitleType.Patch)
                     {
-                        if (Process.versionList.TryGetValue(title.titleIDApplication, out uint version))
+                        if (Process.versionList.TryGetValue(title.baseTitleID, out uint version))
                         {
                             if (title.latestVersion == unchecked((uint)-1) || version > title.latestVersion)
                             {

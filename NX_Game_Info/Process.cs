@@ -185,7 +185,7 @@ namespace NX_Game_Info
                 title.filename = filename;
                 title.filesize = new FileInfo(filename).Length;
 
-                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.baseTitleID ?? "";
 
                 if (latestVersions.TryGetValue(titleID, out uint version))
                 {
@@ -239,6 +239,16 @@ namespace NX_Game_Info
 
                     if (xci.UpdatePartition?.Files.Length > 0)
                     {
+                        PfsFileEntry[] fileEntries = xci.UpdatePartition.Files;
+
+                        List<string> cnmtNca = fileEntries.Select(x => x.Name).Where(x => x.EndsWith(".cnmt.nca")).Intersect(Title.SystemUpdate.Keys).ToList();
+                        if (cnmtNca.Any())
+                        {
+                            uint systemUpdate = unchecked((uint)-1);
+                            Title.SystemUpdate.TryGetValue(cnmtNca.First(), out systemUpdate);
+                            title.systemUpdate = systemUpdate;
+                        }
+
                         title.structure.Add(Title.Structure.UpdatePartition);
                     }
 
@@ -315,7 +325,7 @@ namespace NX_Game_Info
 
             if (title.type == TitleType.Application || title.type == TitleType.Patch)
             {
-                if (versionList.TryGetValue(title.titleIDApplication, out uint version))
+                if (versionList.TryGetValue(title.baseTitleID, out uint version))
                 {
                     title.latestVersion = version;
                 }
@@ -435,7 +445,7 @@ namespace NX_Game_Info
 
             if (title.type == TitleType.Application || title.type == TitleType.Patch)
             {
-                if (versionList.TryGetValue(title.titleIDApplication, out uint version))
+                if (versionList.TryGetValue(title.baseTitleID, out uint version))
                 {
                     title.latestVersion = version;
                 }
@@ -571,7 +581,7 @@ namespace NX_Game_Info
 
             if (title.type == TitleType.Application || title.type == TitleType.Patch)
             {
-                if (versionList.TryGetValue(title.titleIDApplication, out uint version))
+                if (versionList.TryGetValue(title.baseTitleID, out uint version))
                 {
                     title.latestVersion = version;
                 }
@@ -584,7 +594,7 @@ namespace NX_Game_Info
 
             if (title.version > 0)
             {
-                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.baseTitleID ?? "";
 
                 if (latestVersions.TryGetValue(titleID, out uint version))
                 {
@@ -628,38 +638,10 @@ namespace NX_Game_Info
             title.type = titleType;
 
             title.titleID = xml.Element("ContentMeta").Element("Id").Value.Remove(1, 2).ToUpper();
+            title.baseTitleID = String.IsNullOrEmpty(title.titleID) ? "" : title.titleID.Substring(0, Math.Min(title.titleID.Length, 13)) + "000";
             title.version = Convert.ToUInt32(xml.Element("ContentMeta").Element("Version").Value);
 
-            uint firmware = (uint)(Convert.ToUInt64(xml.Element("ContentMeta").Element("RequiredSystemVersion").Value) % 0x100000000);
-            if (firmware == 0)
-            {
-                title.firmware = "0";
-            }
-            else if (firmware <= 450)
-            {
-                title.firmware = "1.0.0";
-            }
-            else if (firmware <= 65796)
-            {
-                title.firmware = "2.0.0";
-            }
-            else if (firmware <= 131162)
-            {
-                title.firmware = "2.1.0";
-            }
-            else if (firmware <= 196628)
-            {
-                title.firmware = "2.2.0";
-            }
-            else if (firmware <= 262164)
-            {
-                title.firmware = "2.3.0";
-            }
-            else
-            {
-                title.firmware = ((firmware >> 26) & 0x3F) + "." + ((firmware >> 20) & 0x3F) + "." + ((firmware >> 16) & 0x0F);
-            }
-
+            title.systemUpdate = (uint)(Convert.ToUInt64(xml.Element("ContentMeta").Element("RequiredSystemVersion").Value) % 0x100000000);
             title.masterkey = (uint)Math.Max(Convert.ToInt32(xml.Element("ContentMeta").Element("KeyGenerationMin").Value) - 1, 0);
 
             foreach (XElement element in xml.Descendants("Content"))
@@ -713,37 +695,11 @@ namespace NX_Game_Info
                         title.type = cnmt.Type;
 
                         title.titleID = String.Format("{0:X16}", cnmt.TitleId);
+                        title.baseTitleID = String.Format("{0:X16}", cnmt.ApplicationTitleId);
                         title.version = cnmt.TitleVersion?.Version ?? title.version;
 
-                        uint firmware = cnmt.MinimumSystemVersion?.Version ?? 0;
-                        if (firmware == 0)
-                        {
-                            title.firmware = "0";
-                        }
-                        else if (firmware <= 450)
-                        {
-                            title.firmware = "1.0.0";
-                        }
-                        else if (firmware <= 65796)
-                        {
-                            title.firmware = "2.0.0";
-                        }
-                        else if (firmware <= 131162)
-                        {
-                            title.firmware = "2.1.0";
-                        }
-                        else if (firmware <= 196628)
-                        {
-                            title.firmware = "2.2.0";
-                        }
-                        else if (firmware <= 262164)
-                        {
-                            title.firmware = "2.3.0";
-                        }
-                        else
-                        {
-                            title.firmware = ((firmware >> 26) & 0x3F) + "." + ((firmware >> 20) & 0x3F) + "." + ((firmware >> 16) & 0x0F);
-                        }
+                        title.systemVersion = cnmt.MinimumSystemVersion?.Version ?? unchecked((uint)-1);
+                        title.applicationVersion = cnmt.MinimumApplicationVersion?.Version ?? unchecked((uint)-1);
 
                         if (cnmtContent)
                         {
@@ -855,7 +811,7 @@ namespace NX_Game_Info
                 {
                     title.titleName = titleName;
                 }
-                else if (titleNames.TryGetValue(title.titleIDApplication, out titleName))
+                else if (titleNames.TryGetValue(title.baseTitleID, out titleName))
                 {
                     title.titleName = titleName;
 
@@ -1019,7 +975,7 @@ namespace NX_Game_Info
 
             foreach (var title in titles)
             {
-                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.titleIDApplication;
+                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.baseTitleID ?? "";
 
                 if (latestVersions.TryGetValue(titleID, out uint version))
                 {

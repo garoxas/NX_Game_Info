@@ -1,5 +1,6 @@
 # NX Game Info
-[![Build status](https://ci.appveyor.com/api/projects/status/kgdq8btq7v2th8ne?svg=true)](https://ci.appveyor.com/project/garoxas/nx-game-info)
+Nightly build [![Build status](https://ci.appveyor.com/api/projects/status/kgdq8btq7v2th8ne?svg=true)](https://ci.appveyor.com/project/garoxas/nx-game-info)
+Stable build https://github.com/garoxas/NX_Game_Info/releases
 
 # Features
 - NSP, XCI, NRO and installed titles on Switch SD card
@@ -9,13 +10,20 @@
 
 # Information
 - Title ID
+- Base Title ID
 - Title Name
 - Display Version
+  - Only available for `Base` and `Update`
 - Version
 - Latest Version
   - Latest title version from [tagaya CDN server](https://switchbrew.org/wiki/Network#tagaya)
-- Firmware
-  - Minimum system version from [Metadata NCA](https://switchbrew.org/wiki/NCA#Application_header) or `RequiredSystemVersion` from Metadata XML (for NSP files). Not to be confused with Gamecard Update Partition version for XCI files
+- System Update
+  - *XCI:* System version on `Update Partition`
+  - *NSP:* `RequiredSystemVersion` from Metadata XML
+- System Version
+  - Minimum system version from [Metadata NCA](https://switchbrew.org/wiki/NCA#Application_header). Only available for `Base` and `Update`
+- Application Version
+  - Minimum application version from [Metadata NCA](https://switchbrew.org/wiki/NCA#Application_header). Only available for `DLC`
 - MasterKey
 - File Name
 - File Size
@@ -44,6 +52,7 @@
   - *Safe:* Titles without Filesystem services access or [permissions bitmask 0x8000000000000000](https://switchbrew.org/wiki/Filesystem_services#Permissions) unset
   - *Unsafe:* Titles with Filesystem services access and [permissions bitmask 0x8000000000000000](https://switchbrew.org/wiki/Filesystem_services#Permissions) set. `Has EraseMmc permission, should only be for homebrew titles and not game titles`
   - *Dangerous:* Titles with Filesystem services access and [permissions bitmask 0xffffffffffffffff](https://switchbrew.org/wiki/Filesystem_services#Permissions) set. `Has all permissions, should only be for homebrew titles and not game titles`
+  - Only available for `Base` and `Update`
 
 # How to
 NX Game Info uses `prod.keys`, `title.keys` and `console.keys` in the format as defined in https://github.com/garoxas/LibHac/blob/NX_Game_Info/KEYS.md and `hac_versionlist.json` from [tagaya CDN server](https://switchbrew.org/wiki/Network#tagaya)
@@ -56,7 +65,7 @@ NX Game Info uses `prod.keys`, `title.keys` and `console.keys` in the format as 
 
 The application will look for these files at the following locations (other file locations will follow wherever `prod.keys` file was found)
 
- - Directory of the executable file (.exe) for Windows
+ - Directory of the executable file (.exe) for Windows or (.app) for macOS
  - `$HOME/.switch` e.g. C:\\Users\\_yourname_\\.switch for Windows or /Users/_yourname_/.switch for macOS
 
 # macOS
