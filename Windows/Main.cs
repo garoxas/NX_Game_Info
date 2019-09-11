@@ -395,6 +395,11 @@ namespace NX_Game_Info
                         Common.History.Default.Titles.RemoveRange(0, Common.History.Default.Titles.Count - Common.HISTORY_SIZE);
                     }
                     Common.History.Default.Save();
+
+                    while (historyToolStripMenuItem.DropDownItems.Count > Common.HISTORY_SIZE)
+                    {
+                        historyToolStripMenuItem.DropDownItems.RemoveAt(0);
+                    }
                 }
 
                 Process.log?.WriteLine("\n{0} titles have updated version", count);
@@ -436,20 +441,23 @@ namespace NX_Game_Info
 
         private void historyToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            Process.latestVersions.Clear();
+
+            int index = 0;
             foreach (ToolStripMenuItem item in historyToolStripMenuItem.DropDownItems)
             {
                 item.Checked = item == sender;
-            }
 
-            Process.latestVersions.Clear();
+                if (item == sender)
+                {
+                    titles = Process.processHistory(index);
 
-            if (Int32.TryParse((sender as ToolStripMenuItem).Name.Substring(7, 1), out int index))
-            {
-                titles = Process.processHistory(index);
+                    reloadData();
 
-                reloadData();
+                    toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
+                }
 
-                toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
+                index++;
             }
         }
 
@@ -638,6 +646,11 @@ namespace NX_Game_Info
                 menuItem.Click += new System.EventHandler(this.historyToolStripMenuItem_Click);
                 menuItem.Checked = true;
                 historyToolStripMenuItem.DropDownItems.Add(menuItem);
+
+                while (historyToolStripMenuItem.DropDownItems.Count > Common.HISTORY_SIZE)
+                {
+                    historyToolStripMenuItem.DropDownItems.RemoveAt(0);
+                }
 
                 toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
 
