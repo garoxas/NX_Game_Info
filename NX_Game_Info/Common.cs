@@ -167,6 +167,7 @@ namespace NX_Game_Info
                 { "f4698de5525da797c76740f38a1c08a0.cnmt.nca", 536871502 }, // 8.0.0
                 { "197d36b9f1564710dae6edb9a73f03b7.cnmt.nca", 536936528 }, // 8.0.1
                 { "68173bf86aa0884f2c989acc4102072f.cnmt.nca", 537919608 }, // 8.1.0
+                { "9bde0122ff0c7611460165d3a7adb795.cnmt.nca", 603980216 }, // 9.0.0
             };
 
             public enum Distribution
