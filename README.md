@@ -22,9 +22,9 @@ Stable build https://github.com/garoxas/NX_Game_Info/releases
   - *XCI:* System version on `Update Partition`
   - *NSP:* `RequiredSystemVersion` from Metadata XML
 - System Version
-  - Minimum system version from [Metadata NCA](https://switchbrew.org/wiki/NCA#Application_header). Only available for `Base` and `Update`
+  - Minimum system version from [Metadata NCA](https://switchbrew.org/wiki/CNMT#Application_Extended_Header). Only available for `Base` and `Update`
 - Application Version
-  - Minimum application version from [Metadata NCA](https://switchbrew.org/wiki/NCA#Application_header). Only available for `DLC`
+  - Minimum application version from [Metadata NCA](https://switchbrew.org/wiki/CNMT#AddOnContent_Extended_Header). Only available for `DLC`
 - MasterKey
 - File Name
 - File Size
