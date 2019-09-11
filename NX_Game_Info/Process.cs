@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+#if WINDOWS
+using System.Reflection;
+#endif
 using System.Text;
 using System.Xml.Linq;
 using LibHac;
@@ -10,6 +13,7 @@ using LibHac.IO;
 using Newtonsoft.Json;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
+using ArrayOfTitle = NX_Game_Info.Common.ArrayOfTitle;
 
 #pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body
 #pragma warning disable RECS0061 // Warns when a culture-aware 'EndsWith' call is used by default.
@@ -126,6 +130,31 @@ namespace NX_Game_Info
             log?.WriteLine("Initialization success");
 
             return true;
+        }
+
+        public static void migrateSettings()
+        {
+            int version = Common.Settings.Default.Version;
+
+            if (version < 00_06_00_00)
+            {
+#if WINDOWS
+                int columnIndex = Common.Settings.Default.Columns.FindIndex(x => x.Equals("firmware"));
+                if (columnIndex != -1)
+                {
+                    Common.Settings.Default.Columns.RemoveAt(columnIndex);
+                    Common.Settings.Default.Columns.InsertRange(columnIndex, new string[] { "systemUpdateString", "systemVersionString", "applicationVersionString" });
+
+                    Common.Settings.Default.ColumnWidth.RemoveAt(columnIndex);
+                    Common.Settings.Default.ColumnWidth.InsertRange(columnIndex, new int[] { 100, 100, 100 });
+                }
+#endif
+            }
+
+#if WINDOWS
+            Common.Settings.Default.Version = Assembly.GetExecutingAssembly().GetName().Version.ToInt();
+#endif
+            Common.Settings.Default.Save();
         }
 
         public static bool updateVersionList()
@@ -969,9 +998,10 @@ namespace NX_Game_Info
             }
         }
 
-        public static List<Title> processHistory()
+        public static List<Title> processHistory(int index = -1)
         {
-            List<Title> titles = Common.History.Default.Titles.LastOrDefault()?.ToList() ?? new List<Title>();
+            ArrayOfTitle history = index != -1 ? Common.History.Default.Titles.ElementAtOrDefault(index) : Common.History.Default.Titles.LastOrDefault();
+            List<Title> titles = history?.title?.ToList() ?? new List<Title>();
 
             foreach (var title in titles)
             {

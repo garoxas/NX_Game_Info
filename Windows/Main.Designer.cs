@@ -42,6 +42,7 @@
             this.updateVersionListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.debugLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.historyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.backgroundWorkerProcess = new System.ComponentModel.BackgroundWorker();
@@ -77,6 +78,7 @@
             this.menuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.optionsToolStripMenuItem,
+            this.historyToolStripMenuItem,
             this.helpToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
@@ -157,22 +159,28 @@
             // updateVersionListToolStripMenuItem
             // 
             this.updateVersionListToolStripMenuItem.Name = "updateVersionListToolStripMenuItem";
-            this.updateVersionListToolStripMenuItem.Size = new System.Drawing.Size(248, 30);
+            this.updateVersionListToolStripMenuItem.Size = new System.Drawing.Size(252, 30);
             this.updateVersionListToolStripMenuItem.Text = "Update &Version List";
             this.updateVersionListToolStripMenuItem.Click += new System.EventHandler(this.updateVersionListToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(245, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(249, 6);
             // 
             // debugLogToolStripMenuItem
             // 
             this.debugLogToolStripMenuItem.CheckOnClick = true;
             this.debugLogToolStripMenuItem.Name = "debugLogToolStripMenuItem";
-            this.debugLogToolStripMenuItem.Size = new System.Drawing.Size(248, 30);
+            this.debugLogToolStripMenuItem.Size = new System.Drawing.Size(252, 30);
             this.debugLogToolStripMenuItem.Text = "Debug &Log";
             this.debugLogToolStripMenuItem.CheckedChanged += new System.EventHandler(this.debugLogToolStripMenuItem_CheckedChanged);
+            // 
+            // historyToolStripMenuItem
+            // 
+            this.historyToolStripMenuItem.Name = "historyToolStripMenuItem";
+            this.historyToolStripMenuItem.Size = new System.Drawing.Size(81, 29);
+            this.historyToolStripMenuItem.Text = "His&tory";
             // 
             // helpToolStripMenuItem
             // 
@@ -255,6 +263,7 @@
             this.objectListView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.objectListView.FullRowSelect = true;
             this.objectListView.GridLines = true;
+            this.objectListView.HideSelection = false;
             this.objectListView.Location = new System.Drawing.Point(0, 33);
             this.objectListView.Name = "objectListView";
             this.objectListView.ShowGroups = false;
@@ -308,7 +317,7 @@
             this.olvColumnLatestVersion.Text = "Latest Version";
             this.olvColumnLatestVersion.Width = 100;
             // 
-            // olvColumnFirmware
+            // olvColumnSystemUpdate
             // 
             this.olvColumnSystemUpdate.AspectName = "systemUpdateString";
             this.olvColumnSystemUpdate.CellPadding = null;
@@ -427,6 +436,7 @@
         private System.Windows.Forms.ToolStripMenuItem updateVersionListToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem debugLogToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem historyToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.ComponentModel.BackgroundWorker backgroundWorkerProcess;

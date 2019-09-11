@@ -1,6 +1,7 @@
 # NX Game Info
-Nightly build [![Build status](https://ci.appveyor.com/api/projects/status/kgdq8btq7v2th8ne?svg=true)](https://ci.appveyor.com/project/garoxas/nx-game-info)
-Stable build https://github.com/garoxas/NX_Game_Info/releases
+[![Build status](https://ci.appveyor.com/api/projects/status/kgdq8btq7v2th8ne?svg=true)](https://ci.appveyor.com/project/garoxas/nx-game-info)  
+Nightly build https://ci.appveyor.com/project/garoxas/nx-game-info/build/artifacts  
+Stable build https://github.com/garoxas/NX_Game_Info/releases  
 
 # Features
 - NSP, XCI, NRO and installed titles on Switch SD card

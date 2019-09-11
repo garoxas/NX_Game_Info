@@ -13,6 +13,7 @@ using BrightIdeasSoftware;
 using LibHac;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
+using ArrayOfTitle = NX_Game_Info.Common.ArrayOfTitle;
 
 #pragma warning disable IDE1006 // Naming rule violation: These words must begin with upper case characters
 
@@ -59,6 +60,8 @@ namespace NX_Game_Info
             {
                 Environment.Exit(-1);
             }
+
+            Process.migrateSettings();
         }
 
         public void reloadData()
@@ -146,6 +149,21 @@ namespace NX_Game_Info
             {
                 column.Item1.Width = column.Item2;
             }
+
+            int index = 0;
+            foreach (ArrayOfTitle history in Common.History.Default.Titles)
+            {
+                ToolStripMenuItem menuItem = new ToolStripMenuItem
+                {
+                    Name = String.Format("history{0}ToolStripMenuItem", index++),
+                    Text = String.Format("{0} ({1} files)", history.description, history.title.Count),
+                    CheckOnClick = true,
+                };
+                menuItem.Click += new System.EventHandler(this.historyToolStripMenuItem_Click);
+                historyToolStripMenuItem.DropDownItems.Add(menuItem);
+            }
+
+            (historyToolStripMenuItem.DropDownItems[index - 1] as ToolStripMenuItem).Checked = true;
 
             titles = Process.processHistory();
 
@@ -366,7 +384,12 @@ namespace NX_Game_Info
                 {
                     reloadData();
 
-                    Common.History.Default.Titles.Add(titles.ToList());
+                    ArrayOfTitle history = new ArrayOfTitle
+                    {
+                        description = DateTime.Now.ToString("dd MMMM yyyy HH:mm:ss"),
+                        title = titles.ToList(),
+                    };
+                    Common.History.Default.Titles.Add(history);
                     if (Common.History.Default.Titles.Count > Common.HISTORY_SIZE)
                     {
                         Common.History.Default.Titles.RemoveRange(0, Common.History.Default.Titles.Count - Common.HISTORY_SIZE);
@@ -411,6 +434,25 @@ namespace NX_Game_Info
             }
         }
 
+        private void historyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (ToolStripMenuItem item in historyToolStripMenuItem.DropDownItems)
+            {
+                item.Checked = item == sender;
+            }
+
+            Process.latestVersions.Clear();
+
+            if (Int32.TryParse((sender as ToolStripMenuItem).Name.Substring(7, 1), out int index))
+            {
+                titles = Process.processHistory(index);
+
+                reloadData();
+
+                toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
+            }
+        }
+
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             aboutBox.Show();
@@ -429,6 +471,7 @@ namespace NX_Game_Info
             BackgroundWorker worker = sender as BackgroundWorker;
 
             titles.Clear();
+            Process.latestVersions.Clear();
 
             if (e.Argument is ValueTuple<Worker, string[]> argumentFile)
             {
@@ -569,12 +612,32 @@ namespace NX_Game_Info
             {
                 reloadData();
 
-                Common.History.Default.Titles.Add(titles.ToList());
+                ArrayOfTitle history = new ArrayOfTitle
+                {
+                    description = DateTime.Now.ToString("dd MMMM yyyy HH:mm:ss"),
+                    title = titles.ToList(),
+                };
+                Common.History.Default.Titles.Add(history);
                 if (Common.History.Default.Titles.Count > Common.HISTORY_SIZE)
                 {
                     Common.History.Default.Titles.RemoveRange(0, Common.History.Default.Titles.Count - Common.HISTORY_SIZE);
                 }
                 Common.History.Default.Save();
+
+                foreach (ToolStripMenuItem item in historyToolStripMenuItem.DropDownItems)
+                {
+                    item.Checked = false;
+                }
+
+                ToolStripMenuItem menuItem = new ToolStripMenuItem
+                {
+                    Name = String.Format("history{0}ToolStripMenuItem", Common.History.Default.Titles.Count - 1),
+                    Text = String.Format("{0} ({1} files)", history.description, history.title.Count),
+                    CheckOnClick = true,
+                };
+                menuItem.Click += new System.EventHandler(this.historyToolStripMenuItem_Click);
+                menuItem.Checked = true;
+                historyToolStripMenuItem.DropDownItems.Add(menuItem);
 
                 toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
 

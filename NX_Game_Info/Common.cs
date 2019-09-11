@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-#if !MACOS
+#if WINDOWS
 using System.Drawing;
 #endif
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -48,6 +47,14 @@ namespace NX_Game_Info
         public class Settings : ApplicationSettingsBase
         {
             [UserScopedSetting()]
+            [DefaultSettingValue("0")]
+            public int Version
+            {
+                get { return (int)this["Version"]; }
+                set { this["Version"] = value; }
+            }
+
+            [UserScopedSetting()]
             [DefaultSettingValue("")]
             public string InitialDirectory
             {
@@ -71,7 +78,7 @@ namespace NX_Game_Info
                 set { this["DebugLog"] = value; }
             }
 
-#if !MACOS
+#if WINDOWS
             [UserScopedSetting()]
             [DefaultSettingValue("0, 0")]
             public Point WindowLocation
@@ -113,13 +120,24 @@ namespace NX_Game_Info
             [UserScopedSetting()]
             [DefaultSettingValue("")]
             [SettingsSerializeAs(SettingsSerializeAs.Xml)]
-            public List<List<Title>> Titles
+            public List<ArrayOfTitle> Titles
             {
-                get { return (List<List<Title>>)this["Titles"]; }
+                get { return (List<ArrayOfTitle>)this["Titles"]; }
                 set { this["Titles"] = value; }
             }
 
             public static History Default = (History)Synchronized(new History());
+        }
+
+        [Serializable]
+        public class ArrayOfTitle
+        {
+            public ArrayOfTitle() { }
+
+            [XmlElement("Title")]
+            public List<Title> title { get; set; }
+            [XmlAttribute("Description")]
+            public string description { get; set; }
         }
 
         [Serializable]
@@ -269,6 +287,8 @@ namespace NX_Game_Info
                             return masterkey.ToString() + " (7.0.0-8.0.1)";
                         case 8:
                             return masterkey.ToString() + " (8.1.0)";
+                        case 9:
+                            return masterkey.ToString() + " (9.0.0)";
                         case unchecked((uint)-1):
                             return "";
                         default:
@@ -430,6 +450,14 @@ namespace NX_Game_Info
             public List<VersionTitle> titles { get; set; }
             public uint format_version { get; set; }
             public uint last_modified { get; set; }
+        }
+    }
+
+    public static class VersionExtension
+    {
+        public static int ToInt(this Version version)
+        {
+            return (version.Major * 100_00_00 + version.Minor * 100_00 + version.Build * 100 + version.Revision);
         }
     }
 }
