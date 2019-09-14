@@ -9,6 +9,7 @@ using Bluegrams.Application;
 using LibHac;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
+using ArrayOfTitle = NX_Game_Info.Common.ArrayOfTitle;
 
 #pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body
 #pragma warning disable RECS0061 // Warns when a culture-aware 'EndsWith' call is used by default.
@@ -21,6 +22,8 @@ namespace NX_Game_Info
     {
         private TableViewDataSource tableViewDataSource;
         private TableViewDelegate tableViewDelegate;
+
+        private NSMenu historyMenu;
 
         private BackgroundWorker backgroundWorker;
         private bool userCancelled;
@@ -81,6 +84,8 @@ namespace NX_Game_Info
                 debugLog.State = Common.Settings.Default.DebugLog ? NSCellStateValue.On : NSCellStateValue.Off;
             }
 
+            historyMenu = Window.Menu?.ItemWithTitle("History")?.Submenu;
+
             bool init = Process.initialize(out List<string> messages);
 
             foreach (var message in messages)
@@ -98,6 +103,8 @@ namespace NX_Game_Info
                 Environment.Exit(-1);
             }
 
+            Process.migrateSettings();
+
             backgroundWorker = new BackgroundWorker
             {
                 WorkerReportsProgress = true,
@@ -106,6 +113,18 @@ namespace NX_Game_Info
             backgroundWorker.DoWork += BackgroundWorker_DoWork;
             backgroundWorker.ProgressChanged += BackgroundWorker_ProgressChanged;
             backgroundWorker.RunWorkerCompleted += BackgroundWorker_RunWorkerCompleted;
+
+            int index = 0;
+            foreach (ArrayOfTitle history in Common.History.Default.Titles)
+            {
+                NSMenuItem menuItem = new NSMenuItem(String.Format("{0} ({1} files)", history.description, history.title.Count), new System.EventHandler(History));
+                historyMenu.AddItem(menuItem);
+
+                index++;
+            }
+
+            if (index > 0)
+                historyMenu.Items[index - 1].State = NSCellStateValue.On;
 
             titles = Process.processHistory();
 
@@ -312,13 +331,16 @@ namespace NX_Game_Info
                             message.StringValue = title.titleName ?? "";
                             progress.DoubleValue = 100f * index++ / count;
 
-                            writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}",
+                            writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}",
                                 title.titleID,
+                                title.baseTitleID,
                                 title.titleName,
                                 title.displayVersion,
                                 title.versionString,
                                 title.latestVersionString,
-                                title.firmware,
+                                title.systemUpdateString,
+                                title.systemVersionString,
+                                title.applicationVersionString,
                                 title.masterkeyString,
                                 title.filename,
                                 title.filesizeString,
@@ -352,6 +374,7 @@ namespace NX_Game_Info
         {
             Window.BeginSheet(sheet, ProgressComplete);
 
+            title.StringValue = "";
             message.StringValue = String.Format("Downloading from {0}", Common.TAGAYA_VERSIONLIST);
             progress.DoubleValue = 0;
 
@@ -378,16 +401,22 @@ namespace NX_Game_Info
                 {
                     tableView.ReloadData();
 
-                    List<List<Title>> history = new List<List<Title>>();
-                    history.AddRange(Common.History.Default.Titles);
-                    history.Add(titles.ToList());
-
-                    Common.History.Default.Titles = new List<List<Title>>(history);
+                    ArrayOfTitle history = new ArrayOfTitle
+                    {
+                        description = DateTime.Now.ToString("dd MMMM yyyy HH:mm:ss"),
+                        title = titles.ToList(),
+                    };
+                    Common.History.Default.Titles.Add(history);
                     if (Common.History.Default.Titles.Count > Common.HISTORY_SIZE)
                     {
                         Common.History.Default.Titles.RemoveRange(0, Common.History.Default.Titles.Count - Common.HISTORY_SIZE);
                     }
                     Common.History.Default.Save();
+
+                    while (historyMenu.Items.Length > Common.HISTORY_SIZE)
+                    {
+                        historyMenu.RemoveItemAt(0);
+                    }
                 }
 
                 Process.log?.WriteLine("\n{0} titles have updated version", count);
@@ -438,11 +467,34 @@ namespace NX_Game_Info
             }
         }
 
+        void History(object sender, EventArgs e)
+        {
+            tableViewDataSource.Titles.Clear();
+            Process.latestVersions.Clear();
+
+            int index = 0;
+            foreach (NSMenuItem item in historyMenu.Items)
+            {
+                item.State = item == sender ? NSCellStateValue.On : NSCellStateValue.Off;
+
+                if (item == sender)
+                {
+                    titles = Process.processHistory(index);
+
+                    tableViewDataSource.Titles.AddRange(titles);
+                    tableView.ReloadData();
+                }
+
+                index++;
+            }
+        }
+
         void BackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             BackgroundWorker worker = sender as BackgroundWorker;
 
             titles.Clear();
+            Process.latestVersions.Clear();
 
             if (e.Argument is ValueTuple<Worker, List<string>> argumentFile)
             {
@@ -576,16 +628,33 @@ namespace NX_Game_Info
 
                 tableView.ReloadData();
 
-                List<List<Title>> history = new List<List<Title>>();
-                history.AddRange(Common.History.Default.Titles);
-                history.Add(titles.ToList());
-
-                Common.History.Default.Titles = new List<List<Title>>(history);
+                ArrayOfTitle history = new ArrayOfTitle
+                {
+                    description = DateTime.Now.ToString("dd MMMM yyyy HH:mm:ss"),
+                    title = titles.ToList(),
+                };
+                Common.History.Default.Titles.Add(history);
                 if (Common.History.Default.Titles.Count > Common.HISTORY_SIZE)
                 {
                     Common.History.Default.Titles.RemoveRange(0, Common.History.Default.Titles.Count - Common.HISTORY_SIZE);
                 }
                 Common.History.Default.Save();
+
+                foreach (NSMenuItem item in historyMenu.Items)
+                {
+                    item.State = NSCellStateValue.Off;
+                }
+
+                NSMenuItem menuItem = new NSMenuItem(String.Format("{0} ({1} files)", history.description, history.title.Count), new System.EventHandler(History))
+                {
+                    State = NSCellStateValue.On,
+                };
+                historyMenu.AddItem(menuItem);
+
+                while (historyMenu.Items.Length > Common.HISTORY_SIZE)
+                {
+                    historyMenu.RemoveItemAt(0);
+                }
 
                 Window.EndSheet(sheet);
             }
@@ -641,21 +710,27 @@ namespace NX_Game_Info
                     {
                         case "titleID":
                             return string.Compare(x.titleID, y.titleID) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "baseTitleID":
+                            return string.Compare(x.baseTitleID, y.baseTitleID) * (sortDescriptor.Ascending ? 1 : -1);
                         case "titleName":
                             return string.Compare(x.titleName, y.titleName) * (sortDescriptor.Ascending ? 1 : -1);
                         case "displayVersion":
                             return string.Compare(x.displayVersion, y.displayVersion) * (sortDescriptor.Ascending ? 1 : -1);
-                        case "versionString":
-                            return string.Compare(x.versionString, y.versionString) * (sortDescriptor.Ascending ? 1 : -1);
-                        case "latestVersionString":
-                            return string.Compare(x.latestVersionString, y.latestVersionString) * (sortDescriptor.Ascending ? 1 : -1);
-                        case "firmware":
-                            return string.Compare(x.firmware, y.firmware) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "version":
+                            return (int)((x.version - y.version) * (sortDescriptor.Ascending ? 1 : -1));
+                        case "latestVersion":
+                            return (int)((x.latestVersion - y.latestVersion) * (sortDescriptor.Ascending ? 1 : -1));
+                        case "systemUpdate":
+                            return (int)((x.systemUpdate - y.systemUpdate) * (sortDescriptor.Ascending ? 1 : -1));
+                        case "systemVersion":
+                            return (int)((x.systemVersion - y.systemVersion) * (sortDescriptor.Ascending ? 1 : -1));
+                        case "applicationVersion":
+                            return (int)((x.applicationVersion - y.applicationVersion) * (sortDescriptor.Ascending ? 1 : -1));
                         case "masterkeyString":
                             return string.Compare(x.masterkeyString, y.masterkeyString) * (sortDescriptor.Ascending ? 1 : -1);
                         case "filename":
                             return string.Compare(x.filename, y.filename) * (sortDescriptor.Ascending ? 1 : -1);
-                        case "filesizeString":
+                        case "filesize":
                             return (int)((x.filesize - y.filesize) * (sortDescriptor.Ascending ? 1 : -1));
                         case "typeString":
                             return string.Compare(x.typeString, y.typeString) * (sortDescriptor.Ascending ? 1 : -1);
@@ -707,6 +782,9 @@ namespace NX_Game_Info
                 case "TitleID":
                     textField.StringValue = title.titleID ?? "";
                     break;
+                case "BaseTitleID":
+                    textField.StringValue = title.baseTitleID ?? "";
+                    break;
                 case "TitleName":
                     textField.StringValue = title.titleName ?? "";
                     break;
@@ -719,8 +797,14 @@ namespace NX_Game_Info
                 case "LatestVersion":
                     textField.StringValue = title.latestVersionString ?? "";
                     break;
-                case "Firmware":
-                    textField.StringValue = title.firmware ?? "";
+                case "SystemUpdate":
+                    textField.StringValue = title.systemUpdateString ?? "";
+                    break;
+                case "SystemVersion":
+                    textField.StringValue = title.systemVersionString ?? "";
+                    break;
+                case "ApplicationVersion":
+                    textField.StringValue = title.applicationVersionString ?? "";
                     break;
                 case "MasterKey":
                     textField.StringValue = title.masterkeyString ?? "";

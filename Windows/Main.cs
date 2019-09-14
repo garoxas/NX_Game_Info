@@ -163,7 +163,8 @@ namespace NX_Game_Info
                 historyToolStripMenuItem.DropDownItems.Add(menuItem);
             }
 
-            (historyToolStripMenuItem.DropDownItems[index - 1] as ToolStripMenuItem).Checked = true;
+            if (index > 0)
+                (historyToolStripMenuItem.DropDownItems[index - 1] as ToolStripMenuItem).Checked = true;
 
             titles = Process.processHistory();
 

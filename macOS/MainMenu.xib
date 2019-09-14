@@ -101,6 +101,10 @@
                         </items>
                     </menu>
                 </menuItem>
+                <menuItem title="History" id="s7d-PH-jCu">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <menu key="submenu" title="History" id="h0J-2S-vTz"/>
+                </menuItem>
             </items>
         </menu>
     </objects>

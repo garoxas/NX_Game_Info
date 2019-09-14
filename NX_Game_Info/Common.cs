@@ -4,6 +4,9 @@ using System.Configuration;
 #if WINDOWS
 using System.Drawing;
 #endif
+#if MACOS
+using System.IO;
+#endif
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -209,13 +212,13 @@ namespace NX_Game_Info
             public Title() { }
 
             [XmlElement("TitleID")]
-            public string titleID { get; set; }
+            public string titleID { get; set; } = "";
             [XmlElement("BaseTitleID")]
-            public string baseTitleID { get; set; }
+            public string baseTitleID { get; set; } = "";
             [XmlElement("TitleName")]
-            public string titleName { get; set; }
+            public string titleName { get; set; } = "";
             [XmlElement("DisplayVersion")]
-            public string displayVersion { get; set; }
+            public string displayVersion { get; set; } = "";
             [XmlElement("Version")]
             public uint version { get; set; } = unchecked((uint)-1);
             public string versionString { get { return version != unchecked((uint)-1) ? version.ToString() : ""; } }
@@ -262,41 +265,6 @@ namespace NX_Game_Info
                     }
                 }
             }
-            [XmlElement("Masterkey")]
-            public uint masterkey { get; set; } = unchecked((uint)-1);
-            public string masterkeyString
-            {
-                get
-                {
-                    switch (masterkey)
-                    {
-                        case 0:
-                            return masterkey.ToString() + " (1.0.0-2.3.0)";
-                        case 1:
-                            return masterkey.ToString() + " (3.0.0)";
-                        case 2:
-                            return masterkey.ToString() + " (3.0.1-3.0.2)";
-                        case 3:
-                            return masterkey.ToString() + " (4.0.0-4.1.0)";
-                        case 4:
-                            return masterkey.ToString() + " (5.0.0-5.1.0)";
-                        case 5:
-                            return masterkey.ToString() + " (6.0.0-6.1.0)";
-                        case 6:
-                            return masterkey.ToString() + " (6.2.0)";
-                        case 7:
-                            return masterkey.ToString() + " (7.0.0-8.0.1)";
-                        case 8:
-                            return masterkey.ToString() + " (8.1.0)";
-                        case 9:
-                            return masterkey.ToString() + " (9.0.0)";
-                        case unchecked((uint)-1):
-                            return "";
-                        default:
-                            return masterkey.ToString();
-                    }
-                }
-            }
             [XmlElement("SystemVersion")]
             public uint systemVersion { get; set; } = unchecked((uint)-1);
             public string systemVersionString
@@ -340,10 +308,45 @@ namespace NX_Game_Info
             [XmlElement("ApplicationVersion")]
             public uint applicationVersion { get; set; } = unchecked((uint)-1);
             public string applicationVersionString { get { return applicationVersion != unchecked((uint)-1) ? applicationVersion.ToString() : ""; } }
+            [XmlElement("Masterkey")]
+            public uint masterkey { get; set; } = unchecked((uint)-1);
+            public string masterkeyString
+            {
+                get
+                {
+                    switch (masterkey)
+                    {
+                        case 0:
+                            return masterkey.ToString() + " (1.0.0-2.3.0)";
+                        case 1:
+                            return masterkey.ToString() + " (3.0.0)";
+                        case 2:
+                            return masterkey.ToString() + " (3.0.1-3.0.2)";
+                        case 3:
+                            return masterkey.ToString() + " (4.0.0-4.1.0)";
+                        case 4:
+                            return masterkey.ToString() + " (5.0.0-5.1.0)";
+                        case 5:
+                            return masterkey.ToString() + " (6.0.0-6.1.0)";
+                        case 6:
+                            return masterkey.ToString() + " (6.2.0)";
+                        case 7:
+                            return masterkey.ToString() + " (7.0.0-8.0.1)";
+                        case 8:
+                            return masterkey.ToString() + " (8.1.0)";
+                        case 9:
+                            return masterkey.ToString() + " (9.0.0)";
+                        case unchecked((uint)-1):
+                            return "";
+                        default:
+                            return masterkey.ToString();
+                    }
+                }
+            }
             [XmlElement("Filename")]
-            public string filename { get; set; }
+            public string filename { get; set; } = "";
             [XmlElement("Filesize")]
-            public long filesize { get; set; }
+            public long filesize { get; set; } = 0;
             public string filesizeString
             {
                 get
@@ -436,7 +439,7 @@ namespace NX_Game_Info
             public Permission permission { get; set; } = Permission.Invalid;
             public string permissionString { get { return permission == Permission.Invalid ? "" : permission.ToString(); } }
             [XmlElement("Error")]
-            public string error { get; set; }
+            public string error { get; set; } = "";
         }
 
         public class VersionTitle
