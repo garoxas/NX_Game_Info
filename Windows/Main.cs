@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -30,6 +31,52 @@ namespace NX_Game_Info
             Directory,
             SDCard,
             Invalid = -1
+        }
+
+        private class CustomSorter : IComparer, IComparer<OLVListItem>
+        {
+            readonly OLVColumn column;
+            readonly SortOrder order;
+
+            public CustomSorter(OLVColumn column, SortOrder order)
+            {
+                this.column = column;
+                this.order = order;
+            }
+
+            public int Compare(object x, object y)
+            {
+                if (x is OLVListItem && y is OLVListItem)
+                    return Compare(x as OLVListItem, y as OLVListItem);
+                return 0;
+            }
+
+            public int Compare(OLVListItem x, OLVListItem y)
+            {
+                switch (column.AspectName)
+                {
+                    case "versionString":
+                        return ((Title)x.RowObject).version.CompareTo(((Title)y.RowObject).version) * (order == SortOrder.Ascending ? 1 : -1);
+                    case "latestVersionString":
+                        return ((Title)x.RowObject).latestVersion.CompareTo(((Title)y.RowObject).latestVersion) * (order == SortOrder.Ascending ? 1 : -1);
+                    case "applicationVersionString":
+                        return ((Title)x.RowObject).applicationVersion.CompareTo(((Title)y.RowObject).applicationVersion) * (order == SortOrder.Ascending ? 1 : -1);
+                    case "filesizeString":
+                        return ((Title)x.RowObject).filesize.CompareTo(((Title)y.RowObject).filesize) * (order == SortOrder.Ascending ? 1 : -1);
+                    case "displayVersion":
+                        if (!Version.TryParse(((Title)x.RowObject).displayVersion, out Version verx))
+                        {
+                            verx = new Version();
+                        }
+                        if (!Version.TryParse(((Title)y.RowObject).displayVersion, out Version very))
+                        {
+                            very = new Version();
+                        }
+                        return verx.CompareTo(very) * (order == SortOrder.Ascending ? 1 : -1);
+                }
+
+                return 0;
+            }
         }
 
         private List<Title> titles = new List<Title>();
@@ -149,6 +196,38 @@ namespace NX_Game_Info
             {
                 column.Item1.Width = column.Item2;
             }
+
+            objectListView.CustomSorter = delegate (OLVColumn column, SortOrder order)
+            {
+                switch (column.AspectName)
+                {
+                    case "versionString":
+                    case "latestVersionString":
+                    case "applicationVersionString":
+                    case "filesizeString":
+                        objectListView.ListViewItemSorter = new CustomSorter(column, order);
+                        break;
+                    case "displayVersion":
+                        objectListView.ListViewItemSorter = new CustomSorter(column, order);
+                        break;
+                    case "titleID":
+                    case "baseTitleID":
+                    case "titleName":
+                    case "systemUpdateString":
+                    case "systemVersionString":
+                    case "masterkeyString":
+                    case "filename":
+                    case "typeString":
+                    case "distribution":
+                    case "structureString":
+                    case "signatureString":
+                    case "permissionString":
+                    case "error":
+                    default:
+                        objectListView.ListViewItemSorter = new ColumnComparer(column, order);
+                        break;
+                }
+            };
 
             int index = 0;
             foreach (ArrayOfTitle history in Common.History.Default.Titles)
