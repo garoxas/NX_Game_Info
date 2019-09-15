@@ -61,6 +61,8 @@ namespace NX_Game_Info
                         return ((Title)x.RowObject).latestVersion.CompareTo(((Title)y.RowObject).latestVersion) * (order == SortOrder.Ascending ? 1 : -1);
                     case "applicationVersionString":
                         return ((Title)x.RowObject).applicationVersion.CompareTo(((Title)y.RowObject).applicationVersion) * (order == SortOrder.Ascending ? 1 : -1);
+                    case "masterkeyString":
+                        return ((Title)x.RowObject).masterkey.CompareTo(((Title)y.RowObject).masterkey) * (order == SortOrder.Ascending ? 1 : -1);
                     case "filesizeString":
                         return ((Title)x.RowObject).filesize.CompareTo(((Title)y.RowObject).filesize) * (order == SortOrder.Ascending ? 1 : -1);
                     case "displayVersion":
