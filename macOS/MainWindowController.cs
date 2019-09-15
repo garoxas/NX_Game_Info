@@ -715,23 +715,31 @@ namespace NX_Game_Info
                         case "titleName":
                             return string.Compare(x.titleName, y.titleName) * (sortDescriptor.Ascending ? 1 : -1);
                         case "displayVersion":
-                            return string.Compare(x.displayVersion, y.displayVersion) * (sortDescriptor.Ascending ? 1 : -1);
+                            if (!Version.TryParse(x.displayVersion, out Version verx))
+                            {
+                                verx = new Version();
+                            }
+                            if (!Version.TryParse(y.displayVersion, out Version very))
+                            {
+                                very = new Version();
+                            }
+                            return verx.CompareTo(very) * (sortDescriptor.Ascending ? 1 : -1);
                         case "version":
-                            return (int)((x.version - y.version) * (sortDescriptor.Ascending ? 1 : -1));
+                            return x.version.CompareTo(y.version) * (sortDescriptor.Ascending ? 1 : -1);
                         case "latestVersion":
-                            return (int)((x.latestVersion - y.latestVersion) * (sortDescriptor.Ascending ? 1 : -1));
+                            return x.latestVersion.CompareTo(y.latestVersion) * (sortDescriptor.Ascending ? 1 : -1);
                         case "systemUpdate":
-                            return (int)((x.systemUpdate - y.systemUpdate) * (sortDescriptor.Ascending ? 1 : -1));
+                            return x.systemUpdate.CompareTo(y.systemUpdate) * (sortDescriptor.Ascending ? 1 : -1);
                         case "systemVersion":
-                            return (int)((x.systemVersion - y.systemVersion) * (sortDescriptor.Ascending ? 1 : -1));
+                            return x.systemVersion.CompareTo(y.systemVersion) * (sortDescriptor.Ascending ? 1 : -1);
                         case "applicationVersion":
-                            return (int)((x.applicationVersion - y.applicationVersion) * (sortDescriptor.Ascending ? 1 : -1));
-                        case "masterkeyString":
-                            return string.Compare(x.masterkeyString, y.masterkeyString) * (sortDescriptor.Ascending ? 1 : -1);
+                            return x.applicationVersion.CompareTo(y.applicationVersion) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "masterkey":
+                            return x.masterkey.CompareTo(y.masterkey) * (sortDescriptor.Ascending ? 1 : -1);
                         case "filename":
                             return string.Compare(x.filename, y.filename) * (sortDescriptor.Ascending ? 1 : -1);
                         case "filesize":
-                            return (int)((x.filesize - y.filesize) * (sortDescriptor.Ascending ? 1 : -1));
+                            return x.filesize.CompareTo(y.filesize) * (sortDescriptor.Ascending ? 1 : -1);
                         case "typeString":
                             return string.Compare(x.typeString, y.typeString) * (sortDescriptor.Ascending ? 1 : -1);
                         case "distribution":
