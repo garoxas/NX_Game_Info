@@ -39,6 +39,7 @@
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.updateTitleKeysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.updateVersionListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.debugLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -149,12 +150,20 @@
             // optionsToolStripMenuItem
             // 
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.updateTitleKeysToolStripMenuItem,
             this.updateVersionListToolStripMenuItem,
             this.toolStripSeparator3,
             this.debugLogToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
             this.optionsToolStripMenuItem.Size = new System.Drawing.Size(88, 29);
             this.optionsToolStripMenuItem.Text = "&Options";
+            // 
+            // updateTitleKeysToolStripMenuItem
+            // 
+            this.updateTitleKeysToolStripMenuItem.Name = "updateTitleKeysToolStripMenuItem";
+            this.updateTitleKeysToolStripMenuItem.Size = new System.Drawing.Size(252, 30);
+            this.updateTitleKeysToolStripMenuItem.Text = "Update &Title Keys";
+            this.updateTitleKeysToolStripMenuItem.Click += new System.EventHandler(this.updateTitleKeysToolStripMenuItem_Click);
             // 
             // updateVersionListToolStripMenuItem
             // 
@@ -433,6 +442,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem updateTitleKeysToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem updateVersionListToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem debugLogToolStripMenuItem;

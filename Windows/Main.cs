@@ -434,12 +434,35 @@ namespace NX_Game_Info
             Environment.Exit(-1);
         }
 
+        private void updateTitleKeysToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            progressDialog = (IProgressDialog)new ProgressDialog();
+            progressDialog.StartProgressDialog(Handle, "Downloading title keys");
+
+            progressDialog.SetLine(2, String.Format("Downloading from {0}", Common.TITLE_KEYS_URI), true, IntPtr.Zero);
+
+            if (Process.updateTitleKeys())
+            {
+                progressDialog.StopProgressDialog();
+                Activate();
+
+                MessageBox.Show(String.Format("Found {0} title keys", Process.keyset?.TitleKeys?.Count), Application.ProductName);
+            }
+            else
+            {
+                progressDialog.StopProgressDialog();
+                Activate();
+
+                MessageBox.Show("Failed to download title keys", Application.ProductName);
+            }
+        }
+
         private void updateVersionListToolStripMenuItem_Click(object sender, EventArgs e)
         {
             progressDialog = (IProgressDialog)new ProgressDialog();
             progressDialog.StartProgressDialog(Handle, "Downloading version list");
 
-            progressDialog.SetLine(2, String.Format("Downloading from {0}", Common.TAGAYA_VERSIONLIST), true, IntPtr.Zero);
+            progressDialog.SetLine(2, String.Format("Downloading from {0}", Common.HAC_VERSIONLIST_URI), true, IntPtr.Zero);
 
             if (Process.updateVersionList())
             {
