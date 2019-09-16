@@ -11,6 +11,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 #endif
 using System.Xml.Linq;
+#if MACOS
+using Foundation;
+#endif
 using LibHac;
 using LibHac.IO;
 using Newtonsoft.Json;
@@ -137,6 +140,8 @@ namespace NX_Game_Info
 
         public static void migrateSettings()
         {
+            Common.Settings.Default.Upgrade();
+
             int version = Common.Settings.Default.Version;
 
             if (version < 00_06_00_00)
@@ -168,7 +173,6 @@ namespace NX_Game_Info
             }
 #endif
 
-            Common.Settings.Default.Upgrade();
             Common.Settings.Default.Save();
         }
 
