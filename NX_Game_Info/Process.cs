@@ -140,8 +140,6 @@ namespace NX_Game_Info
 
         public static void migrateSettings()
         {
-            Common.Settings.Default.Upgrade();
-
             int version = Common.Settings.Default.Version;
 
             if (version < 00_06_00_00)
@@ -172,8 +170,6 @@ namespace NX_Game_Info
                 }
             }
 #endif
-
-            Common.Settings.Default.Save();
         }
 
         public static bool updateVersionList()
