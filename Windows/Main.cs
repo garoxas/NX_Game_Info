@@ -399,13 +399,16 @@ namespace NX_Game_Info
                         progressDialog.SetLine(2, title.titleName, true, IntPtr.Zero);
                         progressDialog.SetProgress(index++, count);
 
-                        writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}",
+                        writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}",
                             title.titleID,
+                            title.baseTitleID,
                             title.titleName,
                             title.displayVersion,
                             title.versionString,
                             title.latestVersionString,
-                            title.systemUpdate,
+                            title.systemUpdateString,
+                            title.systemVersionString,
+                            title.applicationVersionString,
                             title.masterkeyString,
                             title.filename,
                             title.filesizeString,

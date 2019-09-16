@@ -7,6 +7,9 @@ using System.Net.Http;
 using System.Reflection;
 #endif
 using System.Text;
+#if MACOS
+using System.Text.RegularExpressions;
+#endif
 using System.Xml.Linq;
 using LibHac;
 using LibHac.IO;
@@ -153,7 +156,19 @@ namespace NX_Game_Info
 
 #if WINDOWS
             Common.Settings.Default.Version = Assembly.GetExecutingAssembly().GetName().Version.ToInt();
+#elif MACOS
+            string versionString = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleShortVersionString").ToString();
+            Match match = Regex.Match(versionString, @"\d+(\.\d+)*");
+            if (match.Success)
+            {
+                if (Version.TryParse(match.Value, out Version ver))
+                {
+                    Common.Settings.Default.Version = ver.ToInt();
+                }
+            }
 #endif
+
+            Common.Settings.Default.Upgrade();
             Common.Settings.Default.Save();
         }
 
