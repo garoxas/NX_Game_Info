@@ -548,6 +548,10 @@ namespace NX_Game_Info
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (aboutBox.IsDisposed)
+            {
+                aboutBox = new AboutBox();
+            }
             aboutBox.Show();
         }
 
