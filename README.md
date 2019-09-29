@@ -1,6 +1,6 @@
 # NX Game Info
 [![Build status](https://ci.appveyor.com/api/projects/status/kgdq8btq7v2th8ne?svg=true)](https://ci.appveyor.com/project/garoxas/nx-game-info)  
-Nightly build https://ci.appveyor.com/project/garoxas/nx-game-info/build/artifacts  
+Nightly build (Windows) https://ci.appveyor.com/project/garoxas/nx-game-info/build/artifacts  
 Stable build https://github.com/garoxas/NX_Game_Info/releases  
 
 # Features
@@ -26,6 +26,8 @@ Stable build https://github.com/garoxas/NX_Game_Info/releases
 - Application Version
   - Minimum application version from [Metadata NCA](https://switchbrew.org/wiki/CNMT#AddOnContent_Extended_Header). Only available for `DLC`
 - MasterKey
+- Publisher
+  - Only available for `Base` and `Update`
 - File Name
 - File Size
 - Type
