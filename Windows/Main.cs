@@ -218,6 +218,7 @@ namespace NX_Game_Info
                     case "systemUpdateString":
                     case "systemVersionString":
                     case "masterkeyString":
+                    case "publisher":
                     case "filename":
                     case "typeString":
                     case "distribution":
@@ -399,7 +400,7 @@ namespace NX_Game_Info
                         progressDialog.SetLine(2, title.titleName, true, IntPtr.Zero);
                         progressDialog.SetProgress(index++, count);
 
-                        writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}",
+                        writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}",
                             title.titleID,
                             title.baseTitleID,
                             title.titleName,
@@ -410,6 +411,7 @@ namespace NX_Game_Info
                             title.systemVersionString,
                             title.applicationVersionString,
                             title.masterkeyString,
+                            title.publisher,
                             title.filename,
                             title.filesizeString,
                             title.typeString,
