@@ -59,6 +59,7 @@
             this.olvColumnSystemVersion = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnApplicationVersion = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnMasterKey = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
+            this.olvColumnPublisher = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnFileName = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnFileSize = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnType = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
@@ -159,20 +160,20 @@
             // updateVersionListToolStripMenuItem
             // 
             this.updateVersionListToolStripMenuItem.Name = "updateVersionListToolStripMenuItem";
-            this.updateVersionListToolStripMenuItem.Size = new System.Drawing.Size(252, 30);
+            this.updateVersionListToolStripMenuItem.Size = new System.Drawing.Size(248, 30);
             this.updateVersionListToolStripMenuItem.Text = "Update &Version List";
             this.updateVersionListToolStripMenuItem.Click += new System.EventHandler(this.updateVersionListToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(249, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(245, 6);
             // 
             // debugLogToolStripMenuItem
             // 
             this.debugLogToolStripMenuItem.CheckOnClick = true;
             this.debugLogToolStripMenuItem.Name = "debugLogToolStripMenuItem";
-            this.debugLogToolStripMenuItem.Size = new System.Drawing.Size(252, 30);
+            this.debugLogToolStripMenuItem.Size = new System.Drawing.Size(248, 30);
             this.debugLogToolStripMenuItem.Text = "Debug &Log";
             this.debugLogToolStripMenuItem.CheckedChanged += new System.EventHandler(this.debugLogToolStripMenuItem_CheckedChanged);
             // 
@@ -233,6 +234,7 @@
             this.objectListView.AllColumns.Add(this.olvColumnSystemVersion);
             this.objectListView.AllColumns.Add(this.olvColumnApplicationVersion);
             this.objectListView.AllColumns.Add(this.olvColumnMasterKey);
+            this.objectListView.AllColumns.Add(this.olvColumnPublisher);
             this.objectListView.AllColumns.Add(this.olvColumnFileName);
             this.objectListView.AllColumns.Add(this.olvColumnFileSize);
             this.objectListView.AllColumns.Add(this.olvColumnType);
@@ -252,6 +254,7 @@
             this.olvColumnSystemVersion,
             this.olvColumnApplicationVersion,
             this.olvColumnMasterKey,
+            this.olvColumnPublisher,
             this.olvColumnFileName,
             this.olvColumnFileSize,
             this.olvColumnType,
@@ -344,6 +347,13 @@
             this.olvColumnMasterKey.CellPadding = null;
             this.olvColumnMasterKey.Text = "MasterKey";
             this.olvColumnMasterKey.Width = 100;
+            // 
+            // olvColumnPublisher
+            // 
+            this.olvColumnPublisher.AspectName = "publisher";
+            this.olvColumnPublisher.CellPadding = null;
+            this.olvColumnPublisher.Text = "Publisher";
+            this.olvColumnPublisher.Width = 200;
             // 
             // olvColumnFileName
             // 
@@ -453,6 +463,7 @@
         private BrightIdeasSoftware.OLVColumn olvColumnSystemVersion;
         private BrightIdeasSoftware.OLVColumn olvColumnApplicationVersion;
         private BrightIdeasSoftware.OLVColumn olvColumnMasterKey;
+        private BrightIdeasSoftware.OLVColumn olvColumnPublisher;
         private BrightIdeasSoftware.OLVColumn olvColumnFileName;
         private BrightIdeasSoftware.OLVColumn olvColumnFileSize;
         private BrightIdeasSoftware.OLVColumn olvColumnType;

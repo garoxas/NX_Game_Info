@@ -344,6 +344,8 @@ namespace NX_Game_Info
                     }
                 }
             }
+            [XmlElement("Publisher")]
+            public string publisher { get; set; } = "";
             [XmlElement("Filename")]
             public string filename { get; set; } = "";
             [XmlElement("Filesize")]
