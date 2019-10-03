@@ -171,6 +171,7 @@ namespace NX_Game_Info
                 { "197d36b9f1564710dae6edb9a73f03b7.cnmt.nca", 536936528 }, // 8.0.1
                 { "68173bf86aa0884f2c989acc4102072f.cnmt.nca", 537919608 }, // 8.1.0
                 { "9bde0122ff0c7611460165d3a7adb795.cnmt.nca", 603980216 }, // 9.0.0
+                { "9684add4b199811749665b84d27c8cd9.cnmt.nca", 604045412 }, // 9.0.1
             };
 
             public enum Distribution
@@ -335,7 +336,7 @@ namespace NX_Game_Info
                         case 8:
                             return masterkey.ToString() + " (8.1.0)";
                         case 9:
-                            return masterkey.ToString() + " (9.0.0)";
+                            return masterkey.ToString() + " (9.0.0-9.0.1)";
                         case unchecked((uint)-1):
                             return "";
                         default:
