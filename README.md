@@ -26,6 +26,7 @@ Stable build https://github.com/garoxas/NX_Game_Info/releases
 - Application Version
   - Minimum application version from [Metadata NCA](https://switchbrew.org/wiki/CNMT#AddOnContent_Extended_Header). Only available for `DLC`
 - MasterKey
+- Title Key
 - Publisher
   - Only available for `Base` and `Update`
 - File Name

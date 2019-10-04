@@ -98,6 +98,18 @@ namespace NX_Game_Info
 
             aboutToolStripMenuItem.Text = String.Format("&About {0}", Application.ProductName);
 
+            foreach (string property in Title.Properties)
+            {
+                int index = 0;
+                ToolStripMenuItem menuItem = new ToolStripMenuItem
+                {
+                    Name = String.Format("property{0}ToolStripMenuItem", index++),
+                    Text = property,
+                };
+                menuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
+                copyToolStripMenuItem.DropDownItems.Add(menuItem);
+            }
+
             bool init = Process.initialize(out List<string> messages);
 
             foreach (var message in messages)
@@ -218,6 +230,7 @@ namespace NX_Game_Info
                     case "systemUpdateString":
                     case "systemVersionString":
                     case "masterkeyString":
+                    case "titleKey":
                     case "publisher":
                     case "filename":
                     case "typeString":
@@ -400,7 +413,7 @@ namespace NX_Game_Info
                         progressDialog.SetLine(2, title.titleName, true, IntPtr.Zero);
                         progressDialog.SetProgress(index++, count);
 
-                        writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}",
+                        writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}|{19}",
                             title.titleID,
                             title.baseTitleID,
                             title.titleName,
@@ -411,6 +424,7 @@ namespace NX_Game_Info
                             title.systemVersionString,
                             title.applicationVersionString,
                             title.masterkeyString,
+                            title.titleKey,
                             title.publisher,
                             title.filename,
                             title.filesizeString,
@@ -555,6 +569,121 @@ namespace NX_Game_Info
                 aboutBox = new AboutBox();
             }
             aboutBox.Show();
+        }
+
+        private void objectListView_CellRightClick(object sender, CellRightClickEventArgs e)
+        {
+            if (e.Model != null)
+            {
+                e.MenuStrip = contextMenuStrip;
+                contextMenuStrip.Tag = e.Model as Title;
+            }
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (contextMenuStrip.Tag is Title title)
+            {
+                string text = "";
+                string property = (sender as ToolStripMenuItem).Text;
+
+                switch (property)
+                {
+                    case "Title ID":
+                        text = title.titleID;
+                        break;
+                    case "Base Title ID":
+                        text = title.baseTitleID;
+                        break;
+                    case "Title Name":
+                        text = title.titleName;
+                        break;
+                    case "Display Version":
+                        text = title.displayVersion;
+                        break;
+                    case "Version":
+                        text = title.versionString;
+                        break;
+                    case "Latest Version":
+                        text = title.latestVersionString;
+                        break;
+                    case "System Update":
+                        text = title.systemUpdateString;
+                        break;
+                    case "System Version":
+                        text = title.systemVersionString;
+                        break;
+                    case "Application Version":
+                        text = title.applicationVersionString;
+                        break;
+                    case "Masterkey":
+                        text = title.masterkeyString;
+                        break;
+                    case "Title Key":
+                        text = title.titleKey;
+                        break;
+                    case "Publisher":
+                        text = title.publisher;
+                        break;
+                    case "Filename":
+                        text = title.filename;
+                        break;
+                    case "Filesize":
+                        text = title.filesizeString;
+                        break;
+                    case "Type":
+                        text = title.typeString;
+                        break;
+                    case "Distribution":
+                        text = title.distribution.ToString("G");
+                        break;
+                    case "Structure":
+                        text = title.structureString;
+                        break;
+                    case "Signature":
+                        text = title.signatureString;
+                        break;
+                    case "Permission":
+                        text = title.permissionString;
+                        break;
+                    case "Error":
+                        text = title.error;
+                        break;
+                }
+
+                if (!String.IsNullOrEmpty(text))
+                {
+                    Clipboard.SetText(text);
+                }
+                else
+                {
+                    MessageBox.Show(String.Format("{0} is empty", property), Application.ProductName);
+                }
+            }
+
+            contextMenuStrip.Tag = null;
+        }
+
+        private void openFileLocationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (contextMenuStrip.Tag is Title title)
+            {
+                string path = Path.GetDirectoryName(title.filename);
+                if (Directory.Exists(path))
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+                    {
+                        FileName = path,
+                        UseShellExecute = true,
+                    });
+                }
+                else
+                {
+                    MessageBox.Show(String.Format("{0} is not a valid directory", path), Application.ProductName);
+                }
+            }
+
+            contextMenuStrip.Tag = null;
         }
 
         private void objectListView_Freezing(object sender, FreezeEventArgs e)

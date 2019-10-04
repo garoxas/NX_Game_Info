@@ -165,8 +165,8 @@ namespace NX_Game_Info
                 {
                     columnIndex = Common.Settings.Default.Columns.Count;
                 }
-                Common.Settings.Default.Columns.InsertRange(columnIndex, new string[] { "publisher" });
-                Common.Settings.Default.ColumnWidth.InsertRange(columnIndex, new int[] { 200 });
+                Common.Settings.Default.Columns.InsertRange(columnIndex, new string[] { "titleKey", "publisher" });
+                Common.Settings.Default.ColumnWidth.InsertRange(columnIndex, new int[] { 240, 200 });
 #endif
             }
 
@@ -342,7 +342,9 @@ namespace NX_Game_Info
                                 {
                                     if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
                                     {
-                                        processTik(tik, rightsId, ref keyset);
+                                        processTik(tik, rightsId, ref keyset, out byte[] titleKey);
+
+                                        title.titleKey = BitConverter.ToString(titleKey).Replace("-", "").ToUpper();
                                     }
                                 }
 
@@ -445,7 +447,9 @@ namespace NX_Game_Info
                             {
                                 if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
                                 {
-                                    processTik(tik, rightsId, ref keyset);
+                                    processTik(tik, rightsId, ref keyset, out byte[] titleKey);
+
+                                    title.titleKey = BitConverter.ToString(titleKey).Replace("-", "").ToUpper();
                                 }
                             }
 
@@ -1009,12 +1013,12 @@ namespace NX_Game_Info
             title.displayVersion = nacp.DisplayVersion;
         }
 
-        private static void processTik(IStorage tik, byte[] rightsId, ref Keyset keyset)
+        private static void processTik(IStorage tik, byte[] rightsId, ref Keyset keyset, out byte[] titleKey)
         {
             log?.WriteLine("Processing TIK");
 
             const int TitleKeySize = 0x10;
-            byte[] titleKey = new byte[TitleKeySize];
+            titleKey = new byte[TitleKeySize];
 
             Stream stream = tik.AsStream();
             stream.Seek(0x180, SeekOrigin.Begin);
