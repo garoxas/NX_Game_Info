@@ -41,11 +41,13 @@ namespace NX_Game_Info
         public static readonly string HAC_VERSIONLIST = "hac_versionlist.json";
         public static readonly string TAGAYA_VERSIONLIST = "https://pastebin.com/raw/9N26Bx10";
 
+#if WINDOWS
         [DllImport("Shlwapi.dll", CharSet = CharSet.Auto)]
         public static extern Int32 StrFormatByteSize(
             long fileSize,
             [MarshalAs(UnmanagedType.LPTStr)] StringBuilder buffer,
             int bufferSize);
+#endif
 
         public class Settings : ApplicationSettingsBase
         {
@@ -380,10 +382,12 @@ namespace NX_Game_Info
             {
                 get
                 {
-#if MACOS
+#if WINDOWS
+                    StringBuilder builder = new StringBuilder(20); StrFormatByteSize(filesize, builder, 20); return builder.ToString();
+#elif MACOS
                     return NSByteCountFormatter.Format(filesize, NSByteCountFormatterCountStyle.File);
 #else
-                    StringBuilder builder = new StringBuilder(20); StrFormatByteSize(filesize, builder, 20); return builder.ToString();
+                    return GetBytesReadable(filesize);
 #endif
                 }
             }
@@ -483,6 +487,54 @@ namespace NX_Game_Info
             public List<VersionTitle> titles { get; set; }
             public uint format_version { get; set; }
             public uint last_modified { get; set; }
+        }
+
+        // GetBytesReadable Credits to Shailesh N. Humbad https://www.somacon.com/p576.php
+        public static string GetBytesReadable(long i)
+        {
+            // Get absolute value
+            long absolute_i = (i < 0 ? -i : i);
+            // Determine the suffix and readable value
+            string suffix;
+            double readable;
+            if (absolute_i >= 0x1000000000000000) // Exabyte
+            {
+                suffix = "EB";
+                readable = (i >> 50);
+            }
+            else if (absolute_i >= 0x4000000000000) // Petabyte
+            {
+                suffix = "PB";
+                readable = (i >> 40);
+            }
+            else if (absolute_i >= 0x10000000000) // Terabyte
+            {
+                suffix = "TB";
+                readable = (i >> 30);
+            }
+            else if (absolute_i >= 0x40000000) // Gigabyte
+            {
+                suffix = "GB";
+                readable = (i >> 20);
+            }
+            else if (absolute_i >= 0x100000) // Megabyte
+            {
+                suffix = "MB";
+                readable = (i >> 10);
+            }
+            else if (absolute_i >= 0x400) // Kilobyte
+            {
+                suffix = "KB";
+                readable = i;
+            }
+            else
+            {
+                return i.ToString("0 B"); // Byte
+            }
+            // Divide by 1024 to get fractional value
+            readable = (readable / 1024);
+            // Return formatted number with suffix
+            return readable.ToString("0.## ") + suffix;
         }
     }
 

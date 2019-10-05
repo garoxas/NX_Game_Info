@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.852
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NX_Game_Info", "CLI\NX_Game_Info.csproj", "{DA6F1D3B-9553-46D4-96EA-870FB4B7961A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NX_Game_Info", "cli\NX_Game_Info.csproj", "{DA6F1D3B-9553-46D4-96EA-870FB4B7961A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LibHac", "LibHac\src\LibHac\LibHac.csproj", "{795213A7-4554-4CC0-BBEE-BA4305FD5B2C}"
 EndProject
