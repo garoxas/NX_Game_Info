@@ -1,2 +1,0 @@
-#!/usr/bin/env sh
-mono "NX Game Info.exe"
