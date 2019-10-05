@@ -22,7 +22,7 @@ namespace NX_Game_Info
 {
     public partial class Main : Form
     {
-        internal AboutBox aboutBox = new AboutBox();
+        internal AboutBox aboutBox;
         internal IProgressDialog progressDialog;
 
         public enum Worker
@@ -396,7 +396,7 @@ namespace NX_Game_Info
                     progressDialog = (IProgressDialog)new ProgressDialog();
                     progressDialog.StartProgressDialog(Handle, "Exporting titles");
 
-                    writer.WriteLine("{0} {1}", aboutBox.AssemblyTitle, aboutBox.AssemblyVersion);
+                    writer.WriteLine("{0} {1}", Application.ProductName, Application.ProductVersion);
                     writer.WriteLine("--------------------------------------------------------------\n");
 
                     writer.WriteLine("Export titles starts at {0}\n", String.Format("{0:F}", DateTime.Now));
@@ -564,10 +564,7 @@ namespace NX_Game_Info
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (aboutBox.IsDisposed)
-            {
-                aboutBox = new AboutBox();
-            }
+            aboutBox = new AboutBox();
             aboutBox.Show();
         }
 

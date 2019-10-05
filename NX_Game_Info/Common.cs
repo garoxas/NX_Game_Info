@@ -493,4 +493,12 @@ namespace NX_Game_Info
             return Math.Max(version.Major, 0) * 100_00_00 + Math.Max(version.Minor, 0) * 100_00 + Math.Max(version.Build, 0) * 100 + Math.Max(version.Revision, 0);
         }
     }
+
+    public static class StringExtension
+    {
+        public static string Quote(this string text, char separator = ' ')
+        {
+            return text.Contains(separator) ? String.Format("\"{0}\"", text) : text;
+        }
+    }
 }
