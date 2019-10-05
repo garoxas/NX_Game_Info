@@ -7,7 +7,7 @@
     <ProjectGuid>{DA6F1D3B-9553-46D4-96EA-870FB4B7961A}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>NX_Game_Info</RootNamespace>
-    <AssemblyName>NX Game Info</AssemblyName>
+    <AssemblyName>nxgameinfo_cli</AssemblyName>
     <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
