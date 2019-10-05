@@ -4,6 +4,7 @@ Nightly build (Windows) https://ci.appveyor.com/project/garoxas/nx-game-info/bui
 Stable build https://github.com/garoxas/NX_Game_Info/releases  
 
 # Features
+- Windows, macOS and Linux compatible (Command Line Interface)
 - NSP, XCI, NRO and installed titles on Switch SD card
 - Game files structure (Scene Release, CDN Rip, Authoring Tool, Converted from other formats)
 - NCA signature to verify official Nintendo titles. Unmodified titles should pass this verification, although titles converted from other formats will not
@@ -65,12 +66,12 @@ NX Game Info uses `prod.keys`, `title.keys` and `console.keys` in the format as 
   `master_key_##`, `key_area_key_application_##` and `titlekek_##` will also be necessary to decrypt titles with higher MasterKey requirement
  - *title.keys*: Optional, required for `Permission` check if `.tik` file not available
  - *console.keys*: Optional, `sd_seed` key required for `Open SD Card` feature
- - *hac_versionlist.json*: [Optional](https://pastebin.com/raw/9N26Bx10), required for `Latest Version` feature
+ - *hac_versionlist.json*: Optional, required for `Latest Version` feature
 
 The application will look for these files at the following locations (other file locations will follow wherever `prod.keys` file was found)
 
  - Directory of the executable file (.exe) for Windows or (.app) for macOS
- - `$HOME/.switch` e.g. C:\\Users\\_yourname_\\.switch for Windows or /Users/_yourname_/.switch for macOS
+ - `$HOME/.switch` e.g. C:\\Users\\_yourname_\\.switch for Windows, /Users/_yourname_/.switch for macOS or /home/_yourname_/.switch for Linux
 
 # macOS
 ### Open File/Directory
@@ -83,6 +84,14 @@ The application will look for these files at the following locations (other file
 ![NX_Game_Info_Windows.png](NX_Game_Info_Windows.png)
 ### Open SD Card
 ![NX_Game_Info_Windows_SD_Card.png](NX_Game_Info_Windows_SD_Card.png)
+
+# Command Line Interface (Windows, macOS, Linux)
+### Linux (Ubuntu)
+Install .NET Core Runtime and Mono from the following links  
+https://dotnet.microsoft.com/download/linux-package-manager/ubuntu18-04/runtime-current  
+https://www.mono-project.com/download/stable/#download-lin-ubuntu
+
+![NX_Game_Info_cli.png](NX_Game_Info_cli.png)
 
 # Credits
 @Thealexbarney for the [LibHac](https://github.com/Thealexbarney/LibHac) library.  
