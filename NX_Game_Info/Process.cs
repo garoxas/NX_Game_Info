@@ -156,7 +156,7 @@ namespace NX_Game_Info
                 }
 #endif
             }
-            else if (version < 00_06_01_00)
+            else if (version < 00_07_00_00)
             {
 #if WINDOWS
                 int columnIndex = Common.Settings.Default.Columns.FindIndex(x => x.Equals("filename") || x.Equals("filesizeString") ||

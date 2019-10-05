@@ -98,9 +98,9 @@ namespace NX_Game_Info
 
             aboutToolStripMenuItem.Text = String.Format("&About {0}", Application.ProductName);
 
-            foreach (string property in Title.Properties)
+			int index = 0;
+			foreach (string property in Title.Properties)
             {
-                int index = 0;
                 ToolStripMenuItem menuItem = new ToolStripMenuItem
                 {
                     Name = String.Format("property{0}ToolStripMenuItem", index++),

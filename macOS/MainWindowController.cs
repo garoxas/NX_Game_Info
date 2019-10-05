@@ -14,6 +14,7 @@ using ArrayOfTitle = NX_Game_Info.Common.ArrayOfTitle;
 #pragma warning disable RECS0022 // A catch clause that catches System.Exception and has an empty body
 #pragma warning disable RECS0061 // Warns when a culture-aware 'EndsWith' call is used by default.
 #pragma warning disable RECS0063 // Warns when a culture-aware 'StartsWith' call is used by default.
+#pragma warning disable RECS0064 // Warns when a culture-aware 'string.CompareTo' call is used by default
 #pragma warning disable RECS0117 // Local variable has the same name as a member and hides it
 
 namespace NX_Game_Info
@@ -85,6 +86,8 @@ namespace NX_Game_Info
             }
 
             historyMenu = Window.Menu?.ItemWithTitle("History")?.Submenu;
+
+            InitContextMenu(contextMenu.ItemWithTitle("Copy")?.Submenu);
 
             bool init = Process.initialize(out List<string> messages);
 
@@ -331,7 +334,7 @@ namespace NX_Game_Info
                             message.StringValue = title.titleName ?? "";
                             progress.DoubleValue = 100f * index++ / count;
 
-                            writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}",
+                            writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}|{19}",
                                 title.titleID,
                                 title.baseTitleID,
                                 title.titleName,
@@ -342,6 +345,7 @@ namespace NX_Game_Info
                                 title.systemVersionString,
                                 title.applicationVersionString,
                                 title.masterkeyString,
+                                title.titleKey,
                                 title.publisher,
                                 title.filename,
                                 title.filesizeString,
@@ -487,6 +491,128 @@ namespace NX_Game_Info
                 }
 
                 index++;
+            }
+        }
+
+        void InitContextMenu(NSMenu menu)
+        {
+            foreach (string property in Title.Properties)
+            {
+                NSMenuItem menuItem = new NSMenuItem(property, new System.EventHandler(Copy));
+                menu.AddItem(menuItem);
+            }
+        }
+
+        void Copy(object sender, EventArgs e)
+        {
+            Title title = tableViewDataSource.Titles?[(int)tableView.ClickedRow];
+            if (title != null)
+            {
+                string text = "";
+                string property = (sender as NSMenuItem).Title;
+
+                switch (property)
+                {
+                    case "Title ID":
+                        text = title.titleID;
+                        break;
+                    case "Base Title ID":
+                        text = title.baseTitleID;
+                        break;
+                    case "Title Name":
+                        text = title.titleName;
+                        break;
+                    case "Display Version":
+                        text = title.displayVersion;
+                        break;
+                    case "Version":
+                        text = title.versionString;
+                        break;
+                    case "Latest Version":
+                        text = title.latestVersionString;
+                        break;
+                    case "System Update":
+                        text = title.systemUpdateString;
+                        break;
+                    case "System Version":
+                        text = title.systemVersionString;
+                        break;
+                    case "Application Version":
+                        text = title.applicationVersionString;
+                        break;
+                    case "Masterkey":
+                        text = title.masterkeyString;
+                        break;
+                    case "Title Key":
+                        text = title.titleKey;
+                        break;
+                    case "Publisher":
+                        text = title.publisher;
+                        break;
+                    case "Filename":
+                        text = title.filename;
+                        break;
+                    case "Filesize":
+                        text = title.filesizeString;
+                        break;
+                    case "Type":
+                        text = title.typeString;
+                        break;
+                    case "Distribution":
+                        text = title.distribution.ToString("G");
+                        break;
+                    case "Structure":
+                        text = title.structureString;
+                        break;
+                    case "Signature":
+                        text = title.signatureString;
+                        break;
+                    case "Permission":
+                        text = title.permissionString;
+                        break;
+                    case "Error":
+                        text = title.error;
+                        break;
+                }
+
+                if (!String.IsNullOrEmpty(text))
+                {
+                    var pboard = NSPasteboard.GeneralPasteboard;
+                    pboard.DeclareTypes(new string[] { NSPasteboard.NSPasteboardTypeString }, null);
+                    pboard.SetStringForType(text, NSPasteboard.NSPasteboardTypeString);
+                }
+                else
+                {
+                    var alert = new NSAlert()
+                    {
+                        InformativeText = String.Format("{0} is empty", property),
+                        MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                    };
+                    alert.RunModal();
+                }
+            }
+        }
+
+        [Export("showInFinder:")]
+        public void ShowInFinder(NSMenuItem menuItem)
+        {
+            Title title = tableViewDataSource.Titles?[(int)tableView.ClickedRow];
+            if (title != null)
+            {
+                string path = Path.GetDirectoryName(title.filename);
+                if (Directory.Exists(path))
+                {
+                    NSWorkspace.SharedWorkspace.OpenFile(path);
+                }
+                else
+                {
+                    var alert = new NSAlert()
+                    {
+                        InformativeText = String.Format("{0} is not a valid directory", path),
+                        MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                    };
+                    alert.RunModal();
+                }
             }
         }
 
@@ -737,10 +863,12 @@ namespace NX_Game_Info
                             return x.applicationVersion.CompareTo(y.applicationVersion) * (sortDescriptor.Ascending ? 1 : -1);
                         case "masterkey":
                             return x.masterkey.CompareTo(y.masterkey) * (sortDescriptor.Ascending ? 1 : -1);
-                        case "filename":
-                            return string.Compare(x.filename, y.filename) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "titleKey":
+                            return string.Compare(x.titleKey, y.titleKey) * (sortDescriptor.Ascending ? 1 : -1);
                         case "publisher":
                             return string.Compare(x.publisher, y.publisher) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "filename":
+                            return string.Compare(x.filename, y.filename) * (sortDescriptor.Ascending ? 1 : -1);
                         case "filesize":
                             return x.filesize.CompareTo(y.filesize) * (sortDescriptor.Ascending ? 1 : -1);
                         case "typeString":
@@ -819,6 +947,9 @@ namespace NX_Game_Info
                     break;
                 case "MasterKey":
                     textField.StringValue = title.masterkeyString ?? "";
+                    break;
+                case "TitleKey":
+                    textField.StringValue = title.titleKey ?? "";
                     break;
                 case "Publisher":
                     textField.StringValue = title.publisher ?? "";
