@@ -385,65 +385,83 @@ namespace NX_Game_Info
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "Export Titles";
-            saveFileDialog.Filter = "Text Documents (*.txt)|*.txt|All Files (*.*)|*.*";
+            saveFileDialog.Filter = "CSV File (*.csv)|*.csv";
 
             Process.log?.WriteLine("\nExport Titles");
 
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
-                using (var writer = new StreamWriter(saveFileDialog.FileName))
+                string filename = saveFileDialog.FileName;
+
+                if (filename.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                 {
-                    progressDialog = (IProgressDialog)new ProgressDialog();
-                    progressDialog.StartProgressDialog(Handle, "Exporting titles");
-
-                    writer.WriteLine("{0} {1}", Application.ProductName, Application.ProductVersion);
-                    writer.WriteLine("--------------------------------------------------------------\n");
-
-                    writer.WriteLine("Export titles starts at {0}\n", String.Format("{0:F}", DateTime.Now));
-
-                    uint index = 0, count = (uint)titles.Count;
-
-                    foreach (var title in titles)
+                    using (var writer = new StreamWriter(filename))
                     {
-                        if (progressDialog.HasUserCancelled())
+                        progressDialog = (IProgressDialog)new ProgressDialog();
+                        progressDialog.StartProgressDialog(Handle, "Exporting titles");
+
+                        char separator = Common.Settings.Default.CsvSeparator;
+                        if (separator != '\0')
                         {
-                            break;
+                            writer.WriteLine("sep={0}", separator);
+                        }
+                        else
+                        {
+                            separator = ',';
                         }
 
-                        progressDialog.SetLine(2, title.titleName, true, IntPtr.Zero);
-                        progressDialog.SetProgress(index++, count);
+                        writer.WriteLine("# publisher {0} {1}", Application.ProductName, Application.ProductVersion);
+                        writer.WriteLine("# updated {0}", String.Format("{0:F}", DateTime.Now));
 
-                        writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}|{19}",
-                            title.titleID,
-                            title.baseTitleID,
-                            title.titleName,
-                            title.displayVersion,
-                            title.versionString,
-                            title.latestVersionString,
-                            title.systemUpdateString,
-                            title.systemVersionString,
-                            title.applicationVersionString,
-                            title.masterkeyString,
-                            title.titleKey,
-                            title.publisher,
-                            title.filename,
-                            title.filesizeString,
-                            title.typeString,
-                            title.distribution,
-                            title.structureString,
-                            title.signatureString,
-                            title.permissionString,
-                            title.error);
+                        writer.WriteLine(String.Join(separator.ToString(), Common.Title.Properties));
+
+                        uint index = 0, count = (uint)titles.Count;
+
+                        foreach (var title in titles)
+                        {
+                            if (progressDialog.HasUserCancelled())
+                            {
+                                break;
+                            }
+
+                            progressDialog.SetLine(2, title.titleName, true, IntPtr.Zero);
+                            progressDialog.SetProgress(index++, count);
+
+                            writer.WriteLine(String.Join(separator.ToString(), new string[] {
+                                title.titleID.Quote(separator),
+                                title.baseTitleID.Quote(separator),
+                                title.titleName.Quote(separator),
+                                title.displayVersion.Quote(separator),
+                                title.versionString.Quote(separator),
+                                title.latestVersionString.Quote(separator),
+                                title.systemUpdateString.Quote(separator),
+                                title.systemVersionString.Quote(separator),
+                                title.applicationVersionString.Quote(separator),
+                                title.masterkeyString.Quote(separator),
+                                title.titleKey.Quote(separator),
+                                title.publisher.Quote(separator),
+                                title.filename.Quote(separator),
+                                title.filesizeString.Quote(separator),
+                                title.typeString.Quote(separator),
+                                title.distribution.ToString().Quote(separator),
+                                title.structureString.Quote(separator),
+                                title.signatureString.Quote(separator),
+                                title.permissionString.Quote(separator),
+                                title.error.Quote(separator),
+                            }));
+                        }
+
+                        Process.log?.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
+
+                        progressDialog.StopProgressDialog();
+                        Activate();
+
+                        MessageBox.Show(String.Format("{0} of {1} titles exported", index, titles.Count), Application.ProductName);
                     }
-
-                    writer.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
-
-                    Process.log?.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
-
-                    progressDialog.StopProgressDialog();
-                    Activate();
-
-                    MessageBox.Show(String.Format("{0} of {1} titles exported", index, titles.Count), Application.ProductName);
+                }
+                else
+                {
+                    MessageBox.Show(String.Format("This file type is not supported {0}", Path.GetExtension(filename)), Application.ProductName);
                 }
             }
         }

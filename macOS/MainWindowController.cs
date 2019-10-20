@@ -302,7 +302,7 @@ namespace NX_Game_Info
         public void Export(NSMenuItem menuItem)
         {
             NSSavePanel savePanel = NSSavePanel.SavePanel;
-            savePanel.AllowedFileTypes = new string[] { "txt" };
+            savePanel.AllowedFileTypes = new string[] { "csv" };
             savePanel.Title = "Export Titles";
 
             Process.log?.WriteLine("\nExport Titles");
@@ -311,61 +311,84 @@ namespace NX_Game_Info
             {
                 if (result == (int)NSModalResponse.OK)
                 {
-                    using (var writer = new StreamWriter(savePanel.Url.Path))
+                    string filename = savePanel.Url.Path;
+
+                    if (filename.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                     {
-                        Window.BeginSheet(sheet, ProgressComplete);
-                        userCancelled = false;
-
-                        writer.WriteLine("{0} {1}", NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleName").ToString(), NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleShortVersionString").ToString());
-                        writer.WriteLine("--------------------------------------------------------------\n");
-
-                        writer.WriteLine("Export titles starts at {0}\n", String.Format("{0:F}", DateTime.Now));
-
-                        uint index = 0, count = (uint)titles.Count;
-
-                        foreach (var title in titles)
+                        using (var writer = new StreamWriter(filename))
                         {
-                            if (userCancelled)
+                            Window.BeginSheet(sheet, ProgressComplete);
+                            userCancelled = false;
+
+                            char separator = Common.Settings.Default.CsvSeparator;
+                            if (separator != '\0')
                             {
-                                userCancelled = false;
-                                break;
+                                writer.WriteLine("sep={0}", separator);
+                            }
+                            else
+                            {
+                                separator = ',';
                             }
 
-                            message.StringValue = title.titleName ?? "";
-                            progress.DoubleValue = 100f * index++ / count;
+                            writer.WriteLine("# publisher {0} {1}", NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleName").ToString(), NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleShortVersionString").ToString());
+                            writer.WriteLine("# updated {0}", String.Format("{0:F}", DateTime.Now));
 
-                            writer.WriteLine("{0}|{1}|{2}|{3}|{4}|{5}|{6}|{7}|{8}|{9}|{10}|{11}|{12}|{13}|{14}|{15}|{16}|{17}|{18}|{19}",
-                                title.titleID,
-                                title.baseTitleID,
-                                title.titleName,
-                                title.displayVersion,
-                                title.versionString,
-                                title.latestVersionString,
-                                title.systemUpdateString,
-                                title.systemVersionString,
-                                title.applicationVersionString,
-                                title.masterkeyString,
-                                title.titleKey,
-                                title.publisher,
-                                title.filename,
-                                title.filesizeString,
-                                title.typeString,
-                                title.distribution,
-                                title.structureString,
-                                title.signatureString,
-                                title.permissionString,
-                                title.error);
+                            writer.WriteLine(String.Join(separator.ToString(), Common.Title.Properties));
+
+                            uint index = 0, count = (uint)titles.Count;
+
+                            foreach (var title in titles)
+                            {
+                                if (userCancelled)
+                                {
+                                    userCancelled = false;
+                                    break;
+                                }
+
+                                message.StringValue = title.titleName ?? "";
+                                progress.DoubleValue = 100f * index++ / count;
+
+                                writer.WriteLine(String.Join(separator.ToString(), new string[] {
+                                    title.titleID.Quote(separator),
+                                    title.baseTitleID.Quote(separator),
+                                    title.titleName.Quote(separator),
+                                    title.displayVersion.Quote(separator),
+                                    title.versionString.Quote(separator),
+                                    title.latestVersionString.Quote(separator),
+                                    title.systemUpdateString.Quote(separator),
+                                    title.systemVersionString.Quote(separator),
+                                    title.applicationVersionString.Quote(separator),
+                                    title.masterkeyString.Quote(separator),
+                                    title.titleKey.Quote(separator),
+                                    title.publisher.Quote(separator),
+                                    title.filename.Quote(separator),
+                                    title.filesizeString.Quote(separator),
+                                    title.typeString.Quote(separator),
+                                    title.distribution.ToString().Quote(separator),
+                                    title.structureString.Quote(separator),
+                                    title.signatureString.Quote(separator),
+                                    title.permissionString.Quote(separator),
+                                    title.error.Quote(separator),
+                                }));
+                            }
+
+                            Process.log?.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
+
+                            Window.EndSheet(sheet);
+
+                            var alert = new NSAlert()
+                            {
+                                InformativeText = String.Format("{0} of {1} titles exported", index, titles.Count),
+                                MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                            };
+                            alert.RunModal();
                         }
-
-                        writer.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
-
-                        Process.log?.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
-
-                        Window.EndSheet(sheet);
-
+                    }
+                    else
+                    {
                         var alert = new NSAlert()
                         {
-                            InformativeText = String.Format("{0} of {1} titles exported", index, titles.Count),
+                            InformativeText = String.Format("This file type is not supported {0}", Path.GetExtension(filename)),
                             MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
                         };
                         alert.RunModal();

@@ -83,6 +83,14 @@ namespace NX_Game_Info
                 set { this["DebugLog"] = value; }
             }
 
+            [UserScopedSetting()]
+            [DefaultSettingValue("")]
+            public char CsvSeparator
+            {
+                get { return (char)this["CsvSeparator"]; }
+                set { this["CsvSeparator"] = value; }
+            }
+
 #if WINDOWS
             [UserScopedSetting()]
             [DefaultSettingValue("0, 0")]
