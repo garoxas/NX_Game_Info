@@ -126,14 +126,8 @@ namespace NX_Game_Info
                         titleID = titleID.Substring(0, Math.Min(titleID.Length, 13)) + "000";
                     }
 
-                    if (versionList.ContainsKey(titleID.ToUpper()))
-                    {
-                        versionList[titleID.ToUpper()] = Math.Max(versionList[titleID.ToUpper()], title.version);
-                    }
-                    else
-                    {
-                        versionList.Add(titleID.ToUpper(), title.version);
-                    }
+                    versionList.TryGetValue(titleID.ToUpper(), out uint version);
+                    versionList[titleID.ToUpper()] = Math.Max(version, title.version);
                 }
 
                 log?.WriteLine("Found {0} titles, last modified at {1}", versionList.Count, versionlist.last_modified);
@@ -228,8 +222,8 @@ namespace NX_Game_Info
 
                             log?.WriteLine("Found {0} title keys", keyset?.TitleKeys?.Count);
 
-                            titleNames = keyset.TitleNames.ToDictionary(p => BitConverter.ToString(p.Key.Take(8).ToArray()).Replace("-", "").ToUpper(), p => p.Value);
-                            titleVersions = keyset.TitleVersions.ToDictionary(p => BitConverter.ToString(p.Key.Take(8).ToArray()).Replace("-", "").ToUpper(), p => p.Value);
+                            titleNames = keyset.TitleNames.GroupBy(p => BitConverter.ToString(p.Key.Take(8).ToArray()).Replace("-", "").ToUpper()).ToDictionary(p => p.Key, p => p.Last().Value);
+                            titleVersions = keyset.TitleVersions.GroupBy(p => BitConverter.ToString(p.Key.Take(8).ToArray()).Replace("-", "").ToUpper()).ToDictionary(p => p.Key, p => p.Last().Value);
 
                             return true;
                         }
@@ -270,14 +264,8 @@ namespace NX_Game_Info
                                     titleID = titleID.Substring(0, Math.Min(titleID.Length, 13)) + "000";
                                 }
 
-                                if (versionList.ContainsKey(titleID.ToUpper()))
-                                {
-                                    versionList[titleID.ToUpper()] = Math.Max(versionList[titleID.ToUpper()], title.version);
-                                }
-                                else
-                                {
-                                    versionList.Add(titleID.ToUpper(), title.version);
-                                }
+                                versionList.TryGetValue(titleID.ToUpper(), out uint version);
+                                versionList[titleID.ToUpper()] = Math.Max(version, title.version);
                             }
 
                             log?.WriteLine("Found {0} titles, last modified at {1}", versionList.Count, versionlist.last_modified);
