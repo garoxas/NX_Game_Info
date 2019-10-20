@@ -361,6 +361,7 @@ namespace NX_Game_Info
                                     title.masterkeyString.Quote(separator),
                                     title.titleKey.Quote(separator),
                                     title.publisher.Quote(separator),
+                                    title.languagesString.Quote(separator),
                                     title.filename.Quote(separator),
                                     title.filesizeString.Quote(separator),
                                     title.typeString.Quote(separator),
@@ -571,6 +572,9 @@ namespace NX_Game_Info
                         break;
                     case "Publisher":
                         text = title.publisher;
+                        break;
+                    case "Languages":
+                        text = title.languagesString;
                         break;
                     case "Filename":
                         text = title.filename;
@@ -890,6 +894,8 @@ namespace NX_Game_Info
                             return string.Compare(x.titleKey, y.titleKey) * (sortDescriptor.Ascending ? 1 : -1);
                         case "publisher":
                             return string.Compare(x.publisher, y.publisher) * (sortDescriptor.Ascending ? 1 : -1);
+                        case "languagesString":
+                            return string.Compare(x.languagesString, y.languagesString) * (sortDescriptor.Ascending ? 1 : -1);
                         case "filename":
                             return string.Compare(x.filename, y.filename) * (sortDescriptor.Ascending ? 1 : -1);
                         case "filesize":
@@ -976,6 +982,9 @@ namespace NX_Game_Info
                     break;
                 case "Publisher":
                     textField.StringValue = title.publisher ?? "";
+                    break;
+                case "Languages":
+                    textField.StringValue = title.languagesString ?? "";
                     break;
                 case "FileName":
                     textField.StringValue = title.filename ?? "";

@@ -156,7 +156,8 @@ namespace NX_Game_Info
 ├ {32}: {33}
 ├ {34}: {35}
 ├ {36}: {37}
-└ {38}: {39}",
+├ {38}: {39}
+└ {40}: {41}",
                 Title.Properties[0], title.titleID,
                 Title.Properties[1], title.baseTitleID,
                 Title.Properties[2], title.titleName,
@@ -169,14 +170,15 @@ namespace NX_Game_Info
                 Title.Properties[9], title.masterkeyString,
                 Title.Properties[10], title.titleKey,
                 Title.Properties[11], title.publisher,
-                Title.Properties[12], title.filename,
-                Title.Properties[13], title.filesizeString,
-                Title.Properties[14], title.typeString,
-                Title.Properties[15], title.distribution,
-                Title.Properties[16], title.structureString,
-                Title.Properties[17], title.signatureString,
-                Title.Properties[18], title.permissionString,
-                Title.Properties[19], title.error
+                Title.Properties[12], title.languagesString,
+                Title.Properties[13], title.filename,
+                Title.Properties[14], title.filesizeString,
+                Title.Properties[15], title.typeString,
+                Title.Properties[16], title.distribution,
+                Title.Properties[17], title.structureString,
+                Title.Properties[18], title.signatureString,
+                Title.Properties[19], title.permissionString,
+                Title.Properties[20], title.error
                 );
             }
 

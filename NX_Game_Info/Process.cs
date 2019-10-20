@@ -1013,14 +1013,16 @@ namespace NX_Game_Info
 
             Nacp nacp = new Nacp(controlNacp);
 
+            bool first = true;
             foreach (NacpDescription description in nacp.Descriptions)
             {
                 if (!String.IsNullOrEmpty(description.Title))
                 {
-                    if (String.IsNullOrEmpty(title.titleName))
+                    if (first)
                     {
                         title.titleName = description.Title;
                         title.publisher = description.Developer;
+                        first = false;
                     }
 
                     title.languages.Add(Title.LanguageCode.ElementAtOrDefault((int)description.Language));

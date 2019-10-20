@@ -30,6 +30,8 @@ Stable build https://github.com/garoxas/NX_Game_Info/releases
 - Title Key
 - Publisher
   - Only available for `Base` and `Update`
+- Languages
+  - List of language codes as specified by [RFC 5646](https://tools.ietf.org/html/rfc5646). Only available for `Base` and `Update`
 - File Name
 - File Size
 - Type

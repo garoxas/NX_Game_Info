@@ -73,7 +73,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="NX_Game_Info.ico" />
-    <Content Include="nxgameinfo" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
