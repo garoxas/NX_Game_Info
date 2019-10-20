@@ -232,6 +232,7 @@ namespace NX_Game_Info
                     case "masterkeyString":
                     case "titleKey":
                     case "publisher":
+                    case "languagesString":
                     case "filename":
                     case "typeString":
                     case "distribution":
@@ -440,6 +441,7 @@ namespace NX_Game_Info
                                 title.masterkeyString.Quote(separator),
                                 title.titleKey.Quote(separator),
                                 title.publisher.Quote(separator),
+                                title.languagesString.Quote(separator),
                                 title.filename.Quote(separator),
                                 title.filesizeString.Quote(separator),
                                 title.typeString.Quote(separator),
@@ -639,6 +641,9 @@ namespace NX_Game_Info
                         break;
                     case "Publisher":
                         text = title.publisher;
+                        break;
+                    case "Languages":
+                        text = title.languagesString;
                         break;
                     case "Filename":
                         text = title.filename;

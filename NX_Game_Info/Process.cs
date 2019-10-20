@@ -156,7 +156,7 @@ namespace NX_Game_Info
                 }
 #endif
             }
-            else if (version < 00_07_00_00)
+            if (version < 00_07_00_00)
             {
 #if WINDOWS
                 int columnIndex = Common.Settings.Default.Columns.FindIndex(x => x.Equals("filename") || x.Equals("filesizeString") ||
@@ -167,6 +167,19 @@ namespace NX_Game_Info
                 }
                 Common.Settings.Default.Columns.InsertRange(columnIndex, new string[] { "titleKey", "publisher" });
                 Common.Settings.Default.ColumnWidth.InsertRange(columnIndex, new int[] { 240, 200 });
+#endif
+            }
+            if (version < 00_07_00_01)
+            {
+#if WINDOWS
+                int columnIndex = Common.Settings.Default.Columns.FindIndex(x => x.Equals("filename") || x.Equals("filesizeString") ||
+                    x.Equals("typeString") || x.Equals("distribution") || x.Equals("structureString") || x.Equals("signatureString") || x.Equals("permissionString") || x.Equals("error"));
+                if (columnIndex == -1)
+                {
+                    columnIndex = Common.Settings.Default.Columns.Count;
+                }
+                Common.Settings.Default.Columns.InsertRange(columnIndex, new string[] { "languagesString" });
+                Common.Settings.Default.ColumnWidth.InsertRange(columnIndex, new int[] { 120 });
 #endif
             }
 
@@ -1004,9 +1017,13 @@ namespace NX_Game_Info
             {
                 if (!String.IsNullOrEmpty(description.Title))
                 {
-                    title.titleName = description.Title;
-                    title.publisher = description.Developer;
-                    break;
+                    if (String.IsNullOrEmpty(title.titleName))
+                    {
+                        title.titleName = description.Title;
+                        title.publisher = description.Developer;
+                    }
+
+                    title.languages.Add(Title.LanguageCode.ElementAtOrDefault((int)description.Language));
                 }
             }
 

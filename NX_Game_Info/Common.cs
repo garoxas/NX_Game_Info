@@ -184,7 +184,7 @@ namespace NX_Game_Info
                 { "9684add4b199811749665b84d27c8cd9.cnmt.nca", 604045412 }, // 9.0.1
             };
 
-            public static List<string> Properties = new List<string>()
+            public static string[] Properties = new string[]
             {
                 "Title ID",
                 "Base Title ID",
@@ -198,6 +198,7 @@ namespace NX_Game_Info
                 "Masterkey",
                 "Title Key",
                 "Publisher",
+                "Languages",
                 "Filename",
                 "Filesize",
                 "Type",
@@ -206,6 +207,25 @@ namespace NX_Game_Info
                 "Signature",
                 "Permission",
                 "Error",
+            };
+
+            public static string[] LanguageCode = new string[]
+            {
+                "en-US",
+                "en-GB",
+                "ja",
+                "fr",
+                "de",
+                "es-419",
+                "es",
+                "it",
+                "nl",
+                "fr-CA",
+                "pt",
+                "ru",
+                "ko",
+                "zh-TW",
+                "zh-CN",
             };
 
             public enum Distribution
@@ -382,6 +402,15 @@ namespace NX_Game_Info
             public string titleKey { get; set; } = "";
             [XmlElement("Publisher")]
             public string publisher { get; set; } = "";
+            [XmlElement("Languages")]
+            public HashSet<string> languages { get; set; } = new HashSet<string>();
+            public string languagesString
+            {
+                get
+                {
+                    return String.Join(",", languages.Select(x => x).Where(x => !String.IsNullOrEmpty(x)).ToArray());
+                }
+            }
             [XmlElement("Filename")]
             public string filename { get; set; } = "";
             [XmlElement("Filesize")]
