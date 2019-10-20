@@ -126,7 +126,14 @@ namespace NX_Game_Info
                         titleID = titleID.Substring(0, Math.Min(titleID.Length, 13)) + "000";
                     }
 
-                    versionList.Add(titleID.ToUpper(), title.version);
+                    if (versionList.ContainsKey(titleID.ToUpper()))
+                    {
+                        versionList[titleID.ToUpper()] = Math.Max(versionList[titleID.ToUpper()], title.version);
+                    }
+                    else
+                    {
+                        versionList.Add(titleID.ToUpper(), title.version);
+                    }
                 }
 
                 log?.WriteLine("Found {0} titles, last modified at {1}", versionList.Count, versionlist.last_modified);
@@ -198,6 +205,42 @@ namespace NX_Game_Info
 #endif
         }
 
+        public static bool updateTitleKeys()
+        {
+            string title_keys = path_prefix + Common.TITLE_KEYS;
+
+            try
+            {
+                log?.WriteLine("\nDownloading title keys");
+
+                using (var httpClient = new HttpClient())
+                {
+                    var response = httpClient.GetAsync(Common.TITLE_KEYS_URI).Result;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var content = response.Content.ReadAsStringAsync().Result;
+                        if (!String.IsNullOrEmpty(content))
+                        {
+                            File.WriteAllText(title_keys, content);
+
+                            ExternalKeys.ReadTitleKeys(keyset, title_keys);
+
+                            log?.WriteLine("Found {0} title keys", keyset?.TitleKeys?.Count);
+
+                            titleNames = keyset.TitleNames.ToDictionary(p => BitConverter.ToString(p.Key.Take(8).ToArray()).Replace("-", "").ToUpper(), p => p.Value);
+                            titleVersions = keyset.TitleVersions.ToDictionary(p => BitConverter.ToString(p.Key.Take(8).ToArray()).Replace("-", "").ToUpper(), p => p.Value);
+
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return false;
+        }
+
         public static bool updateVersionList()
         {
             string hac_versionlist = path_prefix + Common.HAC_VERSIONLIST;
@@ -208,7 +251,7 @@ namespace NX_Game_Info
 
                 using (var httpClient = new HttpClient())
                 {
-                    var response = httpClient.GetAsync(Common.TAGAYA_VERSIONLIST).Result;
+                    var response = httpClient.GetAsync(Common.HAC_VERSIONLIST_URI).Result;
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -227,7 +270,14 @@ namespace NX_Game_Info
                                     titleID = titleID.Substring(0, Math.Min(titleID.Length, 13)) + "000";
                                 }
 
-                                versionList.Add(titleID.ToUpper(), title.version);
+                                if (versionList.ContainsKey(titleID.ToUpper()))
+                                {
+                                    versionList[titleID.ToUpper()] = Math.Max(versionList[titleID.ToUpper()], title.version);
+                                }
+                                else
+                                {
+                                    versionList.Add(titleID.ToUpper(), title.version);
+                                }
                             }
 
                             log?.WriteLine("Found {0} titles, last modified at {1}", versionList.Count, versionlist.last_modified);
