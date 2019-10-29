@@ -92,6 +92,14 @@ namespace NX_Game_Info
                 set { this["CsvSeparator"] = value; }
             }
 
+            [UserScopedSetting()]
+            [DefaultSettingValue("False")]
+            public bool NszExtension
+            {
+                get { return (bool)this["NszExtension"]; }
+                set { this["NszExtension"] = value; }
+            }
+
 #if WINDOWS
             [UserScopedSetting()]
             [DefaultSettingValue("0, 0")]

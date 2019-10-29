@@ -284,7 +284,8 @@ namespace NX_Game_Info
 
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "Open NX Game Files";
-            openFileDialog.Filter = "NX Game Files (*.xci;*.nsp;*.nro)|*.xci;*.nsp;*.nro|Gamecard Files (*.xci)|*.xci|Package Files (*.nsp)|*.nsp|Homebrew Files (*.nro)|*.nro|All Files (*.*)|*.*";
+            openFileDialog.Filter = String.Format("NX Game Files (*.xci;*.nsp;{0}*.nro)|*.xci;*.nsp;{0}*.nro|Gamecard Files (*.xci{1})|*.xci{1}|Package Files (*.nsp{2})|*.nsp{2}|Homebrew Files (*.nro)|*.nro|All Files (*.*)|*.*",
+                Common.Settings.Default.NszExtension ? "*.xcz;*.nsz;" : "", Common.Settings.Default.NszExtension ? ";*.xcz" : "", Common.Settings.Default.NszExtension ? ";*.nsz" : "");
             openFileDialog.Multiselect = true;
             openFileDialog.InitialDirectory = !String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
@@ -783,7 +784,8 @@ namespace NX_Game_Info
                 if (argumentPath.Item1 == Worker.Directory && argumentPath.Item2 is string path)
                 {
                     List<string> filenames = Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories)
-                        .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro")).ToList();
+                        .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro") ||
+                        (Common.Settings.Default.NszExtension && (filename.ToLower().EndsWith(".xcz") || filename.ToLower().EndsWith(".nsz")))).ToList();
                     filenames.Sort();
 
                     Process.log?.WriteLine("{0} files selected", filenames.Count);

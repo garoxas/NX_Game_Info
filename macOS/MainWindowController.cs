@@ -154,7 +154,7 @@ namespace NX_Game_Info
             openPanel.CanChooseFiles = true;
             openPanel.CanChooseDirectories = false;
             openPanel.AllowsMultipleSelection = true;
-            openPanel.AllowedFileTypes = new string[] { "xci", "nsp", "nro" };
+            openPanel.AllowedFileTypes = Common.Settings.Default.NszExtension ? new string[] { "xci", "nsp", "xcz", "nsz", "nro" } : new string[] { "xci", "nsp", "nro" };
             openPanel.DirectoryUrl = NSUrl.FromFilename(!String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
             openPanel.Title = "Open NX Game Files";
 
@@ -688,7 +688,8 @@ namespace NX_Game_Info
                 if (argumentPath.Item1 == Worker.Directory && argumentPath.Item2 is string path)
                 {
                     List<string> filenames = Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories)
-                        .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro")).ToList();
+                        .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro") ||
+                        (Common.Settings.Default.NszExtension && (filename.ToLower().EndsWith(".xcz") || filename.ToLower().EndsWith(".nsz")))).ToList();
                     filenames.Sort();
 
                     Process.log?.WriteLine("{0} files selected", filenames.Count);

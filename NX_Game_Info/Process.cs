@@ -372,12 +372,22 @@ namespace NX_Game_Info
                         {
                             if (entry.Name.EndsWith(".cnmt.nca"))
                             {
-                                using (var cnmtNca = xci.SecurePartition.OpenFile(entry))
+                                try
                                 {
-                                    var nca = processCnmtNca(cnmtNca, ref title);
-                                    if (nca.Item1 != null && (nca.Item2 != null || title.type == TitleType.AddOnContent))
+                                    using (var cnmtNca = xci.SecurePartition.OpenFile(entry))
                                     {
-                                        (biggestNca, controlNca) = nca;
+                                        var nca = processCnmtNca(cnmtNca, ref title);
+                                        if (nca.Item1 != null && (nca.Item2 != null || title.type == TitleType.AddOnContent))
+                                        {
+                                            (biggestNca, controlNca) = nca;
+                                        }
+                                    }
+                                }
+                                catch (FileNotFoundException)
+                                {
+                                    if (xci.SecurePartition.FileExists(entry.Name.Replace(".nca", ".ncz")))
+                                    {
+                                        title.error = "Unsupported Format: Compressed NCA";
                                     }
                                 }
 
@@ -389,13 +399,23 @@ namespace NX_Game_Info
                             }
                             else if (entry.Name.EndsWith(".tik"))
                             {
-                                using (var tik = xci.SecurePartition.OpenFile(entry))
+                                try
                                 {
-                                    if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
+                                    using (var tik = xci.SecurePartition.OpenFile(entry))
                                     {
-                                        processTik(tik, rightsId, ref keyset, out byte[] titleKey);
+                                        if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
+                                        {
+                                            processTik(tik, rightsId, ref keyset, out byte[] titleKey);
 
-                                        title.titleKey = BitConverter.ToString(titleKey).Replace("-", "").ToUpper();
+                                            title.titleKey = BitConverter.ToString(titleKey).Replace("-", "").ToUpper();
+                                        }
+                                    }
+                                }
+                                catch (FileNotFoundException)
+                                {
+                                    if (xci.SecurePartition.FileExists(entry.Name.Replace(".nca", ".ncz")))
+                                    {
+                                        title.error = "Unsupported Format: Compressed NCA";
                                     }
                                 }
 
@@ -405,17 +425,37 @@ namespace NX_Game_Info
 
                         if (!String.IsNullOrEmpty(biggestNca))
                         {
-                            using (var biggest = xci.SecurePartition.OpenFile(biggestNca))
+                            try
                             {
-                                processBiggestNca(biggest, ref title);
+                                using (var biggest = xci.SecurePartition.OpenFile(biggestNca))
+                                {
+                                    processBiggestNca(biggest, ref title);
+                                }
+                            }
+                            catch (FileNotFoundException)
+                            {
+                                if (xci.SecurePartition.FileExists(biggestNca.Replace(".nca", ".ncz")))
+                                {
+                                    title.error = "Unsupported Format: Compressed NCA";
+                                }
                             }
                         }
 
                         if (!String.IsNullOrEmpty(controlNca))
                         {
-                            using (var control = xci.SecurePartition.OpenFile(controlNca))
+                            try
                             {
-                                processControlNca(control, ref title);
+                                using (var control = xci.SecurePartition.OpenFile(controlNca))
+                                {
+                                    processControlNca(control, ref title);
+                                }
+                            }
+                            catch (FileNotFoundException)
+                            {
+                                if (xci.SecurePartition.FileExists(controlNca.Replace(".nca", ".ncz")))
+                                {
+                                    title.error = "Unsupported Format: Compressed NCA";
+                                }
                             }
                         }
 
@@ -468,21 +508,35 @@ namespace NX_Game_Info
                     {
                         if (entry.Name.EndsWith(".cnmt.xml"))
                         {
-                            using (var cnmtXml = pfs.OpenFile(entry))
+                            try
                             {
-                                (biggestNca, controlNca) = processCnmtXml(cnmtXml, ref title);
+                                using (var cnmtXml = pfs.OpenFile(entry))
+                                {
+                                    (biggestNca, controlNca) = processCnmtXml(cnmtXml, ref title);
+                                }
                             }
+                            catch (FileNotFoundException) { }
 
                             title.structure.Add(Title.Structure.CnmtXml);
                         }
                         else if (entry.Name.EndsWith(".cnmt.nca"))
                         {
-                            using (var cnmtNca = pfs.OpenFile(entry))
+                            try
                             {
-                                var nca = processCnmtNca(cnmtNca, ref title);
-                                if (nca.Item1 != null && (nca.Item2 != null || title.type == TitleType.AddOnContent))
+                                using (var cnmtNca = pfs.OpenFile(entry))
                                 {
-                                    (biggestNca, controlNca) = nca;
+                                    var nca = processCnmtNca(cnmtNca, ref title);
+                                    if (nca.Item1 != null && (nca.Item2 != null || title.type == TitleType.AddOnContent))
+                                    {
+                                        (biggestNca, controlNca) = nca;
+                                    }
+                                }
+                            }
+                            catch (FileNotFoundException)
+                            {
+                                if (pfs.FileExists(entry.Name.Replace(".nca", ".ncz")))
+                                {
+                                    title.error = "Unsupported Format: Compressed NCA";
                                 }
                             }
 
@@ -494,13 +548,23 @@ namespace NX_Game_Info
                         }
                         else if (entry.Name.EndsWith(".tik"))
                         {
-                            using (var tik = pfs.OpenFile(entry))
+                            try
                             {
-                                if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
+                                using (var tik = pfs.OpenFile(entry))
                                 {
-                                    processTik(tik, rightsId, ref keyset, out byte[] titleKey);
+                                    if (entry.Name.Split('.')[0].TryToBytes(out byte[] rightsId))
+                                    {
+                                        processTik(tik, rightsId, ref keyset, out byte[] titleKey);
 
-                                    title.titleKey = BitConverter.ToString(titleKey).Replace("-", "").ToUpper();
+                                        title.titleKey = BitConverter.ToString(titleKey).Replace("-", "").ToUpper();
+                                    }
+                                }
+                            }
+                            catch (FileNotFoundException)
+                            {
+                                if (pfs.FileExists(entry.Name.Replace(".nca", ".ncz")))
+                                {
+                                    title.error = "Unsupported Format: Compressed NCA";
                                 }
                             }
 
@@ -512,10 +576,14 @@ namespace NX_Game_Info
                         }
                         else if (entry.Name.EndsWith(".nacp.xml"))
                         {
-                            using (var nacpXml = pfs.OpenFile(entry))
+                            try
                             {
-                                processNacpXml(nacpXml, ref title);
+                                using (var nacpXml = pfs.OpenFile(entry))
+                                {
+                                    processNacpXml(nacpXml, ref title);
+                                }
                             }
+                            catch (FileNotFoundException) { }
 
                             title.structure.Add(Title.Structure.NacpXml);
                         }
@@ -535,17 +603,37 @@ namespace NX_Game_Info
 
                     if (!String.IsNullOrEmpty(biggestNca))
                     {
-                        using (var biggest = pfs.OpenFile(biggestNca))
+                        try
                         {
-                            processBiggestNca(biggest, ref title);
+                            using (var biggest = pfs.OpenFile(biggestNca))
+                            {
+                                processBiggestNca(biggest, ref title);
+                            }
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            if (pfs.FileExists(biggestNca.Replace(".nca", ".ncz")))
+                            {
+                                title.error = "Unsupported Format: Compressed NCA";
+                            }
                         }
                     }
 
                     if (!String.IsNullOrEmpty(controlNca))
                     {
-                        using (var control = pfs.OpenFile(controlNca))
+                        try
                         {
-                            processControlNca(control, ref title);
+                            using (var control = pfs.OpenFile(controlNca))
+                            {
+                                processControlNca(control, ref title);
+                            }
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            if (pfs.FileExists(controlNca.Replace(".nca", ".ncz")))
+                            {
+                                title.error = "Unsupported Format: Compressed NCA";
+                            }
                         }
                     }
                 }
@@ -853,6 +941,7 @@ namespace NX_Game_Info
 
                 log?.WriteLine(title.error);
             }
+            catch (FileNotFoundException) { }
 
             return (biggestNca, controlNca);
         }
@@ -993,6 +1082,7 @@ namespace NX_Game_Info
 
                     log?.WriteLine(title.error);
                 }
+                catch (FileNotFoundException) { }
             }
         }
 

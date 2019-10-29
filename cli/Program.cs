@@ -39,6 +39,7 @@ namespace NX_Game_Info
                 { "c|sdcard", "open path as sdcard", v => sdcard = v != null },
                 { "s|sort=", "sort by titleid, titlename or filename [default: filename]", (string s) => sort = s },
                 { "h|help", "show this help message and exit", v => printHelp(options) },
+                { "z|nsz", "enable nsz extension", v => Common.Settings.Default.NszExtension = v != null, true },
                 { "d|debug", "enable debug log", v => Common.Settings.Default.DebugLog = v != null },
             };
 
@@ -101,7 +102,7 @@ namespace NX_Game_Info
                         titles.AddRange(openDirectory(path));
                     }
                 }
-                else if (File.Exists(path) && new string[] { ".xci", ".nsp", ".nro" }.Any(ext => ext.Equals(Path.GetExtension(path).ToLower())) && !sdcard)
+                else if (File.Exists(path) && (Common.Settings.Default.NszExtension ? new string[] { ".xci", ".nsp", ".xcz", ".nsz", ".nro" } : new string[] { ".xci", ".nsp", ".nro" }).Any(ext => ext.Equals(Path.GetExtension(path).ToLower())) && !sdcard)
                 {
                     Title title = openFile(path);
                     if (title != null)
@@ -205,7 +206,8 @@ namespace NX_Game_Info
             Process.log?.WriteLine("\nOpen Directory");
 
             List<string> filenames = Directory.EnumerateFiles(path, "*.*", SearchOption.AllDirectories)
-                .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro")).ToList();
+                .Where(filename => filename.ToLower().EndsWith(".xci") || filename.ToLower().EndsWith(".nsp") || filename.ToLower().EndsWith(".nro") ||
+                (Common.Settings.Default.NszExtension && (filename.ToLower().EndsWith(".xcz") || filename.ToLower().EndsWith(".nsz")))).ToList();
             filenames.Sort();
 
             Process.log?.WriteLine("{0} files selected", filenames.Count);
