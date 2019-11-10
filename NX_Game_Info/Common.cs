@@ -110,6 +110,14 @@ namespace NX_Game_Info
             }
 
             [UserScopedSetting()]
+            [DefaultSettingValue("False")]
+            public bool Maximized
+            {
+                get { return (bool)this["Maximized"]; }
+                set { this["Maximized"] = value; }
+            }
+
+            [UserScopedSetting()]
             [DefaultSettingValue("800, 600")]
             public Size WindowSize
             {
