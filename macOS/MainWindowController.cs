@@ -7,6 +7,7 @@ using Foundation;
 using AppKit;
 using Bluegrams.Application;
 using LibHac;
+using OfficeOpenXml;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
 using ArrayOfTitle = NX_Game_Info.Common.ArrayOfTitle;
@@ -302,7 +303,7 @@ namespace NX_Game_Info
         public void Export(NSMenuItem menuItem)
         {
             NSSavePanel savePanel = NSSavePanel.SavePanel;
-            savePanel.AllowedFileTypes = new string[] { "csv" };
+            savePanel.AllowedFileTypes = new string[] { "csv", "xlsx" };
             savePanel.Title = "Export Titles";
 
             Process.log?.WriteLine("\nExport Titles");
@@ -385,6 +386,134 @@ namespace NX_Game_Info
                             alert.RunModal();
                         }
                     }
+                    else if (filename.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+                    {
+                        using (ExcelPackage excel = new ExcelPackage())
+                        {
+                            Window.BeginSheet(sheet, ProgressComplete);
+                            userCancelled = false;
+
+                            ExcelWorksheet worksheet = excel.Workbook.Worksheets.Add(Common.History.Default.Titles.LastOrDefault().description ?? NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString());
+
+                            worksheet.Cells[1, 1, 1, Title.Properties.Count()].LoadFromArrays(new List<string[]> { Title.Properties });
+                            worksheet.Cells["1:1"].Style.Font.Bold = true;
+                            worksheet.Cells["1:1"].Style.Font.Color.SetColor(NSColor.White);
+                            worksheet.Cells["1:1"].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            worksheet.Cells["1:1"].Style.Fill.BackgroundColor.SetColor(NSColor.Blue.ShadowWithLevel((nfloat)0.6));
+
+                            uint index = 0, count = (uint)titles.Count;
+
+                            foreach (var title in titles)
+                            {
+                                if (userCancelled)
+                                {
+                                    userCancelled = false;
+                                    break;
+                                }
+
+                                message.StringValue = title.titleName ?? "";
+                                progress.DoubleValue = 100f * index++ / count;
+
+                                var data = new List<string[]>
+                                {
+                                    new string[] {
+                                        title.titleID,
+                                        title.baseTitleID,
+                                        title.titleName,
+                                        title.displayVersion,
+                                        title.versionString,
+                                        title.latestVersionString,
+                                        title.systemUpdateString,
+                                        title.systemVersionString,
+                                        title.applicationVersionString,
+                                        title.masterkeyString,
+                                        title.titleKey,
+                                        title.publisher,
+                                        title.languagesString,
+                                        title.filename,
+                                        title.filesizeString,
+                                        title.typeString,
+                                        title.distribution.ToString(),
+                                        title.structureString,
+                                        title.signatureString,
+                                        title.permissionString,
+                                        title.error,
+                                    }
+                                };
+
+                                worksheet.Cells[(int)index + 1, 1].LoadFromArrays(data);
+
+                                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.baseTitleID ?? "";
+
+                                Process.latestVersions.TryGetValue(titleID, out uint latestVersion);
+                                Process.versionList.TryGetValue(titleID, out uint version);
+                                Process.titleVersions.TryGetValue(titleID, out uint titleVersion);
+
+                                if (latestVersion < version || latestVersion < titleVersion)
+                                {
+                                    worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                    worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.BackgroundColor.SetColor(title.signature != true ? NSColor.Orange.ColorWithAlphaComponent((nfloat)0.1) : NSColor.Yellow.ColorWithAlphaComponent((nfloat)0.1));
+                                }
+                                else if (title.signature != true)
+                                {
+                                    worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                    worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.BackgroundColor.SetColor(NSColor.Gray.ColorWithAlphaComponent((nfloat)0.1));
+                                }
+
+                                if (title.permission == Title.Permission.Dangerous)
+                                {
+                                    worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Font.Color.SetColor(NSColor.Red);
+                                }
+                                else if (title.permission == Title.Permission.Unsafe)
+                                {
+                                    worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Font.Color.SetColor(NSColor.Purple);
+                                }
+                            }
+
+                            ExcelRange range = worksheet.Cells[1, 1, (int)count + 1, Title.Properties.Count()];
+                            range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                            range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                            worksheet.Column(1).Width = 18;
+                            worksheet.Column(2).Width = 18;
+                            worksheet.Column(3).AutoFit();
+                            worksheet.Column(3).Width = Math.Max(worksheet.Column(3).Width, 30);
+                            worksheet.Column(4).Width = 16;
+                            worksheet.Column(5).Width = 16;
+                            worksheet.Column(6).Width = 16;
+                            worksheet.Column(7).Width = 16;
+                            worksheet.Column(8).Width = 16;
+                            worksheet.Column(9).Width = 16;
+                            worksheet.Column(10).Width = 16;
+                            worksheet.Column(11).AutoFit();
+                            worksheet.Column(11).Width = Math.Max(worksheet.Column(11).Width, 36);
+                            worksheet.Column(12).AutoFit();
+                            worksheet.Column(12).Width = Math.Max(worksheet.Column(12).Width, 30);
+                            worksheet.Column(13).Width = 18;
+                            worksheet.Column(14).AutoFit();
+                            worksheet.Column(14).Width = Math.Max(worksheet.Column(14).Width, 54);
+                            worksheet.Column(15).Width = 10;
+                            worksheet.Column(16).Width = 10;
+                            worksheet.Column(17).Width = 12;
+                            worksheet.Column(18).Width = 12;
+                            worksheet.Column(19).Width = 10;
+                            worksheet.Column(20).Width = 10;
+                            worksheet.Column(21).Width = 40;
+
+                            excel.SaveAs(new FileInfo(filename));
+
+                            Window.EndSheet(sheet);
+
+                            var alert = new NSAlert()
+                            {
+                                InformativeText = String.Format("{0} of {1} titles exported", index, titles.Count),
+                                MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                            };
+                            alert.RunModal();
+                        }
+                    }
                     else
                     {
                         var alert = new NSAlert()
@@ -441,7 +570,7 @@ namespace NX_Game_Info
             Window.BeginSheet(sheet, ProgressComplete);
 
             title.StringValue = "";
-            message.StringValue = String.Format("Downloading from {0}", Common.TAGAYA_VERSIONLIST);
+            message.StringValue = String.Format("Downloading from {0}", Common.HAC_VERSIONLIST_URI);
             progress.DoubleValue = 0;
 
             if (Process.updateVersionList())
@@ -1077,6 +1206,16 @@ namespace NX_Game_Info
             textField.Cell.LineBreakMode = NSLineBreakMode.CharWrapping;
 
             return textField;
+        }
+    }
+
+    public static class ExcelColorExtension
+    {
+        public static void SetColor(this OfficeOpenXml.Style.ExcelColor excelColor, NSColor color)
+        {
+            NSColor rgb = color.UsingColorSpace(NSColorSpace.DeviceRGB);
+            nfloat alpha = rgb.AlphaComponent;
+            excelColor.SetColor(255, (int)((1 + alpha * (rgb.RedComponent - 1)) * 255), (int)((1 + alpha * (rgb.GreenComponent - 1)) * 255), (int)((1 + alpha * (rgb.BlueComponent - 1)) * 255));
         }
     }
 }

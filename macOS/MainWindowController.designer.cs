@@ -45,6 +45,9 @@ namespace NX_Game_Info
 		[Action ("showInFinder:")]
 		partial void showInFinder (Foundation.NSObject sender);
 
+		[Action ("updateTitleKeys:")]
+		partial void updateTitleKeys (Foundation.NSObject sender);
+
 		[Action ("updateVersionList:")]
 		partial void updateVersionList (Foundation.NSObject sender);
 		
