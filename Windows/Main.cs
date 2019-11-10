@@ -167,10 +167,8 @@ namespace NX_Game_Info
 
         public void saveWindowState()
         {
-            if (WindowState == FormWindowState.Maximized)
-                Common.Settings.Default.Maximized = true;
-            else
-                Common.Settings.Default.Maximized = false;
+            Common.Settings.Default.Maximized = (WindowState == FormWindowState.Maximized ? true : false);
+
             if (WindowState == FormWindowState.Normal)
             {
                 Common.Settings.Default.WindowLocation = Location;
@@ -198,8 +196,10 @@ namespace NX_Game_Info
         {
             Location = Common.Settings.Default.WindowLocation;
             Size = Common.Settings.Default.WindowSize;
-            if(Common.Settings.Default.Maximized)
+            if (Common.Settings.Default.Maximized)
+            {
                 WindowState = FormWindowState.Maximized;
+            }
 
             if (Common.Settings.Default.Columns.Any())
             {
