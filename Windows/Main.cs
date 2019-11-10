@@ -12,6 +12,7 @@ using Application = System.Windows.Forms.Application;
 using Bluegrams.Application;
 using BrightIdeasSoftware;
 using LibHac;
+using OfficeOpenXml;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
 using ArrayOfTitle = NX_Game_Info.Common.ArrayOfTitle;
@@ -387,7 +388,7 @@ namespace NX_Game_Info
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "Export Titles";
-            saveFileDialog.Filter = "CSV File (*.csv)|*.csv";
+            saveFileDialog.Filter = "CSV File (*.csv)|*.csv|Excel Workbook (*.xlsx)|*.xlsx";
 
             Process.log?.WriteLine("\nExport Titles");
 
@@ -462,6 +463,131 @@ namespace NX_Game_Info
                         MessageBox.Show(String.Format("{0} of {1} titles exported", index, titles.Count), Application.ProductName);
                     }
                 }
+                else if (filename.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+                {
+                    using (ExcelPackage excel = new ExcelPackage())
+                    {
+                        progressDialog = (IProgressDialog)new ProgressDialog();
+                        progressDialog.StartProgressDialog(Handle, "Exporting titles");
+
+                        ExcelWorksheet worksheet = excel.Workbook.Worksheets.Add(Common.History.Default.Titles.LastOrDefault().description ?? Application.ProductName);
+
+                        worksheet.Cells[1, 1, 1, Title.Properties.Count()].LoadFromArrays(new List<string[]> { Title.Properties });
+                        worksheet.Cells["1:1"].Style.Font.Bold = true;
+                        worksheet.Cells["1:1"].Style.Font.Color.SetColor(Color.White);
+                        worksheet.Cells["1:1"].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                        worksheet.Cells["1:1"].Style.Fill.BackgroundColor.SetColor(Color.MidnightBlue);
+
+                        uint index = 0, count = (uint)titles.Count;
+
+                        foreach (var title in titles)
+                        {
+                            if (progressDialog.HasUserCancelled())
+                            {
+                                break;
+                            }
+
+                            progressDialog.SetLine(2, title.titleName, true, IntPtr.Zero);
+                            progressDialog.SetProgress(index++, count);
+
+                            var data = new List<string[]>
+                            {
+                                new string[] {
+                                    title.titleID,
+                                    title.baseTitleID,
+                                    title.titleName,
+                                    title.displayVersion,
+                                    title.versionString,
+                                    title.latestVersionString,
+                                    title.systemUpdateString,
+                                    title.systemVersionString,
+                                    title.applicationVersionString,
+                                    title.masterkeyString,
+                                    title.titleKey,
+                                    title.publisher,
+                                    title.languagesString,
+                                    title.filename,
+                                    title.filesizeString,
+                                    title.typeString,
+                                    title.distribution.ToString(),
+                                    title.structureString,
+                                    title.signatureString,
+                                    title.permissionString,
+                                    title.error,
+                                }
+                            };
+
+                            worksheet.Cells[(int)index + 1, 1].LoadFromArrays(data);
+
+                            string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.baseTitleID ?? "";
+
+                            Process.latestVersions.TryGetValue(titleID, out uint latestVersion);
+                            Process.versionList.TryGetValue(titleID, out uint version);
+                            Process.titleVersions.TryGetValue(titleID, out uint titleVersion);
+
+                            if (latestVersion < version || latestVersion < titleVersion)
+                            {
+                                worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.BackgroundColor.SetColor(title.signature != true ? Color.OldLace : Color.LightYellow);
+                            }
+                            else if (title.signature != true)
+                            {
+                                worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                                worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.BackgroundColor.SetColor(Color.WhiteSmoke);
+                            }
+
+                            if (title.permission == Title.Permission.Dangerous)
+                            {
+                                worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Font.Color.SetColor(Color.DarkRed);
+                            }
+                            else if (title.permission == Title.Permission.Unsafe)
+                            {
+                                worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Font.Color.SetColor(Color.Indigo);
+                            }
+                        }
+
+                        ExcelRange range = worksheet.Cells[1, 1, (int)count + 1, Title.Properties.Count()];
+                        range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                        range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                        worksheet.Column(1).Width = 18;
+                        worksheet.Column(2).Width = 18;
+                        worksheet.Column(3).AutoFit();
+                        worksheet.Column(3).Width = Math.Max(worksheet.Column(3).Width, 30);
+                        worksheet.Column(4).Width = 16;
+                        worksheet.Column(5).Width = 16;
+                        worksheet.Column(6).Width = 16;
+                        worksheet.Column(7).Width = 16;
+                        worksheet.Column(8).Width = 16;
+                        worksheet.Column(9).Width = 16;
+                        worksheet.Column(10).Width = 16;
+                        worksheet.Column(11).AutoFit();
+                        worksheet.Column(11).Width = Math.Max(worksheet.Column(11).Width, 36);
+                        worksheet.Column(12).AutoFit();
+                        worksheet.Column(12).Width = Math.Max(worksheet.Column(12).Width, 30);
+                        worksheet.Column(13).Width = 18;
+                        worksheet.Column(14).AutoFit();
+                        worksheet.Column(14).Width = Math.Max(worksheet.Column(14).Width, 54);
+                        worksheet.Column(15).Width = 10;
+                        worksheet.Column(16).Width = 10;
+                        worksheet.Column(17).Width = 12;
+                        worksheet.Column(18).Width = 12;
+                        worksheet.Column(19).Width = 10;
+                        worksheet.Column(20).Width = 10;
+                        worksheet.Column(21).Width = 40;
+
+                        excel.SaveAs(new FileInfo(filename));
+
+                        Process.log?.WriteLine("\n{0} of {1} titles exported", index, titles.Count);
+
+                        progressDialog.StopProgressDialog();
+                        Activate();
+
+                        MessageBox.Show(String.Format("{0} of {1} titles exported", index, titles.Count), Application.ProductName);
+                    }
+                }
                 else
                 {
                     MessageBox.Show(String.Format("This file type is not supported {0}", Path.GetExtension(filename)), Application.ProductName);
@@ -483,12 +609,16 @@ namespace NX_Game_Info
 
             progressDialog.SetLine(2, String.Format("Downloading from {0}", Common.TITLE_KEYS_URI), true, IntPtr.Zero);
 
+            int count = Process.keyset?.TitleKeys?.Count ?? 0;
+
             if (Process.updateTitleKeys())
             {
+                Process.log?.WriteLine("\nFound {0} updated title keys", (Process.keyset?.TitleKeys?.Count ?? 0) - count);
+
                 progressDialog.StopProgressDialog();
                 Activate();
 
-                MessageBox.Show(String.Format("Found {0} title keys", Process.keyset?.TitleKeys?.Count), Application.ProductName);
+                MessageBox.Show(String.Format("Found {0} updated title keys", (Process.keyset?.TitleKeys?.Count ?? 0) - count), Application.ProductName);
             }
             else
             {

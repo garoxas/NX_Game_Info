@@ -398,6 +398,43 @@ namespace NX_Game_Info
             });
         }
 
+        [Export("updateTitleKeys:")]
+        public void UpdateTitleKeys(NSMenuItem menuItem)
+        {
+            Window.BeginSheet(sheet, ProgressComplete);
+
+            title.StringValue = "";
+            message.StringValue = String.Format("Downloading from {0}", Common.TITLE_KEYS_URI);
+            progress.DoubleValue = 0;
+
+            int count = Process.keyset?.TitleKeys?.Count ?? 0;
+
+            if (Process.updateTitleKeys())
+            {
+                Process.log?.WriteLine("\nFound {0} updated title keys", (Process.keyset?.TitleKeys?.Count ?? 0) - count);
+
+                Window.EndSheet(sheet);
+
+                var alert = new NSAlert()
+                {
+                    InformativeText = String.Format("Found {0} updated title keys", (Process.keyset?.TitleKeys?.Count ?? 0) - count),
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                };
+                alert.RunModal();
+            }
+            else
+            {
+                Window.EndSheet(sheet);
+
+                var alert = new NSAlert()
+                {
+                    InformativeText = "Failed to download title keys",
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                };
+                alert.RunModal();
+            }
+        }
+
         [Export("updateVersionList:")]
         public void UpdateVersionList(NSMenuItem menuItem)
         {
