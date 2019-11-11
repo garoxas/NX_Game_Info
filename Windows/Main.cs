@@ -196,6 +196,7 @@ namespace NX_Game_Info
         {
             Location = Common.Settings.Default.WindowLocation;
             Size = Common.Settings.Default.WindowSize;
+
             if (Common.Settings.Default.Maximized)
             {
                 WindowState = FormWindowState.Maximized;
