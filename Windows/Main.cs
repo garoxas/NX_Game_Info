@@ -845,37 +845,18 @@ namespace NX_Game_Info
             contextMenuStrip.Tag = null;
         }
 
-        [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
-        private static extern IntPtr ILCreateFromPathW(string pszPath);
-
-        [DllImport("shell32.dll")]
-        private static extern int SHOpenFolderAndSelectItems(IntPtr pidlFolder, int cild, IntPtr apidl, int dwFlags);
-
-        [DllImport("shell32.dll")]
-        private static extern void ILFree(IntPtr pidl);
-
         private void openFileLocationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (contextMenuStrip.Tag is Title title)
             {
-                string file = Path.GetFullPath(title.filename);
                 string path = Path.GetDirectoryName(title.filename);
                 if (Directory.Exists(path))
                 {
-                    if (File.Exists(file))
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
                     {
-                        IntPtr pidl = ILCreateFromPathW(file);
-                        SHOpenFolderAndSelectItems(pidl, 0, IntPtr.Zero, 0);
-                        ILFree(pidl);
-                    }
-                    else
-                    {
-                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
-                        {
-                            FileName = path,
-                            UseShellExecute = true,
-                        });
-                    }
+                        FileName = path,
+                        UseShellExecute = true,
+                    });
                 }
                 else
                 {
