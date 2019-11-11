@@ -906,7 +906,6 @@ namespace NX_Game_Info
                         if (file != newfile && !File.Exists(newfile))
                         {
                             new FileInfo(file).MoveTo(newfile);
-                            //title.filename = newfile;
                         }
                     }
                 }
