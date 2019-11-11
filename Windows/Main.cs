@@ -886,6 +886,33 @@ namespace NX_Game_Info
             contextMenuStrip.Tag = null;
         }
 
+        private void renameFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (contextMenuStrip.Tag is Title title)
+            {
+                foreach(ListViewItem item in objectListView.SelectedItems)
+                {
+                    title = titles[item.Index];
+                    string file = Path.GetFullPath(title.filename);
+                    string extension = Path.GetExtension(title.filename);
+                    string path = Path.GetDirectoryName(title.filename);
+
+                    if (File.Exists(file))
+                    {
+                        var invalidChars = new string(Path.GetInvalidFileNameChars()) + ":";
+
+                        string newfile = Path.Combine(path, System.Text.RegularExpressions.Regex.Replace(title.titleName, string.Format("[{0}]", invalidChars), "") + " [" + title.titleID + "][v" + title.version + "]" + extension);
+
+                        if (file != newfile && !File.Exists(newfile))
+                        {
+                            new FileInfo(file).MoveTo(newfile);
+                            //title.filename = newfile;
+                        }
+                    }
+                }
+            }
+        }
+
         private void objectListView_Freezing(object sender, FreezeEventArgs e)
         {
             if (e.FreezeLevel == 0)
