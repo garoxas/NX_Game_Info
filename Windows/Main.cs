@@ -890,9 +890,9 @@ namespace NX_Game_Info
         {
             if (contextMenuStrip.Tag is Title title)
             {
-                foreach(ListViewItem item in objectListView.SelectedItems)
+                foreach(OLVListItem item in objectListView.SelectedItems)
                 {
-                    title = titles[item.Index];
+                    title = (Title)item.RowObject;
                     string file = Path.GetFullPath(title.filename);
                     string extension = Path.GetExtension(title.filename);
                     string path = Path.GetDirectoryName(title.filename);
