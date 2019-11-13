@@ -922,7 +922,7 @@ namespace NX_Game_Info
                             }
                             else
                             {
-                                renamelist.Add(new List<String>() { file, newfile });
+                                renamelist.Add(new List<String> { file, newfile });
                             }
                         }
                         else
@@ -973,7 +973,7 @@ namespace NX_Game_Info
                         {
                             if (selectedCount > 1)
                             {
-                                if (MessageBox.Show(String.Format("{0} file" + (renameCount > 1 ? "s" : "") + " will be renamed this way:\n\"{1}\" to\n\"{2}\"", renameCount, file, newfile), String.Format("File renaming", selectedCount), MessageBoxButtons.OKCancel) != DialogResult.OK)
+                                if (MessageBox.Show(String.Format("{0} file" + (renameCount > 1 ? "s" : "") + " will be renamed this way:\n\"{1}\" to\n\"{2}\"", renameCount, file, newfile), "File renaming", MessageBoxButtons.OKCancel) != DialogResult.OK)
                                 {
                                     return;
                                 }
