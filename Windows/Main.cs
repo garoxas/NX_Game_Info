@@ -988,6 +988,8 @@ namespace NX_Game_Info
                     }
                 }
             }
+
+            contextMenuStrip.Tag = null;
         }
 
         private void objectListView_Freezing(object sender, FreezeEventArgs e)
