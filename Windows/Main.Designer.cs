@@ -49,6 +49,7 @@
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.renameFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.openFileLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
@@ -76,7 +77,6 @@
             this.olvColumnPermission = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.olvColumnError = ((BrightIdeasSoftware.OLVColumn)(new BrightIdeasSoftware.OLVColumn()));
             this.backgroundWorkerProcess = new System.ComponentModel.BackgroundWorker();
-            this.renameFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip.SuspendLayout();
             this.contextMenuStrip.SuspendLayout();
             this.statusStrip.SuspendLayout();
@@ -221,9 +221,9 @@
             this.contextMenuStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
             this.contextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.copyToolStripMenuItem,
+            this.renameFileToolStripMenuItem,
             this.toolStripSeparator4,
-            this.openFileLocationToolStripMenuItem,
-            this.renameFileToolStripMenuItem});
+            this.openFileLocationToolStripMenuItem});
             this.contextMenuStrip.Name = "contextMenuStrip";
             this.contextMenuStrip.Size = new System.Drawing.Size(225, 70);
             // 
@@ -232,6 +232,13 @@
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
             this.copyToolStripMenuItem.Size = new System.Drawing.Size(224, 30);
             this.copyToolStripMenuItem.Text = "&Copy";
+            //
+            // renameFileToolStripMenuItem
+            // 
+            this.renameFileToolStripMenuItem.Name = "renameFileToolStripMenuItem";
+            this.renameFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.renameFileToolStripMenuItem.Text = "&Rename file";
+            this.renameFileToolStripMenuItem.Click += new System.EventHandler(this.renameFileToolStripMenuItem_Click);
             // 
             // toolStripSeparator4
             // 
@@ -244,13 +251,6 @@
             this.openFileLocationToolStripMenuItem.Size = new System.Drawing.Size(224, 30);
             this.openFileLocationToolStripMenuItem.Text = "Open file locat&ion";
             this.openFileLocationToolStripMenuItem.Click += new System.EventHandler(this.openFileLocationToolStripMenuItem_Click);
-            //
-            // renameFileToolStripMenuItem
-            // 
-            this.renameFileToolStripMenuItem.Name = "renameFileToolStripMenuItem";
-            this.renameFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.renameFileToolStripMenuItem.Text = "&Rename File";
-            this.renameFileToolStripMenuItem.Click += new System.EventHandler(this.renameFileToolStripMenuItem_Click);
             // 
             // statusStrip
             // 
@@ -526,6 +526,7 @@
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem renameFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem openFileLocationToolStripMenuItem;
         private System.Windows.Forms.StatusStrip statusStrip;
@@ -553,7 +554,6 @@
         private BrightIdeasSoftware.OLVColumn olvColumnPermission;
         private BrightIdeasSoftware.OLVColumn olvColumnError;
         private System.ComponentModel.BackgroundWorker backgroundWorkerProcess;
-        private System.Windows.Forms.ToolStripMenuItem renameFileToolStripMenuItem;
     }
 }
 
