@@ -237,7 +237,7 @@
             // 
             this.renameFileToolStripMenuItem.Name = "renameFileToolStripMenuItem";
             this.renameFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.renameFileToolStripMenuItem.Text = "&Rename file";
+            this.renameFileToolStripMenuItem.Text = "&Rename";
             this.renameFileToolStripMenuItem.Click += new System.EventHandler(this.renameFileToolStripMenuItem_Click);
             // 
             // toolStripSeparator4

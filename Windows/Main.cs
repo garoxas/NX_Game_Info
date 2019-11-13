@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using Application = System.Windows.Forms.Application;
 using Bluegrams.Application;
@@ -167,8 +168,6 @@ namespace NX_Game_Info
 
         public void saveWindowState()
         {
-            Common.Settings.Default.Maximized = (WindowState == FormWindowState.Maximized ? true : false);
-
             if (WindowState == FormWindowState.Normal)
             {
                 Common.Settings.Default.WindowLocation = Location;
@@ -179,6 +178,8 @@ namespace NX_Game_Info
                 Common.Settings.Default.WindowLocation = RestoreBounds.Location;
                 Common.Settings.Default.WindowSize = RestoreBounds.Size;
             }
+
+            Common.Settings.Default.Maximized = (WindowState == FormWindowState.Maximized ? true : false);
 
             Common.Settings.Default.Columns = objectListView.ColumnsInDisplayOrder.Select(x => x.AspectName).ToList();
 
@@ -845,6 +846,140 @@ namespace NX_Game_Info
             contextMenuStrip.Tag = null;
         }
 
+        private void renameFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (contextMenuStrip.Tag is Title title)
+            {
+                int duplicateCount = 0, existingCount = 0, missingCount = 0;
+
+                List<Tuple<string, string>> renameList = new List<Tuple<string, string>>();
+
+                foreach (OLVListItem item in objectListView.SelectedItems)
+                {
+                    title = (Title)item.RowObject;
+
+                    string filename = Path.GetFullPath(title.filename);
+                    string newname = Path.Combine(Path.GetDirectoryName(filename), Regex.Replace(title.titleName,
+                        String.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()))), "") + " [" + title.titleID + "][v" + title.version + "]" + Path.GetExtension(filename));
+
+                    if (filename == newname)
+                    {
+                        duplicateCount++;
+                        Process.log?.WriteLine("Skipping file \"{0}\": The source and destination file names are the same", filename);
+                    }
+                    else
+                    {
+                        if (File.Exists(filename))
+                        {
+                            if (File.Exists(newname))
+                            {
+                                existingCount++;
+                                Process.log?.WriteLine("Skipping file \"{0}\": There is already a file with the same name", filename);
+                            }
+                            else
+                            {
+                                renameList.Add(Tuple.Create(filename, newname));
+                            }
+                        }
+                        else
+                        {
+                            missingCount++;
+                            Process.log?.WriteLine("Skipping file \"{0}\": The source file could not be found", filename);
+                        }
+                    }
+                }
+
+                int selectedCount = objectListView.SelectedItems.Count;
+
+                if (duplicateCount + existingCount + missingCount == selectedCount)
+                {
+                    string message;
+
+                    if (duplicateCount == selectedCount)
+                    {
+                        message = "No files need renaming";
+                    }
+                    else if (existingCount == selectedCount)
+                    {
+                        message = "There are already files with the same names";
+                    }
+                    else if (missingCount == selectedCount)
+                    {
+                        message = "The selected files could not be found";
+                    }
+                    else
+                    {
+                        message = String.Join("\n", new string[]
+                        {
+                            duplicateCount > 0 ? String.Format("{0} files do not need renaming", duplicateCount) : "",
+                            existingCount > 0 ? String.Format("{0} files with the same names already exist", existingCount) : "",
+                            missingCount > 0 ? String.Format("{0} files could not be found", missingCount) : "",
+                        }
+                        .Where(x => !String.IsNullOrEmpty(x)));
+                    }
+
+                    MessageBox.Show(message, Application.ProductName);
+                }
+                else
+                {
+                    int renameCount = renameList.Count();
+                    bool confirm = true;
+
+                    foreach (Tuple<string, string> rename in renameList)
+                    {
+                        string filename = rename.Item1;
+                        string newname = rename.Item2;
+
+                        if (confirm)
+                        {
+                            if (renameCount > 1)
+                            {
+                                if (MessageBox.Show(String.Format("{0} files will be renamed following this naming convention\n\n\"{1}\" to \"{2}\"\n\nDo you wish to continue renaming?", renameCount, filename, newname),
+                                    Application.ProductName, MessageBoxButtons.OKCancel) != DialogResult.OK)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (MessageBox.Show(String.Format("\"{0}\" will be renamed to \"{1}\"\n\nDo you wish to continue renaming?", filename, newname),
+                                    Application.ProductName, MessageBoxButtons.OKCancel) != DialogResult.OK)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+
+                        confirm = false;
+
+                        Process.log?.WriteLine("Renaming file \"{0}\" to \"{1}\"", filename, newname);
+
+                        try
+                        {
+                            new FileInfo(filename).MoveTo(newname);
+                        }
+                        catch (NotSupportedException)
+                        {
+                            renameCount--;
+                        }
+                    }
+
+                    string message = String.Join("\n", new string[]
+                    {
+                        String.Format("{0} of {1} files renamed", renameCount, selectedCount),
+                        duplicateCount > 0 ? String.Format("{0} files do not need renaming", duplicateCount) : "",
+                        existingCount > 0 ? String.Format("{0} files with the same names already exist", existingCount) : "",
+                        missingCount > 0 ? String.Format("{0} files could not be found", missingCount) : "",
+                    }
+                    .Where(x => !String.IsNullOrEmpty(x)));
+
+                    MessageBox.Show(message, Application.ProductName);
+                }
+            }
+
+            contextMenuStrip.Tag = null;
+        }
+
         [DllImport("shell32.dll", CharSet = CharSet.Unicode)]
         private static extern IntPtr ILCreateFromPathW(string pszPath);
 
@@ -884,123 +1019,6 @@ namespace NX_Game_Info
             }
 
             contextMenuStrip.Tag = null;
-        }
-
-        private void renameFileToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            if (contextMenuStrip.Tag is Title title)
-            {
-                int fileMissingCount = 0;
-                int newfileExistsCount = 0;
-                int newfileSameCount = 0;
-                bool requestValidation = true;
-                var invalidChars = new string(Path.GetInvalidFileNameChars());
-                int selectedCount = objectListView.SelectedItems.Count;
-                List<List<String>> renamelist = new List<List<String>> ();
-
-                foreach (OLVListItem item in objectListView.SelectedItems)
-                {
-                    title = (Title)item.RowObject;
-                    string file = Path.GetFullPath(title.filename);
-                    string extension = Path.GetExtension(title.filename);
-                    string path = Path.GetDirectoryName(title.filename);
-                    string newfile = Path.Combine(path, System.Text.RegularExpressions.Regex.Replace(title.titleName, string.Format("[{0}]", invalidChars), "") + " [" + title.titleID + "][v" + title.version + "]" + extension);
-
-                    if (file == newfile)
-                    {
-                        newfileSameCount++;
-                        Process.log?.WriteLine("Skip renaming of file \"{0}\", destination filename is the same", file);
-                    }
-                    else
-                    {
-                        if (File.Exists(file))
-                        {
-                            if (File.Exists(newfile))
-                            {
-                                newfileSameCount++;
-                                Process.log?.WriteLine("Skip renaming of file \"{0}\", destination filename is the same", file);
-                            }
-                            else
-                            {
-                                renamelist.Add(new List<String>() { file, newfile });
-                            }
-                        }
-                        else
-                        {
-                            fileMissingCount++;
-                            Process.log?.WriteLine("Skip renaming of file \"{0}\" to \"{1}\", source file could not be found", file, newfile);
-                        }
-                    }
-                }
-
-                if (fileMissingCount + newfileExistsCount + newfileSameCount == selectedCount)
-                {
-                    string message;
-                    string messageTitle = "File renaming failed";
-
-                    if (newfileSameCount == selectedCount)
-                    {
-                        message = (newfileSameCount > 1 ? "No files needed renaming." : "File does not need renaming.");
-                        messageTitle = "File renaming skipped";
-                    }
-                    else if (fileMissingCount == selectedCount)
-                    {
-                        message = (fileMissingCount > 1 ? "Could not find any of the selected titles files, no file could be renamed." : "File not found, could not rename.");
-                    }
-                    else if (newfileExistsCount == selectedCount)
-                    {
-                        message = (newfileExistsCount > 1 ? "All of the selected titles new filenames already exists, no file could be renamed." : "The new filename already exists, file could not be renamed.");
-                    }
-                    else
-                    {
-                        message = (fileMissingCount > 0 ? String.Format("{0} file" + (fileMissingCount > 1 ? "s" : "") + " could not be found\n", fileMissingCount) : "");
-                        message += (newfileExistsCount > 0 ? String.Format("{0} of the new filenames already exists\n", newfileExistsCount) : "");
-                        message += (newfileSameCount > 0 ? String.Format("{0} file" + (newfileSameCount > 1 ? "s" : "") + " did not need renaming", newfileSameCount) : "");
-                    }
-
-                    MessageBox.Show(message, messageTitle);
-                }
-                else
-                {
-                    int renameCount = renamelist.Count();
-
-                    foreach (List<String> renametitle in renamelist)
-                    {
-                        string file = renametitle[0];
-                        string newfile = renametitle[1];
-
-                        if (requestValidation)
-                        {
-                            if (selectedCount > 1)
-                            {
-                                if (MessageBox.Show(String.Format("{0} file" + (renameCount > 1 ? "s" : "") + " will be renamed this way:\n\"{1}\" to\n\"{2}\"", renameCount, file, newfile), String.Format("File renaming", selectedCount), MessageBoxButtons.OKCancel) != DialogResult.OK)
-                                {
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                if (MessageBox.Show(String.Format("Rename file:\n\"{0}\" to\n\"{1}\" ?", file, newfile), "File renaming", MessageBoxButtons.OKCancel) != DialogResult.OK)
-                                {
-                                    return;
-                                }
-                            }
-                        }
-
-                        requestValidation = false;
-
-                        new FileInfo(file).MoveTo(newfile);
-                        Process.log?.WriteLine("Renamed file \"{0}\" to \"{1}\"", file, newfile);
-                    }
-
-                    string message = String.Format("{0} file" + (renameCount > 1 ? "s" : "") + " renamed\n", renameCount);
-                    message += (fileMissingCount > 0 ? String.Format("{0} file" + (fileMissingCount > 1 ? "s" : "") + " could not be found\n", fileMissingCount) : "");
-                    message += (newfileExistsCount > 0 ? String.Format("{0} of the new filenames already exists\n", newfileExistsCount) : "");
-                    message += (newfileSameCount > 0 ? String.Format("{0} file" + (newfileSameCount > 1 ? "s" : "") + " did not need renaming", newfileSameCount) : "");
-
-                    MessageBox.Show(message);
-                }
-            }
         }
 
         private void objectListView_Freezing(object sender, FreezeEventArgs e)
