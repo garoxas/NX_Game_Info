@@ -935,27 +935,30 @@ namespace NX_Game_Info
 
                 if (fileMissingCount + newfileExistsCount + newfileSameCount == selectedCount)
                 {
+                    string message;
+                    string messageTitle = "File renaming failed";
+
                     if (newfileSameCount == selectedCount)
                     {
-                        MessageBox.Show((newfileSameCount > 1 ? "No files needed renaming." : "File does not need renaming."), "File renaming skipped", MessageBoxButtons.OK);
-                        return;
+                        message = (newfileSameCount > 1 ? "No files needed renaming." : "File does not need renaming.");
+                        messageTitle = "File renaming skipped";
                     }
-                    if (fileMissingCount == selectedCount)
+                    else if (fileMissingCount == selectedCount)
                     {
-                        MessageBox.Show("Could not find any of the selected titles files, no file could be renamed.", "File renaming failed", MessageBoxButtons.OK);
-                        return;
+                        message = (fileMissingCount > 1 ? "Could not find any of the selected titles files, no file could be renamed." : "File not found, could not rename.");
                     }
-                    if (newfileExistsCount == selectedCount)
+                    else if (newfileExistsCount == selectedCount)
                     {
-                        MessageBox.Show("All of the selected titles new filenames already exists, no file could be renamed.", "File renaming failed", MessageBoxButtons.OK);
-                        return;
+                        message = (newfileExistsCount > 1 ? "All of the selected titles new filenames already exists, no file could be renamed." : "The new filename already exists, file could not be renamed.");
+                    }
+                    else
+                    {
+                        message = (fileMissingCount > 0 ? String.Format("{0} file" + (fileMissingCount > 1 ? "s" : "") + " could not be found\n", fileMissingCount) : "");
+                        message += (newfileExistsCount > 0 ? String.Format("{0} of the new filenames already exists\n", newfileExistsCount) : "");
+                        message += (newfileSameCount > 0 ? String.Format("{0} file" + (newfileSameCount > 1 ? "s" : "") + " did not need renaming", newfileSameCount) : "");
                     }
 
-                    string message = (fileMissingCount > 0 ? String.Format("{0} file" + (fileMissingCount > 1 ? "s" : "") + " could not be found\n", fileMissingCount) : "");
-                    message += (newfileExistsCount > 0 ? String.Format("{0} of the new filenames already exists\n", newfileExistsCount) : "");
-                    message += (newfileSameCount > 0 ? String.Format("{0} file" + (newfileSameCount > 1 ? "s" : "") + " did not need renaming", newfileSameCount) : "");
-
-                    MessageBox.Show(message, "File renaming failed", MessageBoxButtons.OK);
+                    MessageBox.Show(message, messageTitle);
                 }
                 else
                 {
