@@ -906,30 +906,30 @@ namespace NX_Game_Info
                     string path = Path.GetDirectoryName(title.filename);
                     string newfile = Path.Combine(path, System.Text.RegularExpressions.Regex.Replace(title.titleName, string.Format("[{0}]", invalidChars), "") + " [" + title.titleID + "][v" + title.version + "]" + extension);
 
-                    if (File.Exists(file))
+                    if (file == newfile)
                     {
-                        if (File.Exists(newfile))
+                        newfileSameCount++;
+                        Process.log?.WriteLine("Skip renaming of file \"{0}\", destination filename is the same", file);
+                    }
+                    else
+                    {
+                        if (File.Exists(file))
                         {
-                            if (file != newfile)
-                            {
-                                newfileExistsCount++;
-                                Process.log?.WriteLine("Skip renaming of file \"{0}\" to \"{1}\", destination filename already exists", file, newfile);
-                            }
-                            else
+                            if (File.Exists(newfile))
                             {
                                 newfileSameCount++;
                                 Process.log?.WriteLine("Skip renaming of file \"{0}\", destination filename is the same", file);
                             }
+                            else
+                            {
+                                renamelist.Add(new List<String>() { file, newfile });
+                            }
                         }
                         else
                         {
-                            renamelist.Add(new List<String>() { file, newfile });
+                            fileMissingCount++;
+                            Process.log?.WriteLine("Skip renaming of file \"{0}\" to \"{1}\", source file could not be found", file, newfile);
                         }
-                    }
-                    else
-                    {
-                        fileMissingCount++;
-                        Process.log?.WriteLine("Skip renaming of file \"{0}\" to \"{1}\", source file could not be found", file, newfile);
                     }
                 }
 
@@ -959,7 +959,7 @@ namespace NX_Game_Info
                 }
                 else
                 {
-                    int renameCount = selectedCount - fileMissingCount - newfileExistsCount - newfileSameCount;
+                    int renameCount = renamelist.Count();
 
                     foreach (List<String> renametitle in renamelist)
                     {
