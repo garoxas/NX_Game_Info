@@ -893,7 +893,6 @@ namespace NX_Game_Info
                 int fileMissingCount = 0;
                 int newfileExistsCount = 0;
                 int newfileSameCount = 0;
-                bool requestValidation = true;
                 var invalidChars = new string(Path.GetInvalidFileNameChars());
                 int selectedCount = objectListView.SelectedItems.Count;
                 List<List<String>> renamelist = new List<List<String>> ();
@@ -940,7 +939,7 @@ namespace NX_Game_Info
 
                     if (newfileSameCount == selectedCount)
                     {
-                        message = (newfileSameCount > 1 ? "No files needed renaming." : "File does not need renaming.");
+                        message = (newfileSameCount > 1 ? "Files do" : "File does") + " not need renaming.";
                         messageTitle = "File renaming skipped";
                     }
                     else if (fileMissingCount == selectedCount)
@@ -962,43 +961,31 @@ namespace NX_Game_Info
                 }
                 else
                 {
+                    string message;
                     int renameCount = renamelist.Count();
+                    string file = renamelist[0][0];
+                    string newfile = renamelist[0][1];
 
-                    foreach (List<String> renametitle in renamelist)
+                    message = String.Format("File" + (selectedCount > 1 ? "s" : "") + " will be renamed this way:\n\"{0}\" to\n\"{1}\"", file, newfile);
+
+                    if (MessageBox.Show(message, "File renaming", MessageBoxButtons.OKCancel) == DialogResult.OK)
                     {
-                        string file = renametitle[0];
-                        string newfile = renametitle[1];
-
-                        if (requestValidation)
+                        foreach (List<String> renametitle in renamelist)
                         {
-                            if (selectedCount > 1)
-                            {
-                                if (MessageBox.Show(String.Format("{0} file" + (renameCount > 1 ? "s" : "") + " will be renamed this way:\n\"{1}\" to\n\"{2}\"", renameCount, file, newfile), "File renaming", MessageBoxButtons.OKCancel) != DialogResult.OK)
-                                {
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                if (MessageBox.Show(String.Format("Rename file:\n\"{0}\" to\n\"{1}\" ?", file, newfile), "File renaming", MessageBoxButtons.OKCancel) != DialogResult.OK)
-                                {
-                                    return;
-                                }
-                            }
+                            file = renametitle[0];
+                            newfile = renametitle[1];
+
+                            new FileInfo(file).MoveTo(newfile);
+                            Process.log?.WriteLine("Renamed file \"{0}\" to \"{1}\"", file, newfile);
                         }
 
-                        requestValidation = false;
+                        message = String.Format("{0} file" + (renameCount > 1 ? "s" : "") + " renamed\n", renameCount);
+                        message += (fileMissingCount > 0 ? String.Format("{0} file" + (fileMissingCount > 1 ? "s" : "") + " could not be found\n", fileMissingCount) : "");
+                        message += (newfileExistsCount > 0 ? String.Format("{0} of the new filenames already exists\n", newfileExistsCount) : "");
+                        message += (newfileSameCount > 0 ? String.Format("{0} file" + (newfileSameCount > 1 ? "s" : "") + " did not need renaming", newfileSameCount) : "");
 
-                        new FileInfo(file).MoveTo(newfile);
-                        Process.log?.WriteLine("Renamed file \"{0}\" to \"{1}\"", file, newfile);
+                        MessageBox.Show(message);
                     }
-
-                    string message = String.Format("{0} file" + (renameCount > 1 ? "s" : "") + " renamed\n", renameCount);
-                    message += (fileMissingCount > 0 ? String.Format("{0} file" + (fileMissingCount > 1 ? "s" : "") + " could not be found\n", fileMissingCount) : "");
-                    message += (newfileExistsCount > 0 ? String.Format("{0} of the new filenames already exists\n", newfileExistsCount) : "");
-                    message += (newfileSameCount > 0 ? String.Format("{0} file" + (newfileSameCount > 1 ? "s" : "") + " did not need renaming", newfileSameCount) : "");
-
-                    MessageBox.Show(message);
                 }
             }
         }
