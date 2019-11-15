@@ -83,7 +83,7 @@ namespace NX_Game_Info
             }
         }
 
-        private List<Title> titles = new List<Title>();
+        internal List<Title> titles = new List<Title>();
 
         public Main()
         {
@@ -897,11 +897,11 @@ namespace NX_Game_Info
 
                     if (duplicateCount == selectedCount)
                     {
-                        message = "No files need renaming";
+                        message = "The selected files do not need renaming";
                     }
                     else if (existingCount == selectedCount)
                     {
-                        message = "There are already files with the same names";
+                        message = "The destination has files with the same names";
                     }
                     else if (missingCount == selectedCount)
                     {
@@ -912,7 +912,7 @@ namespace NX_Game_Info
                         message = String.Join("\n", new string[]
                         {
                             duplicateCount > 0 ? String.Format("{0} files do not need renaming", duplicateCount) : "",
-                            existingCount > 0 ? String.Format("{0} files with the same names already exist", existingCount) : "",
+                            existingCount > 0 ? String.Format("{0} files of the same names already exist", existingCount) : "",
                             missingCount > 0 ? String.Format("{0} files could not be found", missingCount) : "",
                         }
                         .Where(x => !String.IsNullOrEmpty(x)));
@@ -924,6 +924,8 @@ namespace NX_Game_Info
                 {
                     int renameCount = renameList.Count();
                     bool confirm = true;
+
+                    int index = historyToolStripMenuItem.DropDownItems.OfType<ToolStripMenuItem>().Select((item, i) => new { item, i }).FirstOrDefault(x => x.item.Checked)?.i ?? -1;
 
                     foreach (Tuple<string, string> rename in renameList)
                     {
@@ -957,6 +959,13 @@ namespace NX_Game_Info
                         try
                         {
                             new FileInfo(filename).MoveTo(newname);
+
+                            titles.Where(x => x.filename == filename).ToList().ForEach(x => x.filename = newname);
+
+                            if (index != -1)
+                            {
+                                Common.History.Default.Titles[index].title.Where(x => x.filename == filename).ToList().ForEach(x => x.filename = newname);
+                            }
                         }
                         catch (NotSupportedException)
                         {
@@ -964,11 +973,15 @@ namespace NX_Game_Info
                         }
                     }
 
+                    Common.History.Default.Save();
+
+                    reloadData();
+
                     string message = String.Join("\n", new string[]
                     {
                         String.Format("{0} of {1} files renamed", renameCount, selectedCount),
                         duplicateCount > 0 ? String.Format("{0} files do not need renaming", duplicateCount) : "",
-                        existingCount > 0 ? String.Format("{0} files with the same names already exist", existingCount) : "",
+                        existingCount > 0 ? String.Format("{0} files of the same names already exist", existingCount) : "",
                         missingCount > 0 ? String.Format("{0} files could not be found", missingCount) : "",
                     }
                     .Where(x => !String.IsNullOrEmpty(x)));
