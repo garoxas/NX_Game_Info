@@ -75,9 +75,9 @@ The application will look for these files at the following locations (other file
  - Directory of the executable file (.exe) for Windows or (.app) for macOS
  - `$HOME/.switch` e.g. C:\\Users\\_yourname_\\.switch for Windows, /Users/_yourname_/.switch for macOS or /home/_yourname_/.switch for Linux
 
- `Export` menu supports exporting current list to either `CSV` or `XLSX`. For `CSV` file default delimiter to use is `comma ( , )` and user defined character can be set in `user.settings` by specifying the delimiter character in `CsvSeparator` field
+ `Export` menu supports exporting current list to either `CSV` or `XLSX`. For `CSV` file, default delimiter to use is `comma ( , )` and user defined character can be set in `user.settings` by specifying the delimiter character in `CsvSeparator` field
 
- Compressed NCA is not supported, but there is an option to make the application accept `XCZ` and `NSZ` file extension by setting `NszExtension` field `user.settings`. Please note that issues related to these file extensions will not be supported
+ Compressed NCA is not supported, but there is an option to make the application accept `XCZ` and `NSZ` file extension by setting `NszExtension` field in `user.settings`. Please note that issues related to these file extensions will not be supported
 
 # macOS
 ### Open File/Directory
@@ -112,6 +112,8 @@ The application will look for these files at the following locations (other file
     - `titleid`
     - `titlename`
     - `filename` (default)
+- -z|--nsz
+  - Enable `XCZ` and `NSZ` extension
 - paths
   - File or directory path, can pass multiple arguments
 

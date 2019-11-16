@@ -49,6 +49,8 @@
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.allColumnsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.renameFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.openFileLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -171,7 +173,7 @@
             // updateTitleKeysToolStripMenuItem
             // 
             this.updateTitleKeysToolStripMenuItem.Name = "updateTitleKeysToolStripMenuItem";
-            this.updateTitleKeysToolStripMenuItem.Size = new System.Drawing.Size(252, 30);
+            this.updateTitleKeysToolStripMenuItem.Size = new System.Drawing.Size(248, 30);
             this.updateTitleKeysToolStripMenuItem.Text = "Update &Title Keys";
             this.updateTitleKeysToolStripMenuItem.Click += new System.EventHandler(this.updateTitleKeysToolStripMenuItem_Click);
             // 
@@ -225,30 +227,45 @@
             this.toolStripSeparator4,
             this.openFileLocationToolStripMenuItem});
             this.contextMenuStrip.Name = "contextMenuStrip";
-            this.contextMenuStrip.Size = new System.Drawing.Size(225, 70);
+            this.contextMenuStrip.Size = new System.Drawing.Size(241, 133);
             // 
             // copyToolStripMenuItem
             // 
+            this.copyToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.allColumnsToolStripMenuItem,
+            this.toolStripSeparator5});
             this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-            this.copyToolStripMenuItem.Size = new System.Drawing.Size(224, 30);
+            this.copyToolStripMenuItem.Size = new System.Drawing.Size(240, 30);
             this.copyToolStripMenuItem.Text = "&Copy";
-            //
+            // 
+            // allColumnsToolStripMenuItem
+            // 
+            this.allColumnsToolStripMenuItem.Name = "allColumnsToolStripMenuItem";
+            this.allColumnsToolStripMenuItem.Size = new System.Drawing.Size(252, 30);
+            this.allColumnsToolStripMenuItem.Text = "&All Columns";
+            this.allColumnsToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(249, 6);
+            // 
             // renameFileToolStripMenuItem
             // 
             this.renameFileToolStripMenuItem.Name = "renameFileToolStripMenuItem";
-            this.renameFileToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.renameFileToolStripMenuItem.Size = new System.Drawing.Size(240, 30);
             this.renameFileToolStripMenuItem.Text = "&Rename";
             this.renameFileToolStripMenuItem.Click += new System.EventHandler(this.renameFileToolStripMenuItem_Click);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(221, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(237, 6);
             // 
             // openFileLocationToolStripMenuItem
             // 
             this.openFileLocationToolStripMenuItem.Name = "openFileLocationToolStripMenuItem";
-            this.openFileLocationToolStripMenuItem.Size = new System.Drawing.Size(224, 30);
+            this.openFileLocationToolStripMenuItem.Size = new System.Drawing.Size(240, 30);
             this.openFileLocationToolStripMenuItem.Text = "Open file locat&ion";
             this.openFileLocationToolStripMenuItem.Click += new System.EventHandler(this.openFileLocationToolStripMenuItem_Click);
             // 
@@ -526,6 +543,8 @@
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem allColumnsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem renameFileToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripMenuItem openFileLocationToolStripMenuItem;

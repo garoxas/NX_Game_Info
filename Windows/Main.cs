@@ -763,79 +763,109 @@ namespace NX_Game_Info
         {
             if (contextMenuStrip.Tag is Title title)
             {
-                string text = "";
-                string property = (sender as ToolStripMenuItem).Text;
+                List<string> text = new List<string>();
 
-                switch (property)
+                string property = (sender as ToolStripMenuItem).Text.Replace("&", "");
+                bool allColumns = property == "All Columns";
+
+                foreach (OLVListItem item in objectListView.SelectedItems)
                 {
-                    case "Title ID":
-                        text = title.titleID;
-                        break;
-                    case "Base Title ID":
-                        text = title.baseTitleID;
-                        break;
-                    case "Title Name":
-                        text = title.titleName;
-                        break;
-                    case "Display Version":
-                        text = title.displayVersion;
-                        break;
-                    case "Version":
-                        text = title.versionString;
-                        break;
-                    case "Latest Version":
-                        text = title.latestVersionString;
-                        break;
-                    case "System Update":
-                        text = title.systemUpdateString;
-                        break;
-                    case "System Version":
-                        text = title.systemVersionString;
-                        break;
-                    case "Application Version":
-                        text = title.applicationVersionString;
-                        break;
-                    case "Masterkey":
-                        text = title.masterkeyString;
-                        break;
-                    case "Title Key":
-                        text = title.titleKey;
-                        break;
-                    case "Publisher":
-                        text = title.publisher;
-                        break;
-                    case "Languages":
-                        text = title.languagesString;
-                        break;
-                    case "Filename":
-                        text = title.filename;
-                        break;
-                    case "Filesize":
-                        text = title.filesizeString;
-                        break;
-                    case "Type":
-                        text = title.typeString;
-                        break;
-                    case "Distribution":
-                        text = title.distribution.ToString("G");
-                        break;
-                    case "Structure":
-                        text = title.structureString;
-                        break;
-                    case "Signature":
-                        text = title.signatureString;
-                        break;
-                    case "Permission":
-                        text = title.permissionString;
-                        break;
-                    case "Error":
-                        text = title.error;
-                        break;
+                    title = (Title)item.RowObject;
+
+                    if (allColumns || property == "Title ID")
+                    {
+                        text.Add(title.titleID);
+                    }
+                    if (allColumns || property == "Base Title ID")
+                    {
+                        text.Add(title.baseTitleID);
+                    }
+                    if (allColumns || property == "Title Name")
+                    {
+                        text.Add(title.titleName);
+                    }
+                    if (allColumns || property == "Display Version")
+                    {
+                        text.Add(title.displayVersion);
+                    }
+                    if (allColumns || property == "Version")
+                    {
+                        text.Add(title.versionString);
+                    }
+                    if (allColumns || property == "Latest Version")
+                    {
+                        text.Add(title.latestVersionString);
+                    }
+                    if (allColumns || property == "System Update")
+                    {
+                        text.Add(title.systemUpdateString);
+                    }
+                    if (allColumns || property == "System Version")
+                    {
+                        text.Add(title.systemVersionString);
+                    }
+                    if (allColumns || property == "Application Version")
+                    {
+                        text.Add(title.applicationVersionString);
+                    }
+                    if (allColumns || property == "Masterkey")
+                    {
+                        text.Add(title.masterkeyString);
+                    }
+                    if (allColumns || property == "Title Key")
+                    {
+                        text.Add(title.titleKey);
+                    }
+                    if (allColumns || property == "Publisher")
+                    {
+                        text.Add(title.publisher);
+                    }
+                    if (allColumns || property == "Languages")
+                    {
+                        text.Add(title.languagesString);
+                    }
+                    if (allColumns || property == "Filename")
+                    {
+                        text.Add(title.filename);
+                    }
+                    if (allColumns || property == "Filesize")
+                    {
+                        text.Add(title.filesizeString);
+                    }
+                    if (allColumns || property == "Type")
+                    {
+                        text.Add(title.typeString);
+                    }
+                    if (allColumns || property == "Distribution")
+                    {
+                        text.Add(title.distribution.ToString("G"));
+                    }
+                    if (allColumns || property == "Structure")
+                    {
+                        text.Add(title.structureString);
+                    }
+                    if (allColumns || property == "Signature")
+                    {
+                        text.Add(title.signatureString);
+                    }
+                    if (allColumns || property == "Permission")
+                    {
+                        text.Add(title.permissionString);
+                    }
+                    if (allColumns || property == "Error")
+                    {
+                        text.Add(title.error);
+                    }
                 }
 
-                if (!String.IsNullOrEmpty(text))
+                if (allColumns)
                 {
-                    Clipboard.SetText(text);
+                    text = text.Select((x, i) => new { x, i }).GroupBy(x => x.i / Title.Properties.Count()).Select(x => String.Join("\t", x.Select(t => t.x))).ToList();
+                }
+
+                if (text.Any() && !text.All(x => String.IsNullOrEmpty(x)))
+                {
+                    Clipboard.SetText(String.Join("\n", text));
                 }
                 else
                 {
@@ -901,7 +931,7 @@ namespace NX_Game_Info
                     }
                     else if (existingCount == selectedCount)
                     {
-                        message = "The destination has files with the same names";
+                        message = "The files of the same names already exist";
                     }
                     else if (missingCount == selectedCount)
                     {
