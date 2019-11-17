@@ -997,9 +997,12 @@ namespace NX_Game_Info
                                 Common.History.Default.Titles[index].title.Where(x => x.filename == filename).ToList().ForEach(x => x.filename = newname);
                             }
                         }
-                        catch (NotSupportedException)
+                        catch (SystemException ex) when (ex is NotSupportedException || ex is UnauthorizedAccessException || ex is IOException)
                         {
                             renameCount--;
+
+                            Process.log?.WriteLine(ex.StackTrace);
+                            Process.log?.WriteLine("Failed to rename file \"{0}\"", filename);
                         }
                     }
 
@@ -1030,34 +1033,67 @@ namespace NX_Game_Info
         private static extern void ILFree(IntPtr pidl);
 
         [DllImport("shell32.dll")]
-        private static extern int SHOpenFolderAndSelectItems(IntPtr pidlFolder, int cild, IntPtr apidl, int dwFlags);
+        private static extern int SHOpenFolderAndSelectItems(IntPtr pidlFolder, int cild, [In, Optional, MarshalAs(UnmanagedType.LPArray)] IntPtr[] apidl, int dwFlags);
 
         private void openFileLocationToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (contextMenuStrip.Tag is Title title)
             {
-                string file = Path.GetFullPath(title.filename);
-                string path = Path.GetDirectoryName(title.filename);
-                if (Directory.Exists(path))
+                List<string> files = new List<string>();
+
+                foreach (OLVListItem item in objectListView.SelectedItems)
                 {
-                    if (File.Exists(file))
+                    title = (Title)item.RowObject;
+
+                    if (File.Exists(title.filename))
                     {
-                        IntPtr pidl = ILCreateFromPathW(file);
-                        SHOpenFolderAndSelectItems(pidl, 0, IntPtr.Zero, 0);
-                        ILFree(pidl);
+                        files.Add(title.filename);
+                    }
+                }
+
+                if (files.Any())
+                {
+                    string path = files.Select(x => Path.GetDirectoryName(x)).Aggregate(files.FirstOrDefault(), (x, y) => String.Join("", x.Substring(0, Math.Min(x.Length, y.Length)).TakeWhile((c, i) => c == y[i])), r => r);
+
+                    files.ForEach(x =>
+                    {
+                        while (!x.Contains(path + "\\"))
+                        {
+                            path = Path.GetDirectoryName(path);
+                        }
+                    });
+
+                    if (Directory.Exists(path))
+                    {
+                        IntPtr pidl = ILCreateFromPathW(path);
+                        List<IntPtr> filesPidl = new List<IntPtr>();
+                        foreach (var file in files)
+                        {
+                            filesPidl.Add(ILCreateFromPathW(file));
+                        }
+
+                        try
+                        {
+                            SHOpenFolderAndSelectItems(pidl, filesPidl.Count(), filesPidl.ToArray(), 0);
+                        }
+                        finally
+                        {
+                            ILFree(pidl);
+                            filesPidl.ForEach(x => ILFree(x));
+                        }
                     }
                     else
                     {
-                        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
-                        {
-                            FileName = path,
-                            UseShellExecute = true,
-                        });
+                        MessageBox.Show(String.Format("{0} is not a valid directory", path), Application.ProductName);
                     }
+                }
+                else if (objectListView.SelectedItems.Count > 0)
+                {
+                    MessageBox.Show("The selected files could not be found", Application.ProductName);
                 }
                 else
                 {
-                    MessageBox.Show(String.Format("{0} is not a valid directory", path), Application.ProductName);
+                    MessageBox.Show("There is no title selected", Application.ProductName);
                 }
             }
 
