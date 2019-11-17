@@ -36,11 +36,17 @@ namespace NX_Game_Info
 		[Action ("cancelProgress:")]
 		partial void cancelProgress (Foundation.NSObject sender);
 
+		[Action ("copy:")]
+		partial void copy (Foundation.NSObject sender);
+
 		[Action ("debugLog:")]
 		partial void debugLog (Foundation.NSObject sender);
 
 		[Action ("export:")]
 		partial void export (Foundation.NSObject sender);
+
+		[Action ("rename:")]
+		partial void rename (Foundation.NSObject sender);
 
 		[Action ("showInFinder:")]
 		partial void showInFinder (Foundation.NSObject sender);

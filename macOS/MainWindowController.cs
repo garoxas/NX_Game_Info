@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Foundation;
 using AppKit;
 using Bluegrams.Application;
@@ -38,7 +39,7 @@ namespace NX_Game_Info
             Invalid = -1
         }
 
-        private List<Title> titles = new List<Title>();
+        internal List<Title> titles = new List<Title>();
 
         public MainWindowController(IntPtr handle) : base(handle)
         {
@@ -94,12 +95,12 @@ namespace NX_Game_Info
 
             foreach (var message in messages)
             {
-                var alert = new NSAlert()
+                new NSAlert()
                 {
                     InformativeText = message,
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                };
-                alert.RunModal();
+                }
+                .RunModal();
             }
 
             if (!init)
@@ -142,12 +143,12 @@ namespace NX_Game_Info
         {
             if (backgroundWorker.IsBusy)
             {
-                var alert = new NSAlert()
+                new NSAlert()
                 {
                     InformativeText = "Please wait until the current process is finished and try again.",
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                };
-                alert.RunModal();
+                }
+                .RunModal();
                 return;
             }
 
@@ -187,12 +188,12 @@ namespace NX_Game_Info
         {
             if (backgroundWorker.IsBusy)
             {
-                var alert = new NSAlert()
+                new NSAlert()
                 {
                     InformativeText = "Please wait until the current process is finished and try again.",
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                };
-                alert.RunModal();
+                }
+                .RunModal();
                 return;
             }
 
@@ -233,12 +234,12 @@ namespace NX_Game_Info
                 string error = "sd_seed is missing from Console Keys";
                 Process.log?.WriteLine(error);
 
-                var alert = new NSAlert()
+                new NSAlert()
                 {
                     InformativeText = String.Format("{0}.\nOpen SD Card will not be available.", error),
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                };
-                alert.RunModal();
+                }
+                .RunModal();
                 return;
             }
 
@@ -248,23 +249,23 @@ namespace NX_Game_Info
                 Process.log?.WriteLine(" - {0} ({1}exists)", "sd_card_kek_source", (bool)Process.keyset?.SdCardKekSource?.Any(b => b != 0) ? "" : "not ");
                 Process.log?.WriteLine(" - {0} ({1}exists)", "sd_card_nca_key_source", (bool)Process.keyset?.SdCardKeySources?[1]?.Any(b => b != 0) ? "" : "not ");
 
-                var alert = new NSAlert()
+                new NSAlert()
                 {
                     InformativeText = "sd_card_kek_source and sd_card_nca_key_source are missing from Keyfile.\nOpen SD Card will not be available.",
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                };
-                alert.RunModal();
+                }
+                .RunModal();
                 return;
             }
 
             if (backgroundWorker.IsBusy)
             {
-                var alert = new NSAlert()
+                new NSAlert()
                 {
                     InformativeText = "Please wait until the current process is finished and try again.",
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                };
-                alert.RunModal();
+                }
+                .RunModal();
                 return;
             }
 
@@ -378,12 +379,12 @@ namespace NX_Game_Info
 
                             Window.EndSheet(sheet);
 
-                            var alert = new NSAlert()
+                            new NSAlert()
                             {
                                 InformativeText = String.Format("{0} of {1} titles exported", index, titles.Count),
                                 MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                            };
-                            alert.RunModal();
+                            }
+                            .RunModal();
                         }
                     }
                     else if (filename.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
@@ -506,22 +507,22 @@ namespace NX_Game_Info
 
                             Window.EndSheet(sheet);
 
-                            var alert = new NSAlert()
+                            new NSAlert()
                             {
                                 InformativeText = String.Format("{0} of {1} titles exported", index, titles.Count),
                                 MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                            };
-                            alert.RunModal();
+                            }
+                            .RunModal();
                         }
                     }
                     else
                     {
-                        var alert = new NSAlert()
+                        new NSAlert()
                         {
                             InformativeText = String.Format("This file type is not supported {0}", Path.GetExtension(filename)),
                             MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                        };
-                        alert.RunModal();
+                        }
+                        .RunModal();
                     }
                 }
             });
@@ -544,23 +545,23 @@ namespace NX_Game_Info
 
                 Window.EndSheet(sheet);
 
-                var alert = new NSAlert()
+                new NSAlert()
                 {
                     InformativeText = String.Format("Found {0} updated title keys", (Process.keyset?.TitleKeys?.Count ?? 0) - count),
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                };
-                alert.RunModal();
+                }
+                .RunModal();
             }
             else
             {
                 Window.EndSheet(sheet);
 
-                var alert = new NSAlert()
+                new NSAlert()
                 {
                     InformativeText = "Failed to download title keys",
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                };
-                alert.RunModal();
+                }
+                .RunModal();
             }
         }
 
@@ -618,23 +619,23 @@ namespace NX_Game_Info
 
                 Window.EndSheet(sheet);
 
-                var alert = new NSAlert()
+                new NSAlert()
                 {
                     InformativeText = String.Format("{0} titles have updated version", count),
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                };
-                alert.RunModal();
+                }
+                .RunModal();
             }
             else
             {
                 Window.EndSheet(sheet);
 
-                var alert = new NSAlert()
+                new NSAlert()
                 {
                     InformativeText = "Failed to download version list",
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                };
-                alert.RunModal();
+                }
+                .RunModal();
             }
         }
 
@@ -693,119 +694,341 @@ namespace NX_Game_Info
             }
         }
 
+        [Export("copy:")]
+        public void Copy(NSMenuItem menuItem)
+        {
+            Copy(menuItem, new EventArgs());
+        }
+
         void Copy(object sender, EventArgs e)
         {
-            Title title = tableViewDataSource.Titles?[(int)tableView.ClickedRow];
-            if (title != null)
+            List<string> text = new List<string>();
+
+            string property = (sender as NSMenuItem).Title;
+            bool allColumns = property == "All Columns";
+
+            tableView.SelectedRows.EnumerateIndexes((nuint idx, ref bool stop) =>
             {
-                string text = "";
-                string property = (sender as NSMenuItem).Title;
-
-                switch (property)
+                Title title = tableViewDataSource.Titles?[(int)idx];
+                if (title != null)
                 {
-                    case "Title ID":
-                        text = title.titleID;
-                        break;
-                    case "Base Title ID":
-                        text = title.baseTitleID;
-                        break;
-                    case "Title Name":
-                        text = title.titleName;
-                        break;
-                    case "Display Version":
-                        text = title.displayVersion;
-                        break;
-                    case "Version":
-                        text = title.versionString;
-                        break;
-                    case "Latest Version":
-                        text = title.latestVersionString;
-                        break;
-                    case "System Update":
-                        text = title.systemUpdateString;
-                        break;
-                    case "System Version":
-                        text = title.systemVersionString;
-                        break;
-                    case "Application Version":
-                        text = title.applicationVersionString;
-                        break;
-                    case "Masterkey":
-                        text = title.masterkeyString;
-                        break;
-                    case "Title Key":
-                        text = title.titleKey;
-                        break;
-                    case "Publisher":
-                        text = title.publisher;
-                        break;
-                    case "Languages":
-                        text = title.languagesString;
-                        break;
-                    case "Filename":
-                        text = title.filename;
-                        break;
-                    case "Filesize":
-                        text = title.filesizeString;
-                        break;
-                    case "Type":
-                        text = title.typeString;
-                        break;
-                    case "Distribution":
-                        text = title.distribution.ToString("G");
-                        break;
-                    case "Structure":
-                        text = title.structureString;
-                        break;
-                    case "Signature":
-                        text = title.signatureString;
-                        break;
-                    case "Permission":
-                        text = title.permissionString;
-                        break;
-                    case "Error":
-                        text = title.error;
-                        break;
+                    if (allColumns || property == "Title ID")
+                    {
+                        text.Add(title.titleID);
+                    }
+                    if (allColumns || property == "Base Title ID")
+                    {
+                        text.Add(title.baseTitleID);
+                    }
+                    if (allColumns || property == "Title Name")
+                    {
+                        text.Add(title.titleName);
+                    }
+                    if (allColumns || property == "Display Version")
+                    {
+                        text.Add(title.displayVersion);
+                    }
+                    if (allColumns || property == "Version")
+                    {
+                        text.Add(title.versionString);
+                    }
+                    if (allColumns || property == "Latest Version")
+                    {
+                        text.Add(title.latestVersionString);
+                    }
+                    if (allColumns || property == "System Update")
+                    {
+                        text.Add(title.systemUpdateString);
+                    }
+                    if (allColumns || property == "System Version")
+                    {
+                        text.Add(title.systemVersionString);
+                    }
+                    if (allColumns || property == "Application Version")
+                    {
+                        text.Add(title.applicationVersionString);
+                    }
+                    if (allColumns || property == "Masterkey")
+                    {
+                        text.Add(title.masterkeyString);
+                    }
+                    if (allColumns || property == "Title Key")
+                    {
+                        text.Add(title.titleKey);
+                    }
+                    if (allColumns || property == "Publisher")
+                    {
+                        text.Add(title.publisher);
+                    }
+                    if (allColumns || property == "Languages")
+                    {
+                        text.Add(title.languagesString);
+                    }
+                    if (allColumns || property == "Filename")
+                    {
+                        text.Add(title.filename);
+                    }
+                    if (allColumns || property == "Filesize")
+                    {
+                        text.Add(title.filesizeString);
+                    }
+                    if (allColumns || property == "Type")
+                    {
+                        text.Add(title.typeString);
+                    }
+                    if (allColumns || property == "Distribution")
+                    {
+                        text.Add(title.distribution.ToString("G"));
+                    }
+                    if (allColumns || property == "Structure")
+                    {
+                        text.Add(title.structureString);
+                    }
+                    if (allColumns || property == "Signature")
+                    {
+                        text.Add(title.signatureString);
+                    }
+                    if (allColumns || property == "Permission")
+                    {
+                        text.Add(title.permissionString);
+                    }
+                    if (allColumns || property == "Error")
+                    {
+                        text.Add(title.error);
+                    }
                 }
+            });
 
-                if (!String.IsNullOrEmpty(text))
+            if (allColumns)
+            {
+                text = text.Select((x, i) => new { x, i }).GroupBy(x => x.i / Title.Properties.Count()).Select(x => String.Join("\t", x.Select(t => t.x))).ToList();
+            }
+
+            if (text.Any() && !text.All(x => String.IsNullOrEmpty(x)))
+            {
+                var pboard = NSPasteboard.GeneralPasteboard;
+                pboard.DeclareTypes(new string[] { NSPasteboard.NSPasteboardTypeString }, null);
+                pboard.SetStringForType(String.Join("\n", text), NSPasteboard.NSPasteboardTypeString);
+            }
+            else
+            {
+                new NSAlert()
                 {
-                    var pboard = NSPasteboard.GeneralPasteboard;
-                    pboard.DeclareTypes(new string[] { NSPasteboard.NSPasteboardTypeString }, null);
-                    pboard.SetStringForType(text, NSPasteboard.NSPasteboardTypeString);
+                    InformativeText = String.Format("{0} is empty", property),
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                }
+                .RunModal();
+            }
+        }
+
+        [Export("rename:")]
+        public void Rename(NSMenuItem menuItem)
+        {
+            int duplicateCount = 0, existingCount = 0, missingCount = 0;
+
+            List<Tuple<string, string>> renameList = new List<Tuple<string, string>>();
+
+            tableView.SelectedRows.EnumerateIndexes((nuint idx, ref bool stop) =>
+            {
+                Title title = tableViewDataSource.Titles?[(int)idx];
+                if (title != null)
+                {
+                    string filename = Path.GetFullPath(title.filename);
+                    string newname = Path.Combine(Path.GetDirectoryName(filename), Regex.Replace(title.titleName,
+                        String.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()))), "") + " [" + title.titleID + "][v" + title.version + "]" + Path.GetExtension(filename));
+
+                    if (filename == newname)
+                    {
+                        duplicateCount++;
+                        Process.log?.WriteLine("Skipping file \"{0}\": The source and destination file names are the same", filename);
+                    }
+                    else
+                    {
+                        if (File.Exists(filename))
+                        {
+                            if (File.Exists(newname))
+                            {
+                                existingCount++;
+                                Process.log?.WriteLine("Skipping file \"{0}\": There is already a file with the same name", filename);
+                            }
+                            else
+                            {
+                                renameList.Add(Tuple.Create(filename, newname));
+                            }
+                        }
+                        else
+                        {
+                            missingCount++;
+                            Process.log?.WriteLine("Skipping file \"{0}\": The source file could not be found", filename);
+                        }
+                    }
+                }
+            });
+
+            int selectedCount = (int)tableView.SelectedRowCount;
+
+            if (duplicateCount + existingCount + missingCount == selectedCount)
+            {
+                string message;
+
+                if (duplicateCount == selectedCount)
+                {
+                    message = "The selected files do not need renaming";
+                }
+                else if (existingCount == selectedCount)
+                {
+                    message = "The files of the same names already exist";
+                }
+                else if (missingCount == selectedCount)
+                {
+                    message = "The selected files could not be found";
                 }
                 else
                 {
-                    var alert = new NSAlert()
+                    message = String.Join("\n", new string[]
                     {
-                        InformativeText = String.Format("{0} is empty", property),
-                        MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                    };
-                    alert.RunModal();
+                            duplicateCount > 0 ? String.Format("{0} files do not need renaming", duplicateCount) : "",
+                            existingCount > 0 ? String.Format("{0} files of the same names already exist", existingCount) : "",
+                            missingCount > 0 ? String.Format("{0} files could not be found", missingCount) : "",
+                    }
+                    .Where(x => !String.IsNullOrEmpty(x)));
                 }
+
+                new NSAlert()
+                {
+                    InformativeText = message,
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                }
+                .RunModal();
+            }
+            else
+            {
+                int renameCount = renameList.Count();
+                bool confirm = true;
+
+                int index = historyMenu.Items.Select((item, i) => new { item, i }).FirstOrDefault(x => x.item.State == NSCellStateValue.On)?.i ?? -1;
+
+                foreach (Tuple<string, string> rename in renameList)
+                {
+                    string filename = rename.Item1;
+                    string newname = rename.Item2;
+
+                    if (confirm)
+                    {
+                        if (renameCount > 1)
+                        {
+                            var alert = new NSAlert()
+                            {
+                                InformativeText = String.Format("{0} files will be renamed following this naming convention\n\n\"{1}\" to \"{2}\"\n\nDo you wish to continue renaming?", renameCount, filename, newname),
+                                MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                            };
+                            alert.AddButton("OK");
+                            alert.AddButton("Cancel");
+                            if (alert.RunModal() != (int)NSAlertButtonReturn.First)
+                            {
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            var alert = new NSAlert()
+                            {
+                                InformativeText = String.Format("\"{0}\" will be renamed to \"{1}\"\n\nDo you wish to continue renaming?", filename, newname),
+                                MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                            };
+                            alert.AddButton("OK");
+                            alert.AddButton("Cancel");
+                            if (alert.RunModal() != (int)NSAlertButtonReturn.First)
+                            {
+                                return;
+                            }
+                        }
+                    }
+
+                    confirm = false;
+
+                    Process.log?.WriteLine("Renaming file \"{0}\" to \"{1}\"", filename, newname);
+
+                    try
+                    {
+                        new FileInfo(filename).MoveTo(newname);
+
+                        titles.Where(x => x.filename == filename).ToList().ForEach(x => x.filename = newname);
+
+                        if (index != -1)
+                        {
+                            Common.History.Default.Titles[index].title.Where(x => x.filename == filename).ToList().ForEach(x => x.filename = newname);
+                        }
+                    }
+                    catch (SystemException ex) when (ex is NotSupportedException || ex is UnauthorizedAccessException || ex is IOException)
+                    {
+                        renameCount--;
+
+                        Process.log?.WriteLine(ex.StackTrace);
+                        Process.log?.WriteLine("Failed to rename file \"{0}\"", filename);
+                    }
+                }
+
+                Common.History.Default.Save();
+
+                tableView.ReloadData();
+
+                string message = String.Join("\n", new string[]
+                {
+                    String.Format("{0} of {1} files renamed", renameCount, selectedCount),
+                    duplicateCount > 0 ? String.Format("{0} files do not need renaming", duplicateCount) : "",
+                    existingCount > 0 ? String.Format("{0} files of the same names already exist", existingCount) : "",
+                    missingCount > 0 ? String.Format("{0} files could not be found", missingCount) : "",
+                }
+                .Where(x => !String.IsNullOrEmpty(x)));
+
+                new NSAlert()
+                {
+                    InformativeText = message,
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                }
+                .RunModal();
             }
         }
 
         [Export("showInFinder:")]
         public void ShowInFinder(NSMenuItem menuItem)
         {
-            Title title = tableViewDataSource.Titles?[(int)tableView.ClickedRow];
-            if (title != null)
+            List<NSUrl> files = new List<NSUrl>();
+
+            tableView.SelectedRows.EnumerateIndexes((nuint idx, ref bool stop) =>
             {
-                string path = Path.GetDirectoryName(title.filename);
-                if (Directory.Exists(path))
+                Title title = tableViewDataSource.Titles?[(int)idx];
+                if (title != null)
                 {
-                    NSWorkspace.SharedWorkspace.OpenFile(path);
-                }
-                else
-                {
-                    var alert = new NSAlert()
+                    if (File.Exists(title.filename))
                     {
-                        InformativeText = String.Format("{0} is not a valid directory", path),
-                        MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                    };
-                    alert.RunModal();
+                        files.Add(NSUrl.FromFilename(title.filename));
+                    }
                 }
+            });
+
+            if (files.Any())
+            {
+                NSWorkspace.SharedWorkspace.ActivateFileViewer(files.ToArray());
+            }
+            else if (tableView.SelectedRows.Any())
+            {
+                new NSAlert()
+                {
+                    InformativeText = String.Format("The selected files could not be found"),
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                }
+                .RunModal();
+            }
+            else
+            {
+                new NSAlert()
+                {
+                    InformativeText = String.Format("There is no title selected"),
+                    MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
+                }
+                .RunModal();
             }
         }
 
@@ -983,12 +1206,12 @@ namespace NX_Game_Info
             {
                 Window.EndSheet(sheet);
 
-                var alert = new NSAlert()
+                new NSAlert()
                 {
                     InformativeText = String.Format("{0}.", error),
                     MessageText = NSBundle.MainBundle.ObjectForInfoDictionary("CFBundleExecutable").ToString(),
-                };
-                alert.RunModal();
+                }
+                .RunModal();
             }
         }
 

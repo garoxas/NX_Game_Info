@@ -533,7 +533,23 @@ Gw
             <items>
                 <menuItem title="Copy" identifier="Copy" id="gf2-tF-RuD">
                     <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="Copy" id="OfT-NK-lje"/>
+                    <menu key="submenu" title="Copy" id="OfT-NK-lje">
+                        <items>
+                            <menuItem title="All Columns" identifier="AllColumns" id="KLv-If-OOI">
+                                <modifierMask key="keyEquivalentModifierMask"/>
+                                <connections>
+                                    <action selector="copy:" target="-2" id="Hy2-R4-SZz"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="K5t-Vr-2PK"/>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Rename" identifier="Rename" id="yGA-Vz-bcT">
+                    <modifierMask key="keyEquivalentModifierMask"/>
+                    <connections>
+                        <action selector="rename:" target="-2" id="NlQ-BS-3Az"/>
+                    </connections>
                 </menuItem>
                 <menuItem isSeparatorItem="YES" id="h47-IB-OYM"/>
                 <menuItem title="Show in Finder" identifier="ShowInFinder" id="1EB-ks-Uvz">
