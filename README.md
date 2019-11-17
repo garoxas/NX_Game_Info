@@ -1,6 +1,8 @@
 # NX Game Info
-[![Build status](https://ci.appveyor.com/api/projects/status/kgdq8btq7v2th8ne?svg=true)](https://ci.appveyor.com/project/garoxas/nx-game-info)  
+[![Build status](https://ci.appveyor.com/api/projects/status/kgdq8btq7v2th8ne?svg=true)](https://ci.appveyor.com/project/garoxas/nx-game-info)
+[![Build status](https://ci.appveyor.com/api/projects/status/3brmk9kwsivhp5as?svg=true)](https://ci.appveyor.com/project/garoxas/nx-game-info-cli)  
 Nightly build (Windows) https://ci.appveyor.com/project/garoxas/nx-game-info/build/artifacts  
+Nightly build (Command Line Interface) https://ci.appveyor.com/project/garoxas/nx-game-info-cli/build/artifacts  
 Stable build https://github.com/garoxas/NX_Game_Info/releases  
 
 # Features
@@ -95,10 +97,10 @@ The application will look for these files at the following locations (other file
 ### Usage
 
 #### Windows
-`nxgameinfo_cli.exe [-h|--help] [-d|--debug] [-c|--sdcard] [-s(titleid|titlename|filename)|--sort=(titleid|titlename|filename)] paths...`
+`nxgameinfo_cli.exe [-h|--help] [-d|--debug] [-c|--sdcard] [-s(titleid|titlename|filename)|--sort=(titleid|titlename|filename)] [-z|--nsz] paths...`
 
 #### macOS, Linux
-`mono nxgameinfo_cli.exe [-h|--help] [-d|--debug] [-c|--sdcard] [-s(titleid|titlename|filename)|--sort=(titleid|titlename|filename)] paths...`
+`mono nxgameinfo_cli.exe [-h|--help] [-d|--debug] [-c|--sdcard] [-s(titleid|titlename|filename)|--sort=(titleid|titlename|filename)] [-z|--nsz] paths...`
 
 #### Parameters
 - -h|--help
