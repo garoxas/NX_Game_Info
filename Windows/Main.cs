@@ -865,7 +865,7 @@ namespace NX_Game_Info
 
                 if (text.Any() && !text.All(x => String.IsNullOrEmpty(x)))
                 {
-                    Clipboard.SetText(String.Join("\n", text));
+                    Clipboard.SetDataObject(new DataObject(DataFormats.Text, String.Join("\n", text)));
                 }
                 else
                 {
