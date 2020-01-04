@@ -36,6 +36,9 @@
   <PropertyGroup>
     <ApplicationIcon>NX_Game_Info.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="EPPlus, Version=4.5.3.2, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
       <HintPath>..\packages\EPPlus.4.5.3.2\lib\net40\EPPlus.dll</HintPath>
@@ -107,6 +110,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="app.manifest" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -125,6 +129,10 @@
     <ProjectReference Include="..\LibHac\src\LibHac\LibHac.csproj">
       <Project>{8153294a-83a8-478c-adf5-aef9b55644b9}</Project>
       <Name>LibHac</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TaskDialog\TaskDialog\TaskDialog.csproj">
+      <Project>{9d268731-f143-473c-be21-cdbd3e19cefd}</Project>
+      <Name>TaskDialog</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

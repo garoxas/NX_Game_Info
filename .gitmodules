@@ -1,3 +1,6 @@
 [submodule "LibHac"]
 	path = LibHac
 	url = git@github.com:garoxas/LibHac.git
+[submodule "TaskDialog"]
+	path = TaskDialog
+	url = git@github.com:kpreisser/TaskDialog.git

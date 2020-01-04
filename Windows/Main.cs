@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using Application = System.Windows.Forms.Application;
 using Bluegrams.Application;
 using BrightIdeasSoftware;
+using KPreisser.UI;
 using LibHac;
 using OfficeOpenXml;
 using FsTitle = LibHac.Title;
@@ -100,8 +101,8 @@ namespace NX_Game_Info
 
             aboutToolStripMenuItem.Text = String.Format("&About {0}", Application.ProductName);
 
-			int index = 0;
-			foreach (string property in Title.Properties)
+            int index = 0;
+            foreach (string property in Title.Properties)
             {
                 ToolStripMenuItem menuItem = new ToolStripMenuItem
                 {
@@ -876,13 +877,21 @@ namespace NX_Game_Info
             contextMenuStrip.Tag = null;
         }
 
+        private enum SkipReason
+        {
+            Duplicate,
+            Existing,
+            Missing,
+        }
+
         private void renameFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (contextMenuStrip.Tag is Title title)
             {
-                int duplicateCount = 0, existingCount = 0, missingCount = 0;
-
                 List<Tuple<string, string>> renameList = new List<Tuple<string, string>>();
+                List<Tuple<string, string, SkipReason>> skippedList = new List<Tuple<string, string, SkipReason>>();
+
+                int selectedCount = objectListView.SelectedItems.Count;
 
                 foreach (OLVListItem item in objectListView.SelectedItems)
                 {
@@ -894,7 +903,7 @@ namespace NX_Game_Info
 
                     if (filename == newname)
                     {
-                        duplicateCount++;
+                        skippedList.Add(Tuple.Create(filename, newname, SkipReason.Duplicate));
                         Process.log?.WriteLine("Skipping file \"{0}\": The source and destination file names are the same", filename);
                     }
                     else
@@ -903,7 +912,7 @@ namespace NX_Game_Info
                         {
                             if (File.Exists(newname))
                             {
-                                existingCount++;
+                                skippedList.Add(Tuple.Create(filename, newname, SkipReason.Existing));
                                 Process.log?.WriteLine("Skipping file \"{0}\": There is already a file with the same name", filename);
                             }
                             else
@@ -913,113 +922,148 @@ namespace NX_Game_Info
                         }
                         else
                         {
-                            missingCount++;
+                            skippedList.Add(Tuple.Create(filename, newname, SkipReason.Missing));
                             Process.log?.WriteLine("Skipping file \"{0}\": The source file could not be found", filename);
                         }
                     }
                 }
 
-                int selectedCount = objectListView.SelectedItems.Count;
-
-                if (duplicateCount + existingCount + missingCount == selectedCount)
+                if (skippedList.Count == selectedCount)
                 {
-                    string message;
+                    string message = "";
 
-                    if (duplicateCount == selectedCount)
+                    if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Duplicate))
                     {
-                        message = "The selected files do not need renaming";
+                        message += String.Format("Files do not need renaming:\n{0}",
+                            String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Duplicate).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
                     }
-                    else if (existingCount == selectedCount)
+                    if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Existing))
                     {
-                        message = "The files of the same names already exist";
-                    }
-                    else if (missingCount == selectedCount)
-                    {
-                        message = "The selected files could not be found";
-                    }
-                    else
-                    {
-                        message = String.Join("\n", new string[]
+                        if (message.Length > 0)
                         {
-                            duplicateCount > 0 ? String.Format("{0} files do not need renaming", duplicateCount) : "",
-                            existingCount > 0 ? String.Format("{0} files of the same names already exist", existingCount) : "",
-                            missingCount > 0 ? String.Format("{0} files could not be found", missingCount) : "",
+                            message += "\n\n";
                         }
-                        .Where(x => !String.IsNullOrEmpty(x)));
+                        message += String.Format("Files of the same names already exist:\n{0}",
+                            String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Existing).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
+                    }
+                    if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Missing))
+                    {
+                        if (message.Length > 0)
+                        {
+                            message += "\n\n";
+                        }
+                        message += String.Format("Files could not be found:\n{0}",
+                            String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Missing).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
                     }
 
-                    MessageBox.Show(message, Application.ProductName);
+                    TaskDialogPage page = new TaskDialogPage()
+                    {
+                        Title = Application.ProductName,
+                        Text = String.Format("Skip renaming {0} files", skippedList.Count),
+                        Expander = new TaskDialogExpander(message),
+                    };
+
+                    new TaskDialog(page).Show();
                 }
                 else
                 {
-                    int renameCount = renameList.Count();
-                    bool confirm = true;
+                    List<Tuple<string, string>> failedList = new List<Tuple<string, string>>();
 
-                    int index = historyToolStripMenuItem.DropDownItems.OfType<ToolStripMenuItem>().Select((item, i) => new { item, i }).FirstOrDefault(x => x.item.Checked)?.i ?? -1;
-
-                    foreach (Tuple<string, string> rename in renameList)
+                    TaskDialogPage page = new TaskDialogPage()
                     {
-                        string filename = rename.Item1;
-                        string newname = rename.Item2;
-
-                        if (confirm)
+                        Title = Application.ProductName,
+                        Text = String.Format("{0} of {1} files will be renamed. Do you wish to continue renaming?", renameList.Count, selectedCount),
+                        Expander = new TaskDialogExpander(String.Join("\n", renameList.Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2)))),
+                        StandardButtons =
                         {
-                            if (renameCount > 1)
+                            new TaskDialogStandardButton(TaskDialogResult.OK)
                             {
-                                if (MessageBox.Show(String.Format("{0} files will be renamed following this naming convention\n\n\"{1}\" to \"{2}\"\n\nDo you wish to continue renaming?", renameCount, filename, newname),
-                                    Application.ProductName, MessageBoxButtons.OKCancel) != DialogResult.OK)
+                                DefaultButton = true,
+                            },
+                            new TaskDialogStandardButton(TaskDialogResult.Cancel),
+                        }
+                    };
+
+                    if (((TaskDialogStandardButton)(new TaskDialog(page).Show())).Result == TaskDialogResult.OK)
+                    {
+                        int index = historyToolStripMenuItem.DropDownItems.OfType<ToolStripMenuItem>().Select((item, i) => new { item, i }).FirstOrDefault(x => x.item.Checked)?.i ?? -1;
+
+                        foreach (Tuple<string, string> rename in renameList)
+                        {
+                            string filename = rename.Item1;
+                            string newname = rename.Item2;
+
+                            Process.log?.WriteLine("Renaming file \"{0}\" to \"{1}\"", filename, newname);
+
+                            try
+                            {
+                                new FileInfo(filename).MoveTo(newname);
+
+                                titles.Where(x => x.filename == filename).ToList().ForEach(x => x.filename = newname);
+
+                                if (index != -1)
                                 {
-                                    return;
+                                    Common.History.Default.Titles[index].title.Where(x => x.filename == filename).ToList().ForEach(x => x.filename = newname);
                                 }
                             }
-                            else
+                            catch (SystemException ex) when (ex is NotSupportedException || ex is UnauthorizedAccessException || ex is IOException)
                             {
-                                if (MessageBox.Show(String.Format("\"{0}\" will be renamed to \"{1}\"\n\nDo you wish to continue renaming?", filename, newname),
-                                    Application.ProductName, MessageBoxButtons.OKCancel) != DialogResult.OK)
-                                {
-                                    return;
-                                }
+                                failedList.Add(Tuple.Create(filename, newname));
+
+                                Process.log?.WriteLine(ex.StackTrace);
+                                Process.log?.WriteLine("Failed to rename file \"{0}\"", filename);
                             }
                         }
 
-                        confirm = false;
+                        Common.History.Default.Save();
 
-                        Process.log?.WriteLine("Renaming file \"{0}\" to \"{1}\"", filename, newname);
+                        reloadData();
 
-                        try
+                        string message = "";
+
+                        if (failedList.Any())
                         {
-                            new FileInfo(filename).MoveTo(newname);
-
-                            titles.Where(x => x.filename == filename).ToList().ForEach(x => x.filename = newname);
-
-                            if (index != -1)
+                            message += String.Format("Failed to rename files:\n{0}",
+                                String.Join("\n", failedList.Select(x => String.Format("\"{0}\" to \"{1}\"", x.Item1, x.Item2))));
+                        }
+                        if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Duplicate))
+                        {
+                            if (message.Length > 0)
                             {
-                                Common.History.Default.Titles[index].title.Where(x => x.filename == filename).ToList().ForEach(x => x.filename = newname);
+                                message += "\n\n";
                             }
+                            message += String.Format("Files do not need renaming:\n{0}",
+                                String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Duplicate).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
                         }
-                        catch (SystemException ex) when (ex is NotSupportedException || ex is UnauthorizedAccessException || ex is IOException)
+                        if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Existing))
                         {
-                            renameCount--;
-
-                            Process.log?.WriteLine(ex.StackTrace);
-                            Process.log?.WriteLine("Failed to rename file \"{0}\"", filename);
+                            if (message.Length > 0)
+                            {
+                                message += "\n\n";
+                            }
+                            message += String.Format("Files of the same names already exist:\n{0}",
+                                String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Existing).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
                         }
+                        if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Missing))
+                        {
+                            if (message.Length > 0)
+                            {
+                                message += "\n\n";
+                            }
+                            message += String.Format("Files could not be found:\n{0}",
+                                String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Missing).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
+                        }
+
+                        TaskDialogPage dialogPage = new TaskDialogPage()
+                        {
+                            Title = Application.ProductName,
+                            Text = String.Format("{0} of {1} files renamed" + (failedList.Count > 0 ? ". {2} files failed to rename" : ""),
+                                renameList.Count - failedList.Count, selectedCount, failedList.Count),
+                            Expander = new TaskDialogExpander(message),
+                        };
+
+                        new TaskDialog(dialogPage).Show();
                     }
-
-                    Common.History.Default.Save();
-
-                    reloadData();
-
-                    string message = String.Join("\n", new string[]
-                    {
-                        String.Format("{0} of {1} files renamed", renameCount, selectedCount),
-                        duplicateCount > 0 ? String.Format("{0} files do not need renaming", duplicateCount) : "",
-                        existingCount > 0 ? String.Format("{0} files of the same names already exist", existingCount) : "",
-                        missingCount > 0 ? String.Format("{0} files could not be found", missingCount) : "",
-                    }
-                    .Where(x => !String.IsNullOrEmpty(x)));
-
-                    MessageBox.Show(message, Application.ProductName);
                 }
             }
 
