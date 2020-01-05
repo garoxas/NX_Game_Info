@@ -935,7 +935,7 @@ namespace NX_Game_Info
                     if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Duplicate))
                     {
                         message += String.Format("Files do not need renaming:\n{0}",
-                            String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Duplicate).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
+                            String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Duplicate).Select(x => String.Format("• \"{0}\"", x.Item1))));
                     }
                     if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Existing))
                     {
@@ -944,7 +944,7 @@ namespace NX_Game_Info
                             message += "\n\n";
                         }
                         message += String.Format("Files of the same names already exist:\n{0}",
-                            String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Existing).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
+                            String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Existing).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, Path.GetFileName(x.Item2)))));
                     }
                     if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Missing))
                     {
@@ -953,17 +953,22 @@ namespace NX_Game_Info
                             message += "\n\n";
                         }
                         message += String.Format("Files could not be found:\n{0}",
-                            String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Missing).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
+                            String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Missing).Select(x => String.Format("• \"{0}\"", x.Item1))));
                     }
 
                     TaskDialogPage page = new TaskDialogPage()
                     {
                         Title = Application.ProductName,
                         Text = String.Format("Skip renaming {0} files", skippedList.Count),
-                        Expander = new TaskDialogExpander(message),
+                        Expander =
+                        {
+                            Text = message,
+                            ExpandFooterArea = true,
+                        },
+                        Width = 350,
                     };
 
-                    new TaskDialog(page).Show();
+                    new TaskDialog(page).Show(Handle);
                 }
                 else
                 {
@@ -973,7 +978,11 @@ namespace NX_Game_Info
                     {
                         Title = Application.ProductName,
                         Text = String.Format("{0} of {1} files will be renamed. Do you wish to continue renaming?", renameList.Count, selectedCount),
-                        Expander = new TaskDialogExpander(String.Join("\n", renameList.Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2)))),
+                        Expander =
+                        {
+                            Text = String.Join("\n", renameList.Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, Path.GetFileName(x.Item2)))),
+                            ExpandFooterArea = true,
+                        },
                         StandardButtons =
                         {
                             new TaskDialogStandardButton(TaskDialogResult.OK)
@@ -981,10 +990,11 @@ namespace NX_Game_Info
                                 DefaultButton = true,
                             },
                             new TaskDialogStandardButton(TaskDialogResult.Cancel),
-                        }
+                        },
+                        Width = 350,
                     };
 
-                    if (((TaskDialogStandardButton)(new TaskDialog(page).Show())).Result == TaskDialogResult.OK)
+                    if (((TaskDialogStandardButton)new TaskDialog(page).Show(Handle)).Result == TaskDialogResult.OK)
                     {
                         int index = historyToolStripMenuItem.DropDownItems.OfType<ToolStripMenuItem>().Select((item, i) => new { item, i }).FirstOrDefault(x => x.item.Checked)?.i ?? -1;
 
@@ -1024,7 +1034,7 @@ namespace NX_Game_Info
                         if (failedList.Any())
                         {
                             message += String.Format("Failed to rename files:\n{0}",
-                                String.Join("\n", failedList.Select(x => String.Format("\"{0}\" to \"{1}\"", x.Item1, x.Item2))));
+                                String.Join("\n", failedList.Select(x => String.Format("\"{0}\" to \"{1}\"", x.Item1, Path.GetFileName(x.Item2)))));
                         }
                         if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Duplicate))
                         {
@@ -1033,7 +1043,7 @@ namespace NX_Game_Info
                                 message += "\n\n";
                             }
                             message += String.Format("Files do not need renaming:\n{0}",
-                                String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Duplicate).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
+                                String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Duplicate).Select(x => String.Format("• \"{0}\"", x.Item1))));
                         }
                         if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Existing))
                         {
@@ -1042,7 +1052,7 @@ namespace NX_Game_Info
                                 message += "\n\n";
                             }
                             message += String.Format("Files of the same names already exist:\n{0}",
-                                String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Existing).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
+                                String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Existing).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, Path.GetFileName(x.Item2)))));
                         }
                         if (skippedList.Select(x => x.Item3).Any(x => x == SkipReason.Missing))
                         {
@@ -1051,7 +1061,7 @@ namespace NX_Game_Info
                                 message += "\n\n";
                             }
                             message += String.Format("Files could not be found:\n{0}",
-                                String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Missing).Select(x => String.Format("• \"{0}\" to \"{1}\"", x.Item1, x.Item2))));
+                                String.Join("\n", skippedList.Where(x => x.Item3 == SkipReason.Missing).Select(x => String.Format("• \"{0}\"", x.Item1))));
                         }
 
                         TaskDialogPage dialogPage = new TaskDialogPage()
@@ -1059,10 +1069,15 @@ namespace NX_Game_Info
                             Title = Application.ProductName,
                             Text = String.Format("{0} of {1} files renamed" + (failedList.Count > 0 ? ". {2} files failed to rename" : ""),
                                 renameList.Count - failedList.Count, selectedCount, failedList.Count),
-                            Expander = new TaskDialogExpander(message),
+                            Expander =
+                            {
+                                Text = message,
+                                ExpandFooterArea = true,
+                            },
+                            Width = 350,
                         };
 
-                        new TaskDialog(dialogPage).Show();
+                        new TaskDialog(dialogPage).Show(Handle);
                     }
                 }
             }
