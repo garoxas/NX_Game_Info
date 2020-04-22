@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -8,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using LibHac;
 using Mono.Options;
+using OfficeOpenXml;
 using FsTitle = LibHac.Title;
 using Title = NX_Game_Info.Common.Title;
 
@@ -34,12 +36,15 @@ namespace NX_Game_Info
 
             bool sdcard = false;
             string sort = "";
+            string export = "";
 
             OptionSet options = null;
             options = new OptionSet()
             {
                 { "c|sdcard", "open path as sdcard", v => sdcard = v != null },
                 { "s|sort=", "sort by titleid, titlename or filename [default: filename]", (string s) => sort = s },
+                { "x|export=", "export filename, only *.csv or *.xlsx supported", (string s) => export = s },
+                { "l|delimiter=", "csv delimiter character [default: ,]", (char c) => Common.Settings.Default.CsvSeparator = c },
                 { "h|help", "show this help message and exit", v => printHelp(options) },
                 { "z|nsz", "enable nsz extension", v => Common.Settings.Default.NszExtension = v != null, true },
                 { "d|debug", "enable debug log", v => Common.Settings.Default.DebugLog = v != null },
@@ -76,18 +81,18 @@ namespace NX_Game_Info
                 Environment.Exit(-1);
             }
 
-            processPaths(paths, sort, sdcard);
+            processPaths(paths, sort, export, sdcard);
         }
 
         static void printHelp(OptionSet options)
         {
-            Console.Error.WriteLine("usage: {0} [-h|--help] [-d|--debug] [-c|--sdcard] [-s(titleid|titlename|filename)|--sort=(titleid|titlename|filename)] paths...\n", Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location).Quote());
+            Console.Error.WriteLine("usage: {0} [-h|--help] [-d|--debug] [-c|--sdcard] [-s(titleid|titlename|filename)|--sort=(titleid|titlename|filename)] [-x(<filename.csv>|<filename.xlsx>)|--export=(<filename.csv>|<filename.xlsx>)] [-l(<delimiter>)|--delimiter=(<delimiter>)] paths...\n", Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().Location).Quote());
             options.WriteOptionDescriptions(Console.Error);
 
             Environment.Exit(-1);
         }
 
-        static void processPaths(List<string> paths, string sort, bool sdcard)
+        static void processPaths(List<string> paths, string sort, string export, bool sdcard)
         {
             List<Title> titles = new List<Title>();
 
@@ -187,6 +192,8 @@ namespace NX_Game_Info
 
             Process.log?.WriteLine("\n{0} titles processed", titles.Count);
             Console.Error.WriteLine("\n{0} titles processed", titles.Count);
+
+            exportTitles(titles, export);
         }
 
         static Title openFile(string filename)
@@ -263,6 +270,209 @@ namespace NX_Game_Info
             }
 
             return titles;
+        }
+
+        static void exportTitles(List<Title> titles, string filename)
+        {
+            FileVersionInfo info = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+
+            if (filename.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(filename));
+                }
+                catch
+                {
+                    Console.Error.WriteLine("\n{0} is not supported or not a valid path", filename);
+                }
+
+                using (var writer = new StreamWriter(filename))
+                {
+                    char separator = Common.Settings.Default.CsvSeparator;
+                    if (separator != '\0')
+                    {
+                        writer.WriteLine("sep={0}", separator);
+                    }
+                    else
+                    {
+                        separator = ',';
+                    }
+
+                    if (info != null)
+                    {
+                        writer.WriteLine("# publisher {0} {1}", info.ProductName, info.ProductVersion);
+                    }
+                    else
+                    {
+                        writer.WriteLine("# publisher {0} {1}", Assembly.GetExecutingAssembly().GetName().Name, Assembly.GetExecutingAssembly().GetName().Version);
+                    }
+
+                    writer.WriteLine("# updated {0}", String.Format("{0:F}", DateTime.Now));
+
+                    writer.WriteLine(String.Join(separator.ToString(), Common.Title.Properties));
+
+                    uint index = 0, count = (uint)titles.Count;
+
+                    foreach (var title in titles)
+                    {
+                        index++;
+
+                        writer.WriteLine(String.Join(separator.ToString(), new string[] {
+                                title.titleID.Quote(separator),
+                                title.baseTitleID.Quote(separator),
+                                title.titleName.Quote(separator),
+                                title.displayVersion.Quote(separator),
+                                title.versionString.Quote(separator),
+                                title.latestVersionString.Quote(separator),
+                                title.systemUpdateString.Quote(separator),
+                                title.systemVersionString.Quote(separator),
+                                title.applicationVersionString.Quote(separator),
+                                title.masterkeyString.Quote(separator),
+                                title.titleKey.Quote(separator),
+                                title.publisher.Quote(separator),
+                                title.languagesString.Quote(separator),
+                                title.filename.Quote(separator),
+                                title.filesizeString.Quote(separator),
+                                title.typeString.Quote(separator),
+                                title.distribution.ToString().Quote(separator),
+                                title.structureString.Quote(separator),
+                                title.signatureString.Quote(separator),
+                                title.permissionString.Quote(separator),
+                                title.error.Quote(separator),
+                            }));
+                    }
+
+                    Process.log?.WriteLine("\n{0} of {1} titles exported to {2}", index, titles.Count, filename);
+                    Console.Error.WriteLine("\n{0} of {1} titles exported to {2}", index, titles.Count, filename);
+                }
+            }
+            else if (filename.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+            {
+                try
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(filename));
+                }
+                catch
+                {
+                    Console.Error.WriteLine("\n{0} is not supported or not a valid path", filename);
+                }
+
+                using (ExcelPackage excel = new ExcelPackage())
+                {
+                    ExcelWorksheet worksheet = excel.Workbook.Worksheets.Add(DateTime.Now.ToString("dd MMMM yyyy HH:mm:ss"));
+
+                    worksheet.Cells[1, 1, 1, Title.Properties.Count()].LoadFromArrays(new List<string[]> { Title.Properties });
+                    worksheet.Cells["1:1"].Style.Font.Bold = true;
+                    worksheet.Cells["1:1"].Style.Font.Color.SetColor(Color.White);
+                    worksheet.Cells["1:1"].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                    worksheet.Cells["1:1"].Style.Fill.BackgroundColor.SetColor(Color.MidnightBlue);
+
+                    uint index = 0, count = (uint)titles.Count;
+
+                    foreach (var title in titles)
+                    {
+                        index++;
+
+                        var data = new List<string[]>
+                        {
+                            new string[] {
+                                title.titleID,
+                                title.baseTitleID,
+                                title.titleName,
+                                title.displayVersion,
+                                title.versionString,
+                                title.latestVersionString,
+                                title.systemUpdateString,
+                                title.systemVersionString,
+                                title.applicationVersionString,
+                                title.masterkeyString,
+                                title.titleKey,
+                                title.publisher,
+                                title.languagesString,
+                                title.filename,
+                                title.filesizeString,
+                                title.typeString,
+                                title.distribution.ToString(),
+                                title.structureString,
+                                title.signatureString,
+                                title.permissionString,
+                                title.error,
+                            }
+                        };
+
+                        worksheet.Cells[(int)index + 1, 1].LoadFromArrays(data);
+
+                        string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.baseTitleID ?? "";
+
+                        Process.latestVersions.TryGetValue(titleID, out uint latestVersion);
+                        Process.versionList.TryGetValue(titleID, out uint version);
+                        Process.titleVersions.TryGetValue(titleID, out uint titleVersion);
+
+                        if (latestVersion < version || latestVersion < titleVersion)
+                        {
+                            worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.BackgroundColor.SetColor(title.signature != true ? Color.OldLace : Color.LightYellow);
+                        }
+                        else if (title.signature != true)
+                        {
+                            worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.PatternType = OfficeOpenXml.Style.ExcelFillStyle.Solid;
+                            worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Fill.BackgroundColor.SetColor(Color.WhiteSmoke);
+                        }
+
+                        if (title.permission == Title.Permission.Dangerous)
+                        {
+                            worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Font.Color.SetColor(Color.DarkRed);
+                        }
+                        else if (title.permission == Title.Permission.Unsafe)
+                        {
+                            worksheet.Cells[(int)index + 1, 1, (int)index + 1, Title.Properties.Count()].Style.Font.Color.SetColor(Color.Indigo);
+                        }
+                    }
+
+                    ExcelRange range = worksheet.Cells[1, 1, (int)count + 1, Title.Properties.Count()];
+                    range.Style.Border.Top.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    range.Style.Border.Left.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    range.Style.Border.Right.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+                    range.Style.Border.Bottom.Style = OfficeOpenXml.Style.ExcelBorderStyle.Thin;
+
+                    worksheet.Column(1).Width = 18;
+                    worksheet.Column(2).Width = 18;
+                    worksheet.Column(3).AutoFit();
+                    worksheet.Column(3).Width = Math.Max(worksheet.Column(3).Width, 30);
+                    worksheet.Column(4).Width = 16;
+                    worksheet.Column(5).Width = 16;
+                    worksheet.Column(6).Width = 16;
+                    worksheet.Column(7).Width = 16;
+                    worksheet.Column(8).Width = 16;
+                    worksheet.Column(9).Width = 16;
+                    worksheet.Column(10).Width = 16;
+                    worksheet.Column(11).AutoFit();
+                    worksheet.Column(11).Width = Math.Max(worksheet.Column(11).Width, 36);
+                    worksheet.Column(12).AutoFit();
+                    worksheet.Column(12).Width = Math.Max(worksheet.Column(12).Width, 30);
+                    worksheet.Column(13).Width = 18;
+                    worksheet.Column(14).AutoFit();
+                    worksheet.Column(14).Width = Math.Max(worksheet.Column(14).Width, 54);
+                    worksheet.Column(15).Width = 10;
+                    worksheet.Column(16).Width = 10;
+                    worksheet.Column(17).Width = 12;
+                    worksheet.Column(18).Width = 12;
+                    worksheet.Column(19).Width = 10;
+                    worksheet.Column(20).Width = 10;
+                    worksheet.Column(21).Width = 40;
+
+                    excel.SaveAs(new FileInfo(filename));
+
+                    Process.log?.WriteLine("\n{0} of {1} titles exported to {2}", index, titles.Count, filename);
+                    Console.Error.WriteLine("\n{0} of {1} titles exported to {2}", index, titles.Count, filename);
+                }
+            }
+            else
+            {
+                Process.log?.WriteLine("\nExport to {0} file type is not supported", Path.GetExtension(filename));
+                Console.Error.WriteLine("\nExport to {0} file type is not supported", Path.GetExtension(filename));
+            }
         }
     }
 }
