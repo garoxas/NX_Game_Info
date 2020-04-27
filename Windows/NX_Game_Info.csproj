@@ -137,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="NX_Game_Info.ico" />
+    <None Include="Resources\delete.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
