@@ -12,8 +12,8 @@ namespace NX_Game_Info
 {
     partial class RenameBox : Form
     {
-        string[] formatSearch = { "{d}", "{i}", "{j}", "{n}", "{v}", "{w}" };
-        string[] formatReplace = { "1.0.1", "0100001001234800", "0100001001234000", "Game Title Name", "65536", "1" };
+        readonly string[] formatSearch = { "{d}", "{i}", "{j}", "{n}", "{v}", "{w}" };
+        readonly string[] formatReplace = { "1.0.1", "0100001001234800", "0100001001234000", "Game Title Name", "65536", "1" };
 
         public RenameBox()
         {
@@ -117,9 +117,7 @@ namespace NX_Game_Info
             Label lbl = sender as Label;
             Label lbl_tag = this.Controls.Find(lbl.Name.Replace("Text", ""), true).FirstOrDefault() as Label;
 
-            //textBoxFormatInput.SelectionBackColor = lbl_tag.BackColor;
             textBoxFormat.SelectedText = lbl_tag.Text;
-            //textBoxFormatInput.SelectionBackColor = Color.White;
         }
 
         private void labelDefault_Click(object sender, EventArgs e)
@@ -144,7 +142,10 @@ namespace NX_Game_Info
 
                     target.Select(match.Index, match.Length);
                     target.SelectionBackColor = lbl_tag.BackColor;
-                    if(replace) target.SelectedText = formatReplace[key];
+                    if (replace)
+                    {
+                        target.SelectedText = formatReplace[key];
+                    }
                 }
             }
         }
