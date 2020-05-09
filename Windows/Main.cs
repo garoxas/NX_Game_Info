@@ -26,6 +26,7 @@ namespace NX_Game_Info
     public partial class Main : Form
     {
         internal AboutBox aboutBox;
+        internal RenameBox renameBox;
         internal IProgressDialog progressDialog;
 
         public enum Worker
@@ -1031,8 +1032,14 @@ namespace NX_Game_Info
                     title = (Title)item.RowObject;
 
                     string filename = Path.GetFullPath(title.filename);
-                    string newname = Path.Combine(Path.GetDirectoryName(filename), Regex.Replace(title.titleName,
-                        String.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()))), "") + " [" + title.titleID + "][v" + title.version + "]" + Path.GetExtension(filename));
+                    string newname = Path.Combine(Path.GetDirectoryName(filename), Regex.Replace(Common.Settings.Default.RenameFormat
+                        .Replace("{n}", title.titleName)
+                        .Replace("{i}", title.titleID)
+                        .Replace("{j}", title.baseTitleID)
+                        .Replace("{v}", title.version.ToString())
+                        .Replace("{w}", (title.version >= 65536 ? title.version / 65536 : 0).ToString())
+                        .Replace("{d}", title.displayVersion),
+                        String.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()))), "") + Path.GetExtension(filename));
 
                     if (filename == newname)
                     {
@@ -1490,6 +1497,12 @@ namespace NX_Game_Info
 
                 MessageBox.Show(String.Format("{0}.", error), Application.ProductName);
             }
+        }
+
+        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            renameBox = new RenameBox();
+            renameBox.ShowDialog();
         }
     }
 

@@ -5,7 +5,8 @@
     <security>
       <requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
         <!-- UAC Manifest Options
-             If you want to change the Windows User Account Control level replace the 
+             If you want to change the Windows User Account Control level 
+             the 
              requestedExecutionLevel node with one of the following.
 
         <requestedExecutionLevel  level="asInvoker" uiAccess="false" />

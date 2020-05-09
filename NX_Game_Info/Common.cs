@@ -93,6 +93,14 @@ namespace NX_Game_Info
             }
 
             [UserScopedSetting()]
+            [DefaultSettingValue("{n} [{i}][v{v}]")]
+            public string RenameFormat
+            {
+                get { return (string)this["RenameFormat"]; }
+                set { this["RenameFormat"] = value; }
+            }
+
+            [UserScopedSetting()]
             [DefaultSettingValue("False")]
             public bool NszExtension
             {
