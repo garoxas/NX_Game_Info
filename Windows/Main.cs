@@ -1499,7 +1499,7 @@ namespace NX_Game_Info
             }
         }
 
-        private void toolStripMenuItem1_Click(object sender, EventArgs e)
+        private void fileRenameFormatToolStripMenuItem_Click(object sender, EventArgs e)
         {
             renameBox = new RenameBox();
             renameBox.ShowDialog();

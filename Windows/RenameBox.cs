@@ -112,7 +112,7 @@ namespace NX_Game_Info
             Close();
         }
 
-        private void addToFormat(object sender, EventArgs e)
+        private void addToFormat_Click(object sender, EventArgs e)
         {
             Label lbl = sender as Label;
             Label lbl_tag = this.Controls.Find(lbl.Name.Replace("Text", ""), true).FirstOrDefault() as Label;

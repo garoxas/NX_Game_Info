@@ -42,7 +42,7 @@
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.updateTitleKeysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.updateVersionListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.fileRenameFormatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.debugLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.historyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -165,7 +165,7 @@
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.updateTitleKeysToolStripMenuItem,
             this.updateVersionListToolStripMenuItem,
-            this.toolStripMenuItem1,
+            this.fileRenameFormatToolStripMenuItem,
             this.toolStripSeparator3,
             this.debugLogToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
@@ -186,12 +186,12 @@
             this.updateVersionListToolStripMenuItem.Text = "Update &Version List";
             this.updateVersionListToolStripMenuItem.Click += new System.EventHandler(this.updateVersionListToolStripMenuItem_Click);
             // 
-            // toolStripMenuItem1
+            // fileRenameFormatToolStripMenuItem
             // 
-            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-            this.toolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
-            this.toolStripMenuItem1.Text = "&File Rename Format";
-            this.toolStripMenuItem1.Click += new System.EventHandler(this.toolStripMenuItem1_Click);
+            this.fileRenameFormatToolStripMenuItem.Name = "fileRenameFormatToolStripMenuItem";
+            this.fileRenameFormatToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.fileRenameFormatToolStripMenuItem.Text = "&File Rename Format";
+            this.fileRenameFormatToolStripMenuItem.Click += new System.EventHandler(this.fileRenameFormatToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
@@ -587,7 +587,7 @@
         private System.Windows.Forms.ToolStripMenuItem openDirectoryToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem allColumnsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem fileRenameFormatToolStripMenuItem;
     }
 }
 

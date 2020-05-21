@@ -81,7 +81,7 @@
             this.labelTextJ.Size = new System.Drawing.Size(68, 13);
             this.labelTextJ.TabIndex = 31;
             this.labelTextJ.Text = "Base Title ID";
-            this.labelTextJ.Click += new System.EventHandler(this.addToFormat);
+            this.labelTextJ.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // labelJ
             // 
@@ -96,7 +96,7 @@
             this.labelJ.Size = new System.Drawing.Size(30, 19);
             this.labelJ.TabIndex = 30;
             this.labelJ.Text = "{j}";
-            this.labelJ.Click += new System.EventHandler(this.addToFormat);
+            this.labelJ.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // labelTextI
             // 
@@ -109,7 +109,7 @@
             this.labelTextI.Size = new System.Drawing.Size(41, 13);
             this.labelTextI.TabIndex = 29;
             this.labelTextI.Text = "Title ID";
-            this.labelTextI.Click += new System.EventHandler(this.addToFormat);
+            this.labelTextI.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // labelFormat
             // 
@@ -134,7 +134,7 @@
             this.labelI.Size = new System.Drawing.Size(30, 19);
             this.labelI.TabIndex = 27;
             this.labelI.Text = "{i}";
-            this.labelI.Click += new System.EventHandler(this.addToFormat);
+            this.labelI.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // labelPreview
             // 
@@ -157,7 +157,7 @@
             this.labelTextV.Size = new System.Drawing.Size(42, 13);
             this.labelTextV.TabIndex = 37;
             this.labelTextV.Text = "Version";
-            this.labelTextV.Click += new System.EventHandler(this.addToFormat);
+            this.labelTextV.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // labelV
             // 
@@ -172,7 +172,7 @@
             this.labelV.Size = new System.Drawing.Size(30, 19);
             this.labelV.TabIndex = 38;
             this.labelV.Text = "{v}";
-            this.labelV.Click += new System.EventHandler(this.addToFormat);
+            this.labelV.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // labelTextW
             // 
@@ -185,7 +185,7 @@
             this.labelTextW.Size = new System.Drawing.Size(76, 13);
             this.labelTextW.TabIndex = 35;
             this.labelTextW.Text = "Simple Version";
-            this.labelTextW.Click += new System.EventHandler(this.addToFormat);
+            this.labelTextW.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // labelW
             // 
@@ -200,7 +200,7 @@
             this.labelW.Size = new System.Drawing.Size(30, 19);
             this.labelW.TabIndex = 36;
             this.labelW.Text = "{w}";
-            this.labelW.Click += new System.EventHandler(this.addToFormat);
+            this.labelW.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // labelTextD
             // 
@@ -213,7 +213,7 @@
             this.labelTextD.Size = new System.Drawing.Size(79, 13);
             this.labelTextD.TabIndex = 43;
             this.labelTextD.Text = "Display Version";
-            this.labelTextD.Click += new System.EventHandler(this.addToFormat);
+            this.labelTextD.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // labelD
             // 
@@ -228,7 +228,7 @@
             this.labelD.Size = new System.Drawing.Size(30, 19);
             this.labelD.TabIndex = 42;
             this.labelD.Text = "{d}";
-            this.labelD.Click += new System.EventHandler(this.addToFormat);
+            this.labelD.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // labelTextN
             // 
@@ -241,7 +241,7 @@
             this.labelTextN.Size = new System.Drawing.Size(58, 13);
             this.labelTextN.TabIndex = 33;
             this.labelTextN.Text = "Title Name";
-            this.labelTextN.Click += new System.EventHandler(this.addToFormat);
+            this.labelTextN.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // labelN
             // 
@@ -256,7 +256,7 @@
             this.labelN.Size = new System.Drawing.Size(30, 19);
             this.labelN.TabIndex = 32;
             this.labelN.Text = "{n}";
-            this.labelN.Click += new System.EventHandler(this.addToFormat);
+            this.labelN.Click += new System.EventHandler(this.addToFormat_Click);
             // 
             // panel1
             // 
