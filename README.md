@@ -126,15 +126,13 @@ https://dotnet.microsoft.com/download?initial-os=windows
 ![NX_Game_Info_Windows_cli.png](NX_Game_Info_Windows_cli.png)
 
 ### macOS
-Install .NET Core Runtime and Mono (Visual Studio channel) from the following links  
-https://dotnet.microsoft.com/download?initial-os=macos  
+Install Mono (Visual Studio channel) from the following links  
 https://www.mono-project.com/download/stable/#download-mac
 
 ![NX_Game_Info_macOS_cli.png](NX_Game_Info_macOS_cli.png)
 
 ### Linux (Ubuntu)
-Install .NET Core Runtime and Mono from the following links  
-https://dotnet.microsoft.com/download/linux-package-manager/ubuntu18-04/runtime-current  
+Install Mono from the following links  
 https://www.mono-project.com/download/stable/#download-lin-ubuntu
 
 ![NX_Game_Info_Linux_cli.png](NX_Game_Info_Linux_cli.png)
