@@ -13,16 +13,16 @@ namespace NX_Game_Info
     partial class RenameBox : Form
     {
         readonly string[] formatSearch = { "{d}", "{i}", "{j}", "{n}", "{v}", "{w}" };
-        readonly string[] formatReplace = { "1.0.1", "0100001001234800", "0100001001234000", "Game Title Name", "65536", "1" };
+        readonly string[] formatReplace = { "1.0.1", "0100001001234800", "0100001001234000", "Title Name", "65536", "1" };
 
         public RenameBox()
         {
             InitializeComponent();
             richTextBoxDefault.Text = Common.Settings.Default.Properties["RenameFormat"].DefaultValue.ToString();
             richTextApplyColor(richTextBoxDefault, false);
-            textBoxFormat.SelectionBackColor = Color.Aqua;
-            textBoxFormat.SelectedText = Common.Settings.Default.RenameFormat;
-            textBoxFormat.Select(textBoxFormat.Text.Length, 0);
+            textBoxCustomize.SelectionBackColor = Color.Aqua;
+            textBoxCustomize.SelectedText = Common.Settings.Default.RenameFormat;
+            textBoxCustomize.Select(textBoxCustomize.Text.Length, 0);
         }
 
         #region Assembly Attribute Accessors
@@ -105,31 +105,23 @@ namespace NX_Game_Info
         }
         #endregion
 
-        private void okButton_Click(object sender, EventArgs e)
-        {
-            Common.Settings.Default.RenameFormat = textBoxFormat.Text;
-            Common.Settings.Default.Save();
-            Close();
-        }
-
         private void addToFormat_Click(object sender, EventArgs e)
         {
             Label lbl = sender as Label;
             Label lbl_tag = this.Controls.Find(lbl.Name.Replace("Text", ""), true).FirstOrDefault() as Label;
 
-            textBoxFormat.SelectedText = lbl_tag.Text;
+            textBoxCustomize.SelectedText = lbl_tag.Text;
         }
 
         private void labelDefault_Click(object sender, EventArgs e)
         {
             labelDefault.Focus();
-            textBoxFormat.Text = Common.Settings.Default.Properties["RenameFormat"].DefaultValue.ToString();
-            textBoxFormat.Select(textBoxFormat.Text.Length, 0);
+            textBoxCustomize.Text = Common.Settings.Default.Properties["RenameFormat"].DefaultValue.ToString();
+            textBoxCustomize.Select(textBoxCustomize.Text.Length, 0);
         }
 
         private void richTextApplyColor (RichTextBox target, bool replace)
         {
-
             for (int key = 0; key < formatSearch.Length; ++key)
             {
                 Label lbl_tag = this.Controls.Find("label" + formatSearch[key][1].ToString().ToUpper(), true).FirstOrDefault() as Label;
@@ -152,21 +144,28 @@ namespace NX_Game_Info
 
         private void textBoxFormatInput_TextChanged(object sender, EventArgs e)
         {
-            int cursor = textBoxFormat.SelectionStart;
+            int cursor = textBoxCustomize.SelectionStart;
 
             // reset selection colors before re-apply to new string
-            textBoxFormat.Select(0, textBoxFormat.Text.Length);
-            textBoxFormat.SelectionBackColor = Color.White;
+            textBoxCustomize.Select(0, textBoxCustomize.Text.Length);
+            textBoxCustomize.SelectionBackColor = Color.White;
 
             // escape template with user input so we can replace and change colors later
-            textBoxPreview.Text = Regex.Replace(textBoxFormat.Text, String.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()))), "") + ".ext";
+            textBoxPreview.Text = Regex.Replace(textBoxCustomize.Text, String.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()))), "") + ".ext";
 
-            richTextApplyColor(textBoxFormat, false);
+            richTextApplyColor(textBoxCustomize, false);
             richTextApplyColor(textBoxPreview, true);
 
             // reset cursor to where it was
-            textBoxFormat.SelectionStart = cursor;
-            textBoxFormat.SelectionLength = 0;
+            textBoxCustomize.SelectionStart = cursor;
+            textBoxCustomize.SelectionLength = 0;
+        }
+
+        private void buttonOK_Click(object sender, EventArgs e)
+        {
+            Common.Settings.Default.RenameFormat = textBoxCustomize.Text;
+            Common.Settings.Default.Save();
+            Close();
         }
     }
 }

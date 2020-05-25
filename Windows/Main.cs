@@ -25,8 +25,8 @@ namespace NX_Game_Info
 {
     public partial class Main : Form
     {
-        internal AboutBox aboutBox;
         internal RenameBox renameBox;
+        internal AboutBox aboutBox;
         internal IProgressDialog progressDialog;
 
         public enum Worker
@@ -331,6 +331,7 @@ namespace NX_Game_Info
                 backgroundWorkerProcess.RunWorkerAsync((Worker.File, openFileDialog.FileNames));
             }
         }
+
         public class ToolStripMenuItemRemove : ToolStripMenuItem
         {
             public ToolStripMenuItemRemove() { }
@@ -436,7 +437,8 @@ namespace NX_Game_Info
             }
             else
             {
-                if (Directory.Exists(directorypath)){
+                if (Directory.Exists(directorypath))
+                {
                     Common.RecentDirectories.Default.Titles.Remove(findtitle);
                     Common.RecentDirectories.Default.Titles.Insert(0, findtitle);
                     Common.RecentDirectories.Default.Save();
@@ -834,6 +836,12 @@ namespace NX_Game_Info
 
                 MessageBox.Show("Failed to download version list", Application.ProductName);
             }
+        }
+
+        private void renameFormatToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            renameBox = new RenameBox();
+            renameBox.ShowDialog();
         }
 
         private void debugLogToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
@@ -1497,12 +1505,6 @@ namespace NX_Game_Info
 
                 MessageBox.Show(String.Format("{0}.", error), Application.ProductName);
             }
-        }
-
-        private void fileRenameFormatToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            renameBox = new RenameBox();
-            renameBox.ShowDialog();
         }
     }
 

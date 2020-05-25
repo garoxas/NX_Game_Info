@@ -42,7 +42,7 @@
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.updateTitleKeysToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.updateVersionListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.fileRenameFormatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.renameFormatToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.debugLogToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.historyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -51,9 +51,9 @@
             this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.copyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.allColumnsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
-            this.renameFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.renameFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.openFileLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -95,7 +95,6 @@
             this.helpToolStripMenuItem});
             this.menuStrip.Location = new System.Drawing.Point(0, 0);
             this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Padding = new System.Windows.Forms.Padding(4, 1, 0, 1);
             this.menuStrip.Size = new System.Drawing.Size(764, 24);
             this.menuStrip.TabIndex = 1;
             this.menuStrip.Text = "menuStrip";
@@ -165,7 +164,7 @@
             this.optionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.updateTitleKeysToolStripMenuItem,
             this.updateVersionListToolStripMenuItem,
-            this.fileRenameFormatToolStripMenuItem,
+            this.renameFormatToolStripMenuItem,
             this.toolStripSeparator3,
             this.debugLogToolStripMenuItem});
             this.optionsToolStripMenuItem.Name = "optionsToolStripMenuItem";
@@ -186,12 +185,12 @@
             this.updateVersionListToolStripMenuItem.Text = "Update &Version List";
             this.updateVersionListToolStripMenuItem.Click += new System.EventHandler(this.updateVersionListToolStripMenuItem_Click);
             // 
-            // fileRenameFormatToolStripMenuItem
+            // renameFormatToolStripMenuItem
             // 
-            this.fileRenameFormatToolStripMenuItem.Name = "fileRenameFormatToolStripMenuItem";
-            this.fileRenameFormatToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.fileRenameFormatToolStripMenuItem.Text = "&File Rename Format";
-            this.fileRenameFormatToolStripMenuItem.Click += new System.EventHandler(this.fileRenameFormatToolStripMenuItem_Click);
+            this.renameFormatToolStripMenuItem.Name = "renameFormatToolStripMenuItem";
+            this.renameFormatToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.renameFormatToolStripMenuItem.Text = "&Rename Format";
+            this.renameFormatToolStripMenuItem.Click += new System.EventHandler(this.renameFormatToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
@@ -254,10 +253,10 @@
             this.allColumnsToolStripMenuItem.Text = "&All Columns";
             this.allColumnsToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
             // 
-            // toolStripSeparator5
+            // toolStripSeparator4
             // 
-            this.toolStripSeparator5.Name = "toolStripSeparator5";
-            this.toolStripSeparator5.Size = new System.Drawing.Size(136, 6);
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(136, 6);
             // 
             // renameFileToolStripMenuItem
             // 
@@ -266,10 +265,10 @@
             this.renameFileToolStripMenuItem.Text = "&Rename";
             this.renameFileToolStripMenuItem.Click += new System.EventHandler(this.renameFileToolStripMenuItem_Click);
             // 
-            // toolStripSeparator4
+            // toolStripSeparator5
             // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(165, 6);
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(165, 6);
             // 
             // openFileLocationToolStripMenuItem
             // 
@@ -285,7 +284,6 @@
             this.toolStripStatusLabel});
             this.statusStrip.Location = new System.Drawing.Point(0, 479);
             this.statusStrip.Name = "statusStrip";
-            this.statusStrip.Padding = new System.Windows.Forms.Padding(1, 0, 9, 0);
             this.statusStrip.Size = new System.Drawing.Size(764, 22);
             this.statusStrip.TabIndex = 2;
             this.statusStrip.Text = "statusStrip";
@@ -318,9 +316,6 @@
             this.objectListView.AllColumns.Add(this.olvColumnSignature);
             this.objectListView.AllColumns.Add(this.olvColumnPermission);
             this.objectListView.AllColumns.Add(this.olvColumnError);
-            this.objectListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.objectListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.olvColumnTitleID,
             this.olvColumnBaseTitleID,
@@ -343,14 +338,14 @@
             this.olvColumnSignature,
             this.olvColumnPermission,
             this.olvColumnError});
+            this.objectListView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.objectListView.FullRowSelect = true;
             this.objectListView.GridLines = true;
             this.objectListView.HideSelection = false;
-            this.objectListView.Location = new System.Drawing.Point(-1, 24);
-            this.objectListView.Margin = new System.Windows.Forms.Padding(2);
+            this.objectListView.Location = new System.Drawing.Point(0, 33);
             this.objectListView.Name = "objectListView";
             this.objectListView.ShowGroups = false;
-            this.objectListView.Size = new System.Drawing.Size(767, 456);
+            this.objectListView.Size = new System.Drawing.Size(778, 489);
             this.objectListView.TabIndex = 3;
             this.objectListView.UseCompatibleStateImageBehavior = false;
             this.objectListView.View = System.Windows.Forms.View.Details;
@@ -513,15 +508,14 @@
             // 
             // Main
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(764, 501);
+            this.ClientSize = new System.Drawing.Size(778, 544);
             this.Controls.Add(this.objectListView);
             this.Controls.Add(this.statusStrip);
             this.Controls.Add(this.menuStrip);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip;
-            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Main";
             this.Text = "NX Game Info";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Main_FormClosing);
@@ -541,6 +535,7 @@
         private System.Windows.Forms.MenuStrip menuStrip;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openDirectoryToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openSDCardToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem exportToolStripMenuItem;
@@ -549,6 +544,7 @@
         private System.Windows.Forms.ToolStripMenuItem optionsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem updateTitleKeysToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem updateVersionListToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem renameFormatToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem debugLogToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem historyToolStripMenuItem;
@@ -556,8 +552,10 @@
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem copyToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem renameFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem allColumnsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripMenuItem renameFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem openFileLocationToolStripMenuItem;
         private System.Windows.Forms.StatusStrip statusStrip;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel;
@@ -584,10 +582,6 @@
         private BrightIdeasSoftware.OLVColumn olvColumnPermission;
         private BrightIdeasSoftware.OLVColumn olvColumnError;
         private System.ComponentModel.BackgroundWorker backgroundWorkerProcess;
-        private System.Windows.Forms.ToolStripMenuItem openDirectoryToolStripMenuItem;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
-        private System.Windows.Forms.ToolStripMenuItem allColumnsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem fileRenameFormatToolStripMenuItem;
     }
 }
 
