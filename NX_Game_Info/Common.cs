@@ -93,6 +93,14 @@ namespace NX_Game_Info
             }
 
             [UserScopedSetting()]
+            [DefaultSettingValue("{n} [{i}][v{v}]")]
+            public string RenameFormat
+            {
+                get { return (string)this["RenameFormat"]; }
+                set { this["RenameFormat"] = value; }
+            }
+
+            [UserScopedSetting()]
             [DefaultSettingValue("False")]
             public bool NszExtension
             {
@@ -157,6 +165,20 @@ namespace NX_Game_Info
             }
 
             public static History Default = (History)Synchronized(new History());
+        }
+
+        public class RecentDirectories : ApplicationSettingsBase
+        {
+            [UserScopedSetting()]
+            [DefaultSettingValue("")]
+            [SettingsSerializeAs(SettingsSerializeAs.Xml)]
+            public List<ArrayOfTitle> Titles
+            {
+                get { return (List<ArrayOfTitle>)this["Titles"]; }
+                set { this["Titles"] = value; }
+            }
+
+            public static RecentDirectories Default = (RecentDirectories)Synchronized(new RecentDirectories());
         }
 
         [Serializable]
@@ -294,10 +316,10 @@ namespace NX_Game_Info
             public string displayVersion { get; set; } = "";
             [XmlElement("Version")]
             public uint version { get; set; } = unchecked((uint)-1);
-            public string versionString { get { return version != unchecked((uint)-1) ? version.ToString() : ""; } }
+            public string versionString { get { return version != unchecked((uint)-1) ? version.ToString() + (version >= 65536 ? " (" + (version / 65536).ToString() + ")" : "") : ""; } }
             [XmlElement("LatestVersion")]
             public uint latestVersion { get; set; } = unchecked((uint)-1);
-            public string latestVersionString { get { return latestVersion != unchecked((uint)-1) ? latestVersion.ToString() : ""; } }
+            public string latestVersionString { get { return latestVersion != unchecked((uint)-1) ? latestVersion.ToString() + (latestVersion >= 65536 ? " (" + (latestVersion / 65536).ToString() + ")" : "") : ""; } }
             [XmlElement("SystemUpdate")]
             public uint systemUpdate { get; set; } = unchecked((uint)-1);
             public string systemUpdateString

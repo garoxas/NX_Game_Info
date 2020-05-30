@@ -103,7 +103,7 @@ namespace NX_Game_Info
         }
         #endregion
 
-        private void okButton_Click(object sender, EventArgs e)
+        private void buttonOK_Click(object sender, EventArgs e)
         {
             Close();
         }

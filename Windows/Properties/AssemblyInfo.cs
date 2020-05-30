@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Garoxas")]
 [assembly: AssemblyProduct("NX Game Info")]
-[assembly: AssemblyCopyright("Copyright ©  2018-2019")]
+[assembly: AssemblyCopyright("Copyright ©  2018-2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

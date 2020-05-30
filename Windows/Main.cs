@@ -25,6 +25,7 @@ namespace NX_Game_Info
 {
     public partial class Main : Form
     {
+        internal RenameBox renameBox;
         internal AboutBox aboutBox;
         internal IProgressDialog progressDialog;
 
@@ -92,10 +93,11 @@ namespace NX_Game_Info
 
             PortableSettingsProvider.SettingsFileName = Common.USER_SETTINGS;
             PortableSettingsProviderBase.SettingsDirectory = Process.path_prefix;
-            PortableSettingsProvider.ApplyProvider(Common.Settings.Default, Common.History.Default);
+            PortableSettingsProvider.ApplyProvider(Common.Settings.Default, Common.History.Default, Common.RecentDirectories.Default);
 
             Common.Settings.Default.Upgrade();
             Common.History.Default.Upgrade();
+            Common.RecentDirectories.Default.Upgrade();
 
             debugLogToolStripMenuItem.Checked = Common.Settings.Default.DebugLog;
 
@@ -274,6 +276,20 @@ namespace NX_Game_Info
 
             titles = Process.processHistory();
 
+            index = 0;
+            foreach (ArrayOfTitle directories in Common.RecentDirectories.Default.Titles)
+            {
+                ToolStripMenuItemRemove menuItem = new ToolStripMenuItemRemove
+                {
+                    Name = directories.description,
+                    Text = directories.description,
+                };
+                menuItem.Click += new System.EventHandler(this.openRecentDirectoryToolStripMenuItem_Click);
+                openDirectoryToolStripMenuItem.DropDownItems.Add(menuItem);
+            }
+
+            titles = Process.processHistory();
+
             reloadData();
 
             toolStripStatusLabel.Text = String.Format("{0} files", titles.Count);
@@ -316,6 +332,26 @@ namespace NX_Game_Info
             }
         }
 
+        public class ToolStripMenuItemRemove : ToolStripMenuItem
+        {
+            public ToolStripMenuItemRemove() { }
+
+            protected override void OnPaint(PaintEventArgs e)
+            {
+                base.OnPaint(e);
+
+                Rectangle rect = new Rectangle(this.Width - 20, 3, 16, 16);
+                e.Graphics.DrawImage(Properties.Resources.Delete, rect);
+            }
+
+            public bool DeleteClicked { get; set; }
+
+            protected override void OnMouseDown(MouseEventArgs e)
+            {
+                DeleteClicked = e.X > (this.Width - 20);
+            }
+        }
+
         private void openDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (backgroundWorkerProcess.IsBusy)
@@ -324,6 +360,8 @@ namespace NX_Game_Info
                 return;
             }
 
+            fileToolStripMenuItem.HideDropDown();
+
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
             folderBrowserDialog.SelectedPath = !String.IsNullOrEmpty(Common.Settings.Default.InitialDirectory) && Directory.Exists(Common.Settings.Default.InitialDirectory) ? Common.Settings.Default.InitialDirectory : Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
@@ -331,6 +369,41 @@ namespace NX_Game_Info
 
             if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
             {
+                ArrayOfTitle findtitle = Common.RecentDirectories.Default.Titles.Find(x => x.description == folderBrowserDialog.SelectedPath);
+                Common.RecentDirectories.Default.Titles.Remove(findtitle);
+                Common.RecentDirectories.Default.Titles.Insert(0, new ArrayOfTitle { description = folderBrowserDialog.SelectedPath });
+
+                if (Common.RecentDirectories.Default.Titles.Count > Common.HISTORY_SIZE)
+                {
+                    Common.RecentDirectories.Default.Titles.RemoveRange(Common.HISTORY_SIZE, Common.RecentDirectories.Default.Titles.Count - Common.HISTORY_SIZE);
+                }
+                Common.RecentDirectories.Default.Save();
+
+                ToolStripMenuItemRemove menuItem = new ToolStripMenuItemRemove
+                {
+                    Name = folderBrowserDialog.SelectedPath,
+                    Text = folderBrowserDialog.SelectedPath,
+                };
+                menuItem.Click += new System.EventHandler(this.openRecentDirectoryToolStripMenuItem_Click);
+
+                ToolStripItem[] finditem = openDirectoryToolStripMenuItem.DropDownItems.Find(folderBrowserDialog.SelectedPath, false);
+                if (finditem.Length > 0)
+                {
+                    openDirectoryToolStripMenuItem.DropDownItems.Remove(finditem[0]);
+                }
+
+                openDirectoryToolStripMenuItem.DropDownItems.Insert(0, menuItem);
+
+                foreach (ToolStripMenuItem item in openDirectoryToolStripMenuItem.DropDownItems)
+                {
+                    item.Checked = item == menuItem;
+                }
+
+                while (openDirectoryToolStripMenuItem.DropDownItems.Count > Common.HISTORY_SIZE)
+                {
+                    openDirectoryToolStripMenuItem.DropDownItems.RemoveAt(Common.HISTORY_SIZE);
+                }
+
                 objectListView.Items.Clear();
                 toolStripStatusLabel.Text = "";
 
@@ -341,6 +414,69 @@ namespace NX_Game_Info
                 progressDialog.StartProgressDialog(Handle, String.Format("Opening files from directory {0}", folderBrowserDialog.SelectedPath));
 
                 backgroundWorkerProcess.RunWorkerAsync((Worker.Directory, folderBrowserDialog.SelectedPath));
+            }
+        }
+
+        private void openRecentDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (backgroundWorkerProcess.IsBusy)
+            {
+                MessageBox.Show("Please wait until the current process is finished and try again.", Application.ProductName);
+                return;
+            }
+
+            string directorypath = ((ToolStripMenuItem)sender).Text;
+            ArrayOfTitle findtitle = Common.RecentDirectories.Default.Titles.Find(x => x.description == directorypath);
+            ToolStripItem[] finditem = openDirectoryToolStripMenuItem.DropDownItems.Find(directorypath, false);
+
+            if (((ToolStripMenuItemRemove)sender).DeleteClicked)
+            {
+                Common.RecentDirectories.Default.Titles.Remove(findtitle);
+                Common.RecentDirectories.Default.Save();
+                openDirectoryToolStripMenuItem.DropDownItems.Remove(finditem[0]);
+            }
+            else
+            {
+                if (Directory.Exists(directorypath))
+                {
+                    Common.RecentDirectories.Default.Titles.Remove(findtitle);
+                    Common.RecentDirectories.Default.Titles.Insert(0, findtitle);
+                    Common.RecentDirectories.Default.Save();
+
+                    if (finditem.Length > 0)
+                    {
+                        openDirectoryToolStripMenuItem.DropDownItems.Remove(finditem[0]);
+                        openDirectoryToolStripMenuItem.DropDownItems.Insert(0, finditem[0]);
+                    }
+
+                    foreach (ToolStripMenuItem item in openDirectoryToolStripMenuItem.DropDownItems)
+                    {
+                        item.Checked = item == finditem[0];
+                    }
+
+                    Process.log?.WriteLine("\nOpen Recent Directory");
+
+                    objectListView.Items.Clear();
+                    toolStripStatusLabel.Text = "";
+
+                    Common.Settings.Default.InitialDirectory = directorypath;
+                    Common.Settings.Default.Save();
+
+                    progressDialog = (IProgressDialog)new ProgressDialog();
+                    progressDialog.StartProgressDialog(Handle, String.Format("Opening files from directory {0}", directorypath));
+
+                    backgroundWorkerProcess.RunWorkerAsync((Worker.Directory, directorypath));
+                }
+                else
+                {
+                    DialogResult dialogResult = MessageBox.Show("Directory \"" + directorypath + "\" doesn't exist, remove from recents ?", Application.ProductName, MessageBoxButtons.YesNo);
+                    if (dialogResult == DialogResult.Yes)
+                    {
+                        Common.RecentDirectories.Default.Titles.Remove(findtitle);
+                        Common.RecentDirectories.Default.Save();
+                        openDirectoryToolStripMenuItem.DropDownItems.Remove(finditem[0]);
+                    }
+                }
             }
         }
 
@@ -702,6 +838,12 @@ namespace NX_Game_Info
             }
         }
 
+        private void renameFormatToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            renameBox = new RenameBox();
+            renameBox.ShowDialog();
+        }
+
         private void debugLogToolStripMenuItem_CheckedChanged(object sender, EventArgs e)
         {
             Common.Settings.Default.DebugLog = debugLogToolStripMenuItem.Checked;
@@ -898,8 +1040,14 @@ namespace NX_Game_Info
                     title = (Title)item.RowObject;
 
                     string filename = Path.GetFullPath(title.filename);
-                    string newname = Path.Combine(Path.GetDirectoryName(filename), Regex.Replace(title.titleName,
-                        String.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()))), "") + " [" + title.titleID + "][v" + title.version + "]" + Path.GetExtension(filename));
+                    string newname = Path.Combine(Path.GetDirectoryName(filename), Regex.Replace(Common.Settings.Default.RenameFormat
+                        .Replace("{n}", title.titleName)
+                        .Replace("{i}", title.titleID)
+                        .Replace("{j}", title.baseTitleID)
+                        .Replace("{v}", title.version.ToString())
+                        .Replace("{w}", (title.version >= 65536 ? title.version / 65536 : 0).ToString())
+                        .Replace("{d}", title.displayVersion),
+                        String.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()))), "") + Path.GetExtension(filename));
 
                     if (filename == newname)
                     {
