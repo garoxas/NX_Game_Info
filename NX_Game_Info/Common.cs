@@ -143,6 +143,22 @@ namespace NX_Game_Info
 
             [UserScopedSetting()]
             [DefaultSettingValue("")]
+            public string SortColumn
+            {
+                get { return (string)this["SortColumn"]; }
+                set { this["SortColumn"] = value; }
+            }
+
+            [UserScopedSetting()]
+            [DefaultSettingValue("True")]
+            public bool SortOrder
+            {
+                get { return (bool)this["SortOrder"]; }
+                set { this["SortOrder"] = value; }
+            }
+
+            [UserScopedSetting()]
+            [DefaultSettingValue("")]
             public List<int> ColumnWidth
             {
                 get { return (List<int>)this["ColumnWidth"]; }

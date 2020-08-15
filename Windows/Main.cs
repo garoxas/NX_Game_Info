@@ -193,6 +193,9 @@ namespace NX_Game_Info
             }
             Common.Settings.Default.ColumnWidth = columnWidth;
 
+            Common.Settings.Default.SortColumn = objectListView.PrimarySortColumn?.AspectName ?? "";
+            Common.Settings.Default.SortOrder = objectListView.PrimarySortOrder == SortOrder.Ascending;
+
             Common.Settings.Default.Save();
         }
 
@@ -257,6 +260,16 @@ namespace NX_Game_Info
                         break;
                 }
             };
+
+            if (Common.Settings.Default.SortColumn.Length > 0)
+            {
+                foreach (OLVColumn column in objectListView.AllColumns)
+                {
+                    if (column.AspectName == Common.Settings.Default.SortColumn)
+                        objectListView.PrimarySortColumn = column;
+                }
+                objectListView.PrimarySortOrder = Common.Settings.Default.SortOrder ? SortOrder.Ascending : SortOrder.Descending;
+            }
 
             int index = 0;
             foreach (ArrayOfTitle history in Common.History.Default.Titles)
