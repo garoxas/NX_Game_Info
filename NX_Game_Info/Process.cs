@@ -841,8 +841,24 @@ namespace NX_Game_Info
             title.baseTitleID = String.IsNullOrEmpty(title.titleID) ? "" : title.titleID.Substring(0, Math.Min(title.titleID.Length, 13)) + "000";
             title.version = Convert.ToUInt32(xml.Element("ContentMeta").Element("Version").Value);
 
-            title.systemUpdate = (uint)(Convert.ToUInt64(xml.Element("ContentMeta").Element("RequiredSystemVersion").Value) % 0x100000000);
-            title.masterkey = (uint)Math.Max(Convert.ToInt32(xml.Element("ContentMeta").Element("KeyGenerationMin").Value) - 1, 0);
+            try
+            {
+                title.systemUpdate = (uint)(Convert.ToUInt64(xml.Element("ContentMeta").Element("RequiredSystemVersion").Value) % 0x100000000);
+            }
+            catch (NullReferenceException)
+            {
+                try
+                {
+                    title.systemUpdate = (uint)(Convert.ToUInt64(xml.Element("ContentMeta").Element("RequiredDownloadSystemVersion").Value) % 0x100000000);
+                }
+                catch (NullReferenceException) { }
+            }
+
+            try
+            {
+                title.masterkey = (uint)Math.Max(Convert.ToInt32(xml.Element("ContentMeta").Element("KeyGenerationMin").Value) - 1, 0);
+            }
+            catch (NullReferenceException) { }
 
             foreach (XElement element in xml.Descendants("Content"))
             {
