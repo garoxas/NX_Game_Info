@@ -238,6 +238,14 @@ namespace NX_Game_Info
                 { "9bde0122ff0c7611460165d3a7adb795.cnmt.nca", 603980216 }, // 9.0.0
                 { "9684add4b199811749665b84d27c8cd9.cnmt.nca", 604045412 }, // 9.0.1
                 { "7f12839dea0870d71187d0ebeed53270.cnmt.nca", 605028592 }, // 9.1.0
+                { "8dec844718aae2464fa9f96865582c08.cnmt.nca", 606076948 }, // 9.2.0
+                { "d508702ca7c50d1233662ed6b4993a09.cnmt.nca", 671089000 }, // 10.0.0
+                { "2847d2f1dfeb7cd1bde2a7dcf2b67397.cnmt.nca", 671154196 }, // 10.0.1
+                { "4ba2c6ae6f8f40f1c44fb82f12af2dde.cnmt.nca", 671219752 }, // 10.0.2
+                { "fd7c2112250b321fe1e278dfaf11cd8d.cnmt.nca", 671285268 }, // 10.0.3
+                { "8fcd9e3c1938ead201dc790138b595d3.cnmt.nca", 671350804 }, // 10.0.4
+                { "528d5b06298ba4c5b656ab6472240821.cnmt.nca", 672137336 }, // 10.1.0
+                { "7746448930b5db17c75227dd4a9b2f20.cnmt.nca", 673185852 }, // 10.2.0
             };
 
             public static string[] Properties = new string[]
@@ -448,7 +456,7 @@ namespace NX_Game_Info
                         case 9:
                             return masterkey.ToString() + " (9.0.0-9.0.1)";
                         case 10:
-                            return masterkey.ToString() + " (9.1.0)";
+                            return masterkey.ToString() + " (9.1.0-10.2.0)";
                         case unchecked((uint)-1):
                             return "";
                         default:
