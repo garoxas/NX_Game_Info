@@ -1320,6 +1320,33 @@ namespace NX_Game_Info
             contextMenuStrip.Tag = null;
         }
 
+        private void objectListView_CanDrop(object sender, OlvDropEventArgs e)
+        {
+            e.DropSink.FeedbackColor = Color.Transparent;
+            e.DropSink.CanDropOnItem = false;
+            e.Effect = DragDropEffects.Move;
+        }
+
+        private void objectListView_Dropped(object sender, OlvDropEventArgs e)
+        {
+            string[] files = ((DataObject)e.DataObject).GetFileDropList().Cast<string>().ToArray();
+
+            if (files.Count() == 1 && Directory.Exists(files[0]))
+            {
+                progressDialog = (IProgressDialog)new ProgressDialog();
+                progressDialog.StartProgressDialog(Handle, String.Format("Opening files from directory {0}", files[0]));
+
+                backgroundWorkerProcess.RunWorkerAsync((Worker.Directory, files[0]));
+            }
+            else
+            {
+                progressDialog = (IProgressDialog)new ProgressDialog();
+                progressDialog.StartProgressDialog(Handle, "Opening files");
+
+                backgroundWorkerProcess.RunWorkerAsync((Worker.File, files.Where(x => File.Exists(x)).ToArray()));
+            }
+        }
+
         private void objectListView_Freezing(object sender, FreezeEventArgs e)
         {
             if (e.FreezeLevel == 0)
