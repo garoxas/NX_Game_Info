@@ -136,6 +136,9 @@ namespace NX_Game_Info
             tableViewDataSource.Titles.AddRange(titles);
 
             tableView.ReloadData();
+
+            tableView.RegisterForDraggedTypes(new string[] { "NSFilenamesPboardType" });
+            tableViewDataSource.viewController = this;
         }
 
         [Export("openDocument:")]
@@ -166,21 +169,26 @@ namespace NX_Game_Info
             {
                 if (result == (int)NSModalResponse.OK)
                 {
-                    tableViewDataSource.Titles.Clear();
-                    tableView.ReloadData();
-
                     Common.Settings.Default.InitialDirectory = Path.GetDirectoryName(openPanel.Urls.First().Path);
                     Common.Settings.Default.Save();
 
-                    title.StringValue = String.Format("Opening files");
-                    message.StringValue = "";
-                    progress.DoubleValue = 0;
-
-                    Window.BeginSheet(sheet, ProgressComplete);
-
-                    backgroundWorker.RunWorkerAsync((Worker.File, openPanel.Urls.Select((arg) => arg.Path).ToList()));
+                    OpenFile(openPanel.Urls.Select((arg) => arg.Path).ToList());
                 }
             });
+        }
+
+        public void OpenFile(List<string> filenames)
+        {
+            tableViewDataSource.Titles.Clear();
+            tableView.ReloadData();
+
+            title.StringValue = String.Format("Opening files");
+            message.StringValue = "";
+            progress.DoubleValue = 0;
+
+            Window.BeginSheet(sheet, ProgressComplete);
+
+            backgroundWorker.RunWorkerAsync((Worker.File, filenames));
         }
 
         [Export("open:")]
@@ -209,21 +217,26 @@ namespace NX_Game_Info
             {
                 if (result == (int)NSModalResponse.OK)
                 {
-                    tableViewDataSource.Titles.Clear();
-                    tableView.ReloadData();
-
                     Common.Settings.Default.InitialDirectory = openPanel.Urls.First().Path;
                     Common.Settings.Default.Save();
 
-                    title.StringValue = String.Format("Opening files from directory {0}", openPanel.Urls.First().Path);
-                    message.StringValue = "";
-                    progress.DoubleValue = 0;
-
-                    Window.BeginSheet(sheet, ProgressComplete);
-
-                    backgroundWorker.RunWorkerAsync((Worker.Directory, openPanel.Urls.First().Path));
+                    OpenDirectory(openPanel.Urls.First().Path);
                 }
             });
+        }
+
+        public void OpenDirectory(string path)
+        {
+            tableViewDataSource.Titles.Clear();
+            tableView.ReloadData();
+
+            title.StringValue = String.Format("Opening files from directory {0}", path);
+            message.StringValue = "";
+            progress.DoubleValue = 0;
+
+            Window.BeginSheet(sheet, ProgressComplete);
+
+            backgroundWorker.RunWorkerAsync((Worker.Directory, path));
         }
 
         [Export("save:")]
@@ -1236,6 +1249,8 @@ namespace NX_Game_Info
 
     public class TableViewDataSource : NSTableViewDataSource
     {
+        internal MainWindowController viewController;
+
         internal List<Title> Titles { get; } = new List<Title>();
 
         public override nint GetRowCount(NSTableView tableView)
@@ -1309,6 +1324,36 @@ namespace NX_Game_Info
 
                 tableView.ReloadData();
             }
+        }
+
+        [Export("tableView:validateDrop:proposedRow:proposedDropOperation:")]
+        public override NSDragOperation ValidateDrop(NSTableView tableView, NSDraggingInfo info, nint row, NSTableViewDropOperation dropOperation)
+        {
+            return NSDragOperation.Move;
+        }
+
+        [Export("tableView:acceptDrop:row:dropOperation:")]
+        public override bool AcceptDrop(NSTableView tableView, NSDraggingInfo info, nint row, NSTableViewDropOperation dropOperation)
+        {
+            NSPasteboard pasteboard = info.DraggingPasteboard;
+            if (Array.IndexOf(pasteboard.Types, "NSFilenamesPboardType") >= 0)
+            {
+                NSPasteboardItem[] pasteboardItems = pasteboard.PasteboardItems;
+                string[] files = pasteboardItems.Select(x => new NSUrl(x.GetStringForType("public.file-url")).Path).ToArray();
+
+                if (files.Count() == 1 && Directory.Exists(files[0]))
+                {
+                    viewController.OpenDirectory(files[0]);
+                }
+                else
+                {
+                    viewController.OpenFile(files.Where(x => File.Exists(x)).ToList());
+                }
+
+                return true;
+            }
+
+            return false;
         }
     }
 

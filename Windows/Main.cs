@@ -1333,6 +1333,9 @@ namespace NX_Game_Info
 
             if (files.Count() == 1 && Directory.Exists(files[0]))
             {
+                objectListView.Items.Clear();
+                toolStripStatusLabel.Text = "";
+
                 progressDialog = (IProgressDialog)new ProgressDialog();
                 progressDialog.StartProgressDialog(Handle, String.Format("Opening files from directory {0}", files[0]));
 
@@ -1340,6 +1343,9 @@ namespace NX_Game_Info
             }
             else
             {
+                objectListView.Items.Clear();
+                toolStripStatusLabel.Text = "";
+
                 progressDialog = (IProgressDialog)new ProgressDialog();
                 progressDialog.StartProgressDialog(Handle, "Opening files");
 
