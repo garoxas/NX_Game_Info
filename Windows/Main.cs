@@ -1387,10 +1387,10 @@ namespace NX_Game_Info
 
                         worker.ReportProgress(100 * index++ / count, filename);
 
-                        Title title = Process.processFile(filename);
+                        List<Title> title = Process.processFile(filename);
                         if (title != null)
                         {
-                            titles.Add(title);
+                            titles.AddRange(title);
                         }
                     }
 
@@ -1423,10 +1423,10 @@ namespace NX_Game_Info
 
                         worker.ReportProgress(100 * index++ / count, filename);
 
-                        Title title = Process.processFile(filename);
+                        List<Title> title = Process.processFile(filename);
                         if (title != null)
                         {
-                            titles.Add(title);
+                            titles.AddRange(title);
                         }
                     }
 

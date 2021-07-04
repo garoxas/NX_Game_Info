@@ -111,10 +111,10 @@ namespace NX_Game_Info
                 }
                 else if (File.Exists(path) && (Common.Settings.Default.NszExtension ? new string[] { ".xci", ".nsp", ".xcz", ".nsz", ".nro" } : new string[] { ".xci", ".nsp", ".nro" }).Any(ext => ext.Equals(Path.GetExtension(path).ToLower())) && !sdcard)
                 {
-                    Title title = openFile(path);
+                    List<Title> title = openFile(path);
                     if (title != null)
                     {
-                        titles.Add(title);
+                        titles.AddRange(title);
                     }
                 }
                 else
@@ -196,18 +196,18 @@ namespace NX_Game_Info
             exportTitles(titles, export);
         }
 
-        static Title openFile(string filename)
+        static List<Title> openFile(string filename)
         {
             Process.log?.WriteLine("\nOpen File");
 
             Process.log?.WriteLine("File selected");
             Console.Error.WriteLine("Opening file {0}", filename);
 
-            Title title = Process.processFile(filename);
+            List<Title> titles = Process.processFile(filename);
 
             Process.log?.WriteLine("\nTitle processed");
 
-            return title;
+            return titles;
         }
 
         static List<Title> openDirectory(string path)
@@ -226,10 +226,10 @@ namespace NX_Game_Info
 
             foreach (string filename in filenames)
             {
-                Title title = Process.processFile(filename);
+                List<Title> title = Process.processFile(filename);
                 if (title != null)
                 {
-                    titles.Add(title);
+                    titles.AddRange(title);
                 }
             }
 

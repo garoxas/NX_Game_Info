@@ -209,7 +209,7 @@ namespace NX_Game_Info
         }
 
         [Serializable]
-        public class Title
+        public class Title : ICloneable
         {
             public static Dictionary<string, uint> SystemUpdate = new Dictionary<string, uint>
             {
@@ -576,6 +576,11 @@ namespace NX_Game_Info
             public string permissionString { get { return permission == Permission.Invalid ? "" : permission.ToString(); } }
             [XmlElement("Error")]
             public string error { get; set; } = "";
+
+            public object Clone()
+            {
+                return MemberwiseClone();
+            }
         }
 
         public class VersionTitle

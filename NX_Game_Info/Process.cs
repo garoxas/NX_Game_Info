@@ -282,32 +282,35 @@ namespace NX_Game_Info
             return false;
         }
 
-        public static Title processFile(string filename)
+        public static List<Title> processFile(string filename)
         {
             log?.WriteLine("\nProcessing file {0}", filename);
 
             try
             {
-                Title title = processXci(filename) ?? processNsp(filename) ?? processNro(filename);
+                List<Title> titles = processXci(filename) ?? new Title[] { processNsp(filename) ?? processNro(filename) }.ToList();
 
-                title.filename = filename;
-                title.filesize = new FileInfo(filename).Length;
-
-                string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.baseTitleID ?? "";
-
-                if (latestVersions.TryGetValue(titleID, out uint version))
+                foreach (var title in titles)
                 {
-                    if (title.version > version)
+                    title.filename = filename;
+                    title.filesize = new FileInfo(filename).Length;
+
+                    string titleID = title.type == TitleType.AddOnContent ? title.titleID : title.baseTitleID ?? "";
+
+                    if (latestVersions.TryGetValue(titleID, out uint version))
                     {
-                        latestVersions[titleID] = title.version;
+                        if (title.version > version)
+                        {
+                            latestVersions[titleID] = title.version;
+                        }
+                    }
+                    else
+                    {
+                        latestVersions.Add(titleID, title.version);
                     }
                 }
-                else
-                {
-                    latestVersions.Add(titleID, title.version);
-                }
 
-                return title;
+                return titles;
             }
             catch (MissingKeyException ex)
             {
@@ -323,14 +326,15 @@ namespace NX_Game_Info
             return null;
         }
 
-        public static Title processXci(string filename)
+        public static List<Title> processXci(string filename)
         {
             Title title = new Title();
+            List<Title> titles = new List<Title>();
 
             using (var filestream = new FileStream(filename, FileMode.Open, FileAccess.Read))
             {
                 Xci xci;
-                string biggestNca = null, controlNca = null;
+                List<string> biggestNca = new List<string>(), controlNca = new List<string>();
 
                 try
                 {
@@ -365,6 +369,11 @@ namespace NX_Game_Info
                         title.structure.Add(Title.Structure.NormalPartition);
                     }
 
+                    if (xci.LogoPartition?.Files.Length > 0)
+                    {
+                        title.structure.Add(Title.Structure.LogoPartition);
+                    }
+
                     if (xci.SecurePartition?.Files.Length > 0)
                     {
                         PfsFileEntry[] fileEntries = xci.SecurePartition.Files;
@@ -376,11 +385,16 @@ namespace NX_Game_Info
                                 {
                                     using (var cnmtNca = xci.SecurePartition.OpenFile(entry))
                                     {
-                                        var nca = processCnmtNca(cnmtNca, ref title);
+                                        var item = (Title)title.Clone();
+
+                                        var nca = processCnmtNca(cnmtNca, ref item);
                                         if (nca.Item1 != null && (nca.Item2 != null || title.type == TitleType.AddOnContent))
                                         {
-                                            (biggestNca, controlNca) = nca;
+                                            biggestNca.Add(nca.Item1);
+                                            controlNca.Add(nca.Item2);
                                         }
+
+                                        titles.Add(item);
                                     }
                                 }
                                 catch (FileNotFoundException)
@@ -392,10 +406,12 @@ namespace NX_Game_Info
                                 }
 
                                 title.structure.Add(Title.Structure.CnmtNca);
+                                titles.ForEach(item => item.structure.Add(Title.Structure.CnmtNca));
                             }
                             else if (entry.Name.EndsWith(".cert"))
                             {
                                 title.structure.Add(Title.Structure.Cert);
+                                titles.ForEach(item => item.structure.Add(Title.Structure.Cert));
                             }
                             else if (entry.Name.EndsWith(".tik"))
                             {
@@ -420,51 +436,65 @@ namespace NX_Game_Info
                                 }
 
                                 title.structure.Add(Title.Structure.Tik);
-                            }
-                        }
-
-                        if (!String.IsNullOrEmpty(biggestNca))
-                        {
-                            try
-                            {
-                                using (var biggest = xci.SecurePartition.OpenFile(biggestNca))
-                                {
-                                    processBiggestNca(biggest, ref title);
-                                }
-                            }
-                            catch (FileNotFoundException)
-                            {
-                                if (xci.SecurePartition.FileExists(biggestNca.Replace(".nca", ".ncz")))
-                                {
-                                    title.error = "Unsupported Format: Compressed NCA";
-                                }
-                            }
-                        }
-
-                        if (!String.IsNullOrEmpty(controlNca))
-                        {
-                            try
-                            {
-                                using (var control = xci.SecurePartition.OpenFile(controlNca))
-                                {
-                                    processControlNca(control, ref title);
-                                }
-                            }
-                            catch (FileNotFoundException)
-                            {
-                                if (xci.SecurePartition.FileExists(controlNca.Replace(".nca", ".ncz")))
-                                {
-                                    title.error = "Unsupported Format: Compressed NCA";
-                                }
+                                titles.ForEach(item => item.structure.Add(Title.Structure.Tik));
                             }
                         }
 
                         title.structure.Add(Title.Structure.SecurePartition);
-                    }
+                        titles.ForEach(item => item.structure.Add(Title.Structure.SecurePartition));
 
-                    if (xci.LogoPartition?.Files.Length > 0)
-                    {
-                        title.structure.Add(Title.Structure.LogoPartition);
+                        var titleNca = biggestNca.Zip(controlNca, Tuple.Create).ToList();
+
+                        for (int i = 0; i < titleNca.Count(); i++)
+                        {
+                            var nca = titleNca[i];
+
+                            var item = titles[i];
+
+                            if (!String.IsNullOrEmpty(nca.Item1))
+                            {
+                                try
+                                {
+                                    using (var biggest = xci.SecurePartition.OpenFile(nca.Item1))
+                                    {
+                                        processBiggestNca(biggest, ref item);
+                                    }
+                                }
+                                catch (FileNotFoundException)
+                                {
+                                    if (xci.SecurePartition.FileExists(nca.Item1.Replace(".nca", ".ncz")))
+                                    {
+                                        title.error = "Unsupported Format: Compressed NCA";
+                                    }
+                                }
+                            }
+
+                            if (!String.IsNullOrEmpty(nca.Item2))
+                            {
+                                try
+                                {
+                                    using (var control = xci.SecurePartition.OpenFile(nca.Item2))
+                                    {
+                                        processControlNca(control, ref item);
+                                    }
+                                }
+                                catch (FileNotFoundException)
+                                {
+                                    if (xci.SecurePartition.FileExists(nca.Item2.Replace(".nca", ".ncz")))
+                                    {
+                                        title.error = "Unsupported Format: Compressed NCA";
+                                    }
+                                }
+                            }
+
+                            if (item.type == TitleType.Application || item.type == TitleType.Patch)
+                            {
+                                if (versionList.TryGetValue(item.baseTitleID, out uint version))
+                                {
+                                    item.latestVersion = version;
+                                }
+                            }
+                        }
                     }
                 }
                 catch (InvalidDataException)
@@ -473,17 +503,12 @@ namespace NX_Game_Info
                 }
             }
 
-            if (title.type == TitleType.Application || title.type == TitleType.Patch)
+            foreach (var item in titles)
             {
-                if (versionList.TryGetValue(title.baseTitleID, out uint version))
-                {
-                    title.latestVersion = version;
-                }
+                log?.WriteLine("XCI information for {0}: [{1}] {2}", filename, item.titleID, item.titleName);
             }
 
-            log?.WriteLine("XCI information for {0}: [{1}] {2}", filename, title.titleID, title.titleName);
-
-            return title;
+            return titles;
         }
 
         public static Title processNsp(string filename)
